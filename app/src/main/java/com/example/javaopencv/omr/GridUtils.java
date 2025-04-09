@@ -1,13 +1,14 @@
 package com.example.javaopencv.omr;
 
 import android.content.Context;
+
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
-import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,8 +19,8 @@ public class GridUtils {
      * Nếu headerRows > 0 thì phần header không được chia vào grid.
      *
      * @param regionImg Ảnh nguồn (ROI)
-     * @param cols Số cột
-     * @param rows Số hàng
+     * @param cols Số cột.
+     * @param rows Số hàng.
      * @param headerRows Số hàng header (không bao gồm trong grid), nếu không có thì truyền 0.
      * @return Danh sách 2 chiều, mỗi phần tử là danh sách các ô (Mat) của một hàng.
      */
@@ -35,13 +36,11 @@ public class GridUtils {
         }
         int cellWidth = regionWidth / cols;
         int cellHeight = regionHeight / rows;
-
         for (int r = 0; r < rows; r++) {
             List<Mat> rowCells = new ArrayList<>();
             for (int c = 0; c < cols; c++) {
                 int xStart = c * cellWidth;
                 int yStart = yOffset + r * cellHeight;
-                // Tạo ROI cho ô, đảm bảo không vượt quá biên ảnh.
                 Rect cellRect = new Rect(xStart, yStart, cellWidth, cellHeight);
                 rowCells.add(new Mat(regionImg, cellRect));
             }
@@ -59,51 +58,61 @@ public class GridUtils {
 
     /**
      * Kiểm tra xem một ô có được tô hay không dựa trên tỉ lệ số pixel trắng.
+     * Ngưỡng tô được dùng là 0.14.
      *
-     * @param cell Ảnh ô (Mat)
-     * @param fillThreshold Ngưỡng tô (ví dụ 0.14)
+     * @param cell Ảnh của ô (Mat).
+     * @param fillThreshold Ngưỡng tô (ví dụ 0.14).
      * @return true nếu ô được tô vượt qua ngưỡng, false nếu không.
      */
     public static boolean isCellMarked(Mat cell, double fillThreshold) {
         int totalPixels = cell.rows() * cell.cols();
         int whitePixels = Core.countNonZero(cell);
         double ratio = (double) whitePixels / totalPixels;
+        // Debug: in ra tỉ lệ tô của từng cell
+        System.out.println("Cell fill ratio: " + ratio);
         return ratio > fillThreshold;
     }
 
     /**
-     * Trích xuất đáp án từ grid cho bài trắc nghiệm.
-     * Với mỗi hàng, nếu có ô được tô thì chọn đáp án tương ứng (A, B, C, D), ngược lại trả về "X".
+     * Trích xuất đáp án từ grid cho phần trắc nghiệm theo hàng.
+     * Với mỗi hàng, hàm duyệt qua các ô và chọn ô có tỉ lệ tô cao nhất (nếu vượt qua ngưỡng 0.14),
+     * ánh xạ theo thứ tự "A", "B", "C", "D". Nếu không có ô nào vượt qua ngưỡng thì trả về "X".
      *
-     * @param cells Grid các ô (List<List<Mat>>)
-     * @param fillThreshold Ngưỡng tô (ví dụ 0.14)
+     * @param cells Grid các ô (List<List<Mat>>).
+     * @param fillThreshold Ngưỡng tô (0.14).
      * @return Danh sách đáp án.
      */
     public static List<String> extractExamAnswers(List<List<Mat>> cells, double fillThreshold) {
         List<String> answers = new ArrayList<>();
         String[] choices = {"A", "B", "C", "D"};
-        for (List<Mat> row : cells) {
-            int chosen = -1;
+        for (int i = 0; i < cells.size(); i++) {
+            double bestRatio = 0;
+            int bestChoice = -1;
+            List<Mat> row = cells.get(i);
             for (int j = 0; j < row.size(); j++) {
-                if (isCellMarked(row.get(j), fillThreshold)) {
-                    chosen = j;
-                    break;
+                Mat cell = row.get(j);
+                int total = cell.rows() * cell.cols();
+                int white = Core.countNonZero(cell);
+                double ratio = (double) white / total;
+                if (ratio > fillThreshold && ratio > bestRatio) {
+                    bestRatio = ratio;
+                    bestChoice = j;
                 }
             }
-            if (chosen == -1)
+            if (bestChoice == -1)
                 answers.add("X");
             else
-                answers.add(choices[chosen]);
+                answers.add(choices[bestChoice]);
         }
         return answers;
     }
 
     /**
-     * Trích xuất chữ số (hoặc ký tự) từ grid (ví dụ SBD hoặc Mã đề).
-     * Với mỗi cột, chọn ô đầu tiên được tô, nếu không có thì "X".
+     * Trích xuất chữ số (hoặc ký tự) từ grid cho SBD hoặc Mã đề theo cột.
+     * Với mỗi cột, chọn ô có tỉ lệ tô cao nhất nếu vượt qua ngưỡng 0.14, nếu không có thì "X".
      *
      * @param cells Grid các ô.
-     * @param fillThreshold Ngưỡng tô.
+     * @param fillThreshold Ngưỡng tô (0.14).
      * @return Chuỗi ký tự được trích xuất.
      */
     public static String extractDigits(List<List<Mat>> cells, double fillThreshold) {
@@ -111,34 +120,48 @@ public class GridUtils {
         int cols = cells.get(0).size();
         int rows = cells.size();
         for (int j = 0; j < cols; j++) {
-            int chosen = -1;
             double bestRatio = 0;
+            int bestRow = -1;
             for (int i = 0; i < rows; i++) {
                 Mat cell = cells.get(i).get(j);
-                int totalPixels = cell.rows() * cell.cols();
-                int whitePixels = Core.countNonZero(cell);
-                double ratio = (double) whitePixels / totalPixels;
+                int total = cell.rows() * cell.cols();
+                int white = Core.countNonZero(cell);
+                double ratio = (double) white / total;
                 if (ratio > fillThreshold && ratio > bestRatio) {
                     bestRatio = ratio;
-                    chosen = i;
+                    bestRow = i;
                 }
             }
-            if (chosen == -1)
+            if (bestRow == -1)
                 digits.append("X");
             else
-                digits.append(chosen);
+                digits.append(bestRow);
         }
         return digits.toString();
     }
 
     /**
-     * Vẽ grid overlay lên vùng ảnh (ROI) và trả về ảnh debug.
+     * So sánh theo cột cho grid SBD và Mã đề, trả về kết quả là mảng gồm SBD và Mã đề.
      *
-     * @param regionImg Ảnh (ROI).
+     * @param sbdCells  Grid SBD.
+     * @param maDeCells Grid Mã đề.
+     * @param fillThreshold Ngưỡng tô (0.14).
+     * @return Mảng hai phần tử chứa SBD và Mã đề.
+     */
+    public static String[] extractKeysByColumns(List<List<Mat>> sbdCells, List<List<Mat>> maDeCells, double fillThreshold) {
+        String sbdKey = extractDigits(sbdCells, fillThreshold);
+        String maDeKey = extractDigits(maDeCells, fillThreshold);
+        return new String[]{sbdKey, maDeKey};
+    }
+
+    /**
+     * Vẽ grid overlay lên vùng ảnh (ROI) và trả về ảnh debug với overlay grid.
+     *
+     * @param regionImg Ảnh ROI nguồn.
      * @param cols Số cột.
      * @param rows Số hàng.
-     * @param headerRows Số hàng header (không chia vào grid).
-     * @param color Màu của grid (Scalar, ví dụ: new Scalar(255, 255, 255) cho màu trắng).
+     * @param headerRows Số hàng header (không được chia vào grid).
+     * @param color Màu của grid (ví dụ new Scalar(255, 255, 255) cho màu trắng).
      * @param thickness Độ dày của đường grid.
      * @return Ảnh debug có overlay grid.
      */
@@ -170,12 +193,12 @@ public class GridUtils {
      * @param alignedImg Ảnh căn chỉnh.
      * @param regionX Tọa độ X của vùng.
      * @param regionY Tọa độ Y của vùng.
-     * @param regionW Chiều rộng của vùng.
-     * @param regionH Chiều cao của vùng.
+     * @param regionW Chiều rộng vùng.
+     * @param regionH Chiều cao vùng.
      * @param cols Số cột.
      * @param rows Số hàng.
-     * @param color Màu grid (Scalar, ví dụ: new Scalar(255, 255, 255)).
-     * @param thickness Độ dày của đường.
+     * @param color Màu của grid (ví dụ new Scalar(255, 255, 255)).
+     * @param thickness Độ dày của đường grid.
      * @return Ảnh có overlay grid.
      */
     public static Mat drawRegionGrid(Mat alignedImg, double regionX, double regionY, double regionW, double regionH,
@@ -203,7 +226,7 @@ public class GridUtils {
      * @param rows Số hàng của grid.
      * @param headerRows Số hàng header (nếu có).
      * @param context Context để lưu debug ảnh.
-     * @param filename Tên file debug (ví dụ: "debug_grid_roi.jpg").
+     * @param filename Tên file debug (ví dụ "debug_grid_roi.jpg").
      */
     public static void debugGridOnImage(Mat regionImg, int cols, int rows, int headerRows, Scalar color, int thickness, Context context, String filename) {
         Mat debugImg = drawGridOnImage(regionImg, cols, rows, headerRows, color, thickness);

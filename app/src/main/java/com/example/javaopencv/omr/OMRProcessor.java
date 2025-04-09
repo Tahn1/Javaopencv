@@ -19,6 +19,8 @@ import java.util.List;
 public class OMRProcessor {
 
     private static final String TAG = "OMRProcessor";
+    // Ngưỡng tô mặc định 0.14
+    private static final double FILL_THRESHOLD = 0.18;
 
     public static class OMRResult {
         public String sbd;         // Số báo danh
@@ -68,14 +70,14 @@ public class OMRProcessor {
             Log.d(TAG, "Áp dụng threshold Otsu");
             ImageDebugUtils.saveDebugImage(threshMat, "threshMat.jpg", context);
 
-            // 6. Debug marker lớn: Vẽ contour marker lớn (sử dụng MarkerUtils)
+            // 6. Debug marker lớn: vẽ contour marker lớn (sử dụng MarkerUtils)
             MarkerUtils.debugLargeMarkers(srcMat, 100.0, 5000.0, context);
             Log.d(TAG, "Đã debug marker lớn");
 
             // 7. Căn chỉnh ảnh bằng marker lớn
             Mat alignedMat;
             try {
-                // Lưu ý: Các giá trị minArea và maxArea có thể cần điều chỉnh để phù hợp với ảnh của bạn.
+                // Các giá trị minArea và maxArea có thể điều chỉnh để phù hợp với ảnh của bạn.
                 alignedMat = MarkerUtils.alignImageUsingMarkers(srcMat, 100.0, 1500.0, context);
                 Log.d(TAG, "Ảnh căn chỉnh, kích thước: " + alignedMat.width() + "x" + alignedMat.height());
                 ImageDebugUtils.saveDebugImage(alignedMat, "alignedMat.jpg", context);
@@ -139,12 +141,10 @@ public class OMRProcessor {
             List<List<Mat>> examRightCells = GridUtils.splitRegionIntoCells(regions.examRightRoi, 4, 10);
             Log.d(TAG, "Chia lưới thành công");
 
-            // 13a. Vẽ grid debug cho từng ROI và lưu ảnh debug GRID
-            // Ví dụ: Grid cho ROI SBD với 6 cột, 10 hàng, không có headerRows, màu trắng và độ dày 2
+            // 13a. Vẽ debug grid cho từng ROI và lưu debug ảnh GRID (màu trắng, độ dày 2)
             Mat gridSBD = GridUtils.drawGridOnImage(regions.sbdRoi, 6, 10, 0, new Scalar(255, 255, 255), 2);
             ImageDebugUtils.saveDebugImage(gridSBD, "grid_sbd.jpg", context);
 
-// Tương tự cho các ROI khác:
             Mat gridMaDe = GridUtils.drawGridOnImage(regions.maDeRoi, 3, 10, 0, new Scalar(255, 255, 255), 2);
             ImageDebugUtils.saveDebugImage(gridMaDe, "grid_maDe.jpg", context);
 
@@ -154,22 +154,21 @@ public class OMRProcessor {
             Mat gridExamRight = GridUtils.drawGridOnImage(regions.examRightRoi, 4, 10, 0, new Scalar(255, 255, 255), 2);
             ImageDebugUtils.saveDebugImage(gridExamRight, "grid_examRight.jpg", context);
 
-
             // 14. Đọc SBD và Mã đề
-            String sbd = GridUtils.extractDigits(sbdCells, 0.14);
-            String maDe = GridUtils.extractDigits(maDeCells, 0.14);
-            Log.d(TAG, "Đã đọc SBD: " + sbd + ", Mã đề: " + maDe);
+            String sbdDigits = GridUtils.extractDigits(sbdCells, FILL_THRESHOLD);
+            String maDeDigits = GridUtils.extractDigits(maDeCells, FILL_THRESHOLD);
+            Log.d(TAG, "Đã đọc SBD: " + sbdDigits + ", Mã đề: " + maDeDigits);
 
-            // 15. Đọc đáp án: ghép đáp án bên trái và bên phải
-            List<String> examLeftAnswers = GridUtils.extractExamAnswers(examLeftCells, 0.14);
-            List<String> examRightAnswers = GridUtils.extractExamAnswers(examRightCells, 0.14);
+            // 15. Đọc đáp án từ grid trắc nghiệm: ghép đáp án bên trái và bên phải
+            List<String> examLeftAnswers = GridUtils.extractExamAnswers(examLeftCells, FILL_THRESHOLD);
+            List<String> examRightAnswers = GridUtils.extractExamAnswers(examRightCells, FILL_THRESHOLD);
             List<String> allAnswers = new ArrayList<>();
             allAnswers.addAll(examLeftAnswers);
             allAnswers.addAll(examRightAnswers);
             Log.d(TAG, "Đã đọc đáp án: " + allAnswers);
 
-            result.sbd = sbd;
-            result.maDe = maDe;
+            result.sbd = sbdDigits;
+            result.maDe = maDeDigits;
             result.answers = allAnswers;
             Log.d(TAG, "Xử lý OMR thành công");
 

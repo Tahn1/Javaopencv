@@ -38,7 +38,7 @@ public class TestOmrActivity extends AppCompatActivity {
 
         try {
             // Load ảnh test từ thư mục assets (đặt file "test_omr.jpg" vào app/src/main/assets/)
-            InputStream is = getAssets().open("phieu20cau3.jpg");
+            InputStream is = getAssets().open("phieu20cau6.jpg");
             Bitmap testBitmap = BitmapFactory.decodeStream(is);
             is.close();
 
