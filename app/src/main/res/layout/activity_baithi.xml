@@ -1,0 +1,23 @@
+<!-- res/layout/activity_baithi.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_height="match_parent">
+
+    <!-- Header tùy chỉnh (có thể tạo thêm layout riêng) -->
+    <TextView
+        android:id="@+id/tvHeader"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@color/orange"
+        android:text="Bài thi"
+        android:textColor="#fff"
+        android:textSize="18sp"
+        android:gravity="center_vertical|center_horizontal" />
+
+    <!-- List menu -->
+    <ListView
+        android:id="@+id/list_menu"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+</LinearLayout>

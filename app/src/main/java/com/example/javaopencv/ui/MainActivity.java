@@ -1,49 +1,67 @@
-package com.example.javaopencv.ui;
+// MainActivity.java
+package com.example.myapp;
 
+import android.content.Intent;
 import android.os.Bundle;
-import androidx.annotation.Nullable;
+import android.view.MenuItem;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import com.example.javaopencv.R;
-import com.example.javaopencv.data.entity.Exam;
-import com.example.javaopencv.viewmodel.ExamViewModel;
-import java.util.List;
+import androidx.drawerlayout.widget.DrawerLayout;
+import com.google.android.material.navigation.NavigationView;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+        implements NavigationView.OnNavigationItemSelectedListener {
 
-    private ExamViewModel examViewModel;
-    private RecyclerView recyclerView;
-    private ExamAdapter examAdapter;
+    private DrawerLayout drawerLayout;
+    private ActionBarDrawerToggle toggle;
+    private NavigationView navigationView;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main); // XML chứa DrawerLayout
 
-        // Khởi tạo RecyclerView và Adapter
-        recyclerView = findViewById(R.id.recycler_view_exams);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        examAdapter = new ExamAdapter();
-        recyclerView.setAdapter(examAdapter);
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.nav_view);
 
-        // Lấy instance của ExamViewModel
-        examViewModel = new ViewModelProvider(this,
-                new ViewModelProvider.AndroidViewModelFactory(getApplication()))
-                .get(ExamViewModel.class);
+        // Cấu hình Toggle cho Drawer
+        toggle = new ActionBarDrawerToggle(this, drawerLayout,
+                R.string.drawer_open, R.string.drawer_close);
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        // Quan sát LiveData từ ViewModel để tự động cập nhật UI khi dữ liệu thay đổi
-        examViewModel.getAllExams().observe(this, new Observer<List<Exam>>() {
-            @Override
-            public void onChanged(List<Exam> exams) {
-                // Cập nhật Adapter với danh sách exam mới
-                examAdapter.setExamList(exams);
-            }
-        });
+        navigationView.setNavigationItemSelectedListener(this);
 
-        // Ví dụ: thêm một Exam (bạn có thể thực hiện từ một nút nhấn, dialog, v.v.)
-        // examViewModel.addExam(new Exam(1, "Bài kiểm tra 1", "Phieu1", 20, "2023-04-07"));
+        // Khởi chạy màn hình mặc định (ví dụ, KiemTraActivity)
+        if (savedInstanceState == null) {
+            // Thay vì dùng fragment, bạn cũng có thể startActivity ở đây
+            startActivity(new Intent(this, KiemTraActivity.class));
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if(toggle.onOptionsItemSelected(item)){
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        // Xử lý các mục trong Drawer
+        switch (item.getItemId()){
+            case R.id.nav_kiemtra:
+                startActivity(new Intent(this, KiemTraActivity.class));
+                break;
+            case R.id.nav_giaythi:
+                startActivity(new Intent(this, GiayThiActivity.class));
+                break;
+            // Thêm các mục khác nếu cần
+        }
+        drawerLayout.closeDrawers();
+        return true;
     }
 }

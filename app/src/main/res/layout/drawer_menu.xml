@@ -1,0 +1,10 @@
+<!-- res/menu/drawer_menu.xml -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_kiemtra"
+        android:title="Kiểm tra" />
+    <item
+        android:id="@+id/nav_giaythi"
+        android:title="Giấy thi" />
+    <!-- Thêm mục khác nếu cần -->
+</menu>
