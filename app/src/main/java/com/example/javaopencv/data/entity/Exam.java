@@ -19,4 +19,11 @@ public class Exam {
         this.soCau = soCau;
         this.date = date;
     }
+
+    // Getters
+    public int getId() { return id; }
+    public String getTitle() { return title; }
+    public String getPhieu() { return phieu; }
+    public int getSoCau() { return soCau; }
+    public String getDate() { return date; }
 }

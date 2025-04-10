@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Theme gốc của bạn phải không có ActionBar -->
+    <style name="Base.Theme.Javaopencv" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">#9C27B0</item>
+
+    </style>
+
+    <!-- Ứng dụng sử dụng theme này -->
+    <style name="Theme.Javaopencv" parent="Base.Theme.Javaopencv" />
+
+</resources>

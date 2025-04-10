@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="exam_phieu_array">
+        <item>Phiếu 20</item>
+        <item>Phiếu 60</item>
+    </string-array>
+</resources>

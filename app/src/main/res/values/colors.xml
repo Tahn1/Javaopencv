@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="purple_500">#9C27B0</color>
+    <color name="colorPrimary">#6200EE</color>
+    <color name="colorPrimaryVariant">#3700B3</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorSecondary">#03DAC5</color>
+    <color name="colorAccent">#FF4081</color>
     <color name="black">#FF000000</color>
+    <color name="orange">#FFA500</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="holo_pink_light">#FF69B4</color>
 </resources>

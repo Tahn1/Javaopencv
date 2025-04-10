@@ -1,11 +1,17 @@
 <resources>
     <string name="app_name">Javaopencv</string>
+    <string name="menu">Menu</string>
+    <string name="search">Tìm kiếm</string>
+    <string name="filter">Lọc</string>
+    <string name="add_exam">Thêm bài</string>
     <string name="action_settings">Settings</string>
-    <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
     <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
+    <string name="description_exam_list">Danh sách bài thi, cuộn để xem thêm</string>
+    <string name="cancel_search">Cancel</string>
+
 
     <string name="lorem_ipsum">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris
