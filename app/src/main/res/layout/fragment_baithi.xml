@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Header: Nền cam với nút back và tiêu đề "Bài thi" -->
+    <!-- Header (cao 100dp, nền màu cam, nút back ở trái, tiêu đề ở giữa) -->
     <RelativeLayout
         android:id="@+id/header"
         android:layout_width="match_parent"
@@ -21,21 +21,22 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="50dp"
             android:src="@drawable/ic_arrow_back_white"
-            android:contentDescription="Back"/>
+            android:contentDescription="@string/back"/>
 
-        <!-- Tiêu đề -->
+        <!-- Tiêu đề Bài thi -->
         <TextView
             android:id="@+id/tv_header_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:text="Bài thi"
+            android:text="@string/bai_thi_title"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="@android:color/white"/>
+            android:textColor="@android:color/white"
+            android:layout_marginTop="50dp"/>
     </RelativeLayout>
 
-    <!-- RecyclerView hiển thị danh sách 5 mục -->
+    <!-- Danh sách 5 mục -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_menu"
         android:layout_width="match_parent"

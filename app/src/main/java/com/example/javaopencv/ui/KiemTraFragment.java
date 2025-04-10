@@ -23,6 +23,8 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -56,7 +58,7 @@ public class KiemTraFragment extends Fragment implements ExamAdapter.OnExamItemC
         // Inflate layout "fragment_kiem_tra.xml"
         View view = inflater.inflate(R.layout.fragment_kiem_tra, container, false);
 
-        // Bind các View từ layout (đảm bảo rằng các id này đúng với file XML của bạn)
+        // Bind các View từ layout
         btnMenu = view.findViewById(R.id.btn_menu);
         btnSearch = view.findViewById(R.id.btn_search);
         btnFilter = view.findViewById(R.id.btn_filter);
@@ -89,7 +91,7 @@ public class KiemTraFragment extends Fragment implements ExamAdapter.OnExamItemC
             }
         });
 
-        // Toggle thanh tìm kiếm khi nhấn vào nút Search
+        // Toggle thanh tìm kiếm khi nhấn nút Search
         btnSearch.setOnClickListener(v -> {
             if (etSearch.getVisibility() == View.VISIBLE) {
                 etSearch.setText("");
@@ -106,17 +108,13 @@ public class KiemTraFragment extends Fragment implements ExamAdapter.OnExamItemC
         // Lắng nghe thay đổi text của etSearch để lọc danh sách
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                // Không cần xử lý
-            }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 examAdapter.filter(s.toString());
             }
             @Override
-            public void afterTextChanged(Editable s) {
-                // Không cần xử lý
-            }
+            public void afterTextChanged(Editable s) { }
         });
 
         // FAB mở dialog tạo bài thi mới
@@ -127,10 +125,6 @@ public class KiemTraFragment extends Fragment implements ExamAdapter.OnExamItemC
 
     /**
      * Hiển thị dialog tạo bài thi mới.
-     * Yêu cầu file XML "dialog_create_exam.xml" phải có các View với các id:
-     * - et_exam_title (EditText nhập tên bài)
-     * - spinner_exam_phieu (Spinner cho lựa chọn "Phiếu 20" hoặc "Phiếu 60")
-     * - et_exam_socau (EditText nhập số câu; chỉ nhập số và có giới hạn theo lựa chọn)
      */
     private void showCreateExamDialog() {
         LayoutInflater inflater = LayoutInflater.from(getContext());
@@ -144,7 +138,6 @@ public class KiemTraFragment extends Fragment implements ExamAdapter.OnExamItemC
                 R.array.exam_phieu_array, android.R.layout.simple_spinner_dropdown_item);
         spinnerPhieu.setAdapter(spinnerAdapter);
 
-        // Khi lựa chọn trong Spinner thay đổi, cập nhật InputFilter cho etSoCau để chỉ cho phép số câu tối đa được nhập
         spinnerPhieu.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -153,9 +146,7 @@ public class KiemTraFragment extends Fragment implements ExamAdapter.OnExamItemC
                 etSoCau.setFilters(new InputFilter[]{ new InputFilterMinMax(1, maxQuestions) });
             }
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                // Không xử lý
-            }
+            public void onNothingSelected(AdapterView<?> parent) { }
         });
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
@@ -174,7 +165,6 @@ public class KiemTraFragment extends Fragment implements ExamAdapter.OnExamItemC
                         Toast.makeText(getContext(), "Vui lòng nhập số câu", Toast.LENGTH_SHORT).show();
                         return;
                     }
-
                     int soCau = Integer.parseInt(soCauStr);
                     long idExam = System.currentTimeMillis();
                     String date = android.text.format.DateFormat.format("dd-MM-yyyy", new java.util.Date()).toString();
@@ -183,13 +173,11 @@ public class KiemTraFragment extends Fragment implements ExamAdapter.OnExamItemC
                     viewModel.addExam(newExam);
                 })
                 .setNegativeButton("HỦY", (dialog, which) -> dialog.dismiss());
-
         builder.create().show();
     }
 
     /**
-     * Hiển thị dialog sắp xếp bài thi theo 4 tùy chọn:
-     * "Tên (A-Z)", "Tên (Z-A)", "Ngày (Tăng dần)", "Ngày (Giảm dần)".
+     * Hiển thị dialog sắp xếp bài thi theo các tùy chọn.
      */
     private void showSortDialog() {
         final String[] sortOptions = {"Tên (A-Z)", "Tên (Z-A)", "Ngày (Tăng dần)", "Ngày (Giảm dần)"};
@@ -205,17 +193,20 @@ public class KiemTraFragment extends Fragment implements ExamAdapter.OnExamItemC
         builder.create().show();
     }
 
-    /**
-     * Xử lý click (ngắn) trên một bài thi.
-     */
     @Override
     public void onExamItemClick(Exam exam) {
-        Toast.makeText(getContext(), "Chọn bài: " + exam.title, Toast.LENGTH_SHORT).show();
+        // Tạo Bundle và truyền dữ liệu sang BaiThiFragment
+        Bundle args = new Bundle();
+        args.putInt("examId", exam.id);
+        args.putString("title", exam.title);
+        args.putString("phieu", exam.phieu);
+        args.putInt("soCau", exam.soCau);
+
+        // Sử dụng NavController để điều hướng
+        NavController navController = Navigation.findNavController(getView());
+        navController.navigate(R.id.action_kiemTraFragment_to_baiThiFragment, args);
     }
 
-    /**
-     * Xử lý long press trên một bài thi, hiển thị dialog lựa chọn: Sửa, Xóa, Sao chép.
-     */
     @Override
     public void onExamItemLongClick(Exam exam) {
         final String[] options = {"Sửa", "Xóa", "Sao chép"};
@@ -224,7 +215,7 @@ public class KiemTraFragment extends Fragment implements ExamAdapter.OnExamItemC
                 .setItems(options, (dialog, which) -> {
                     switch (which) {
                         case 0: // Sửa
-                            Toast.makeText(getContext(), "Chức năng Sửa chưa được triển khai", Toast.LENGTH_SHORT).show();
+                            showEditExamDialog(exam);
                             break;
                         case 1: // Xóa
                             viewModel.deleteExam(exam);
@@ -233,7 +224,7 @@ public class KiemTraFragment extends Fragment implements ExamAdapter.OnExamItemC
                         case 2: // Sao chép
                             Exam copiedExam = new Exam(
                                     (int) System.currentTimeMillis(),
-                                    exam.title,
+                                    exam.title + " (Copy)",
                                     exam.phieu,
                                     exam.soCau,
                                     exam.date
@@ -248,8 +239,70 @@ public class KiemTraFragment extends Fragment implements ExamAdapter.OnExamItemC
     }
 
     /**
+     * Hiển thị dialog để sửa bài thi đã chọn.
+     */
+    private void showEditExamDialog(Exam exam) {
+        LayoutInflater inflater = LayoutInflater.from(getContext());
+        View dialogView = inflater.inflate(R.layout.dialog_create_exam, null);
+
+        final EditText etTitle = dialogView.findViewById(R.id.et_exam_title);
+        final Spinner spinnerPhieu = dialogView.findViewById(R.id.spinner_exam_phieu);
+        final EditText etSoCau = dialogView.findViewById(R.id.et_exam_socau);
+
+        etTitle.setText(exam.title);
+
+        ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(getContext(),
+                R.array.exam_phieu_array, android.R.layout.simple_spinner_dropdown_item);
+        spinnerPhieu.setAdapter(spinnerAdapter);
+        // Chọn mục phù hợp với exam.phieu
+        if (exam.phieu.equals("Phiếu 20") || exam.phieu.equals("Phiếu 60")) {
+            int pos = spinnerAdapter.getPosition(exam.phieu);
+            spinnerPhieu.setSelection(pos);
+        }
+
+        etSoCau.setText(String.valueOf(exam.soCau));
+
+        spinnerPhieu.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String selected = spinnerPhieu.getSelectedItem().toString();
+                int maxQuestions = selected.equals("Phiếu 20") ? 20 : 60;
+                etSoCau.setFilters(new InputFilter[]{ new InputFilterMinMax(1, maxQuestions) });
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) { }
+        });
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Sửa bài thi")
+                .setView(dialogView)
+                .setPositiveButton("LƯU", (dialog, which) -> {
+                    String newTitle = etTitle.getText().toString().trim();
+                    String newPhieu = spinnerPhieu.getSelectedItem().toString().trim();
+                    String soCauStr = etSoCau.getText().toString().trim();
+
+                    if (TextUtils.isEmpty(newTitle)) {
+                        Toast.makeText(getContext(), "Tên bài không được để trống", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (TextUtils.isEmpty(soCauStr)) {
+                        Toast.makeText(getContext(), "Vui lòng nhập số câu", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    int newSoCau = Integer.parseInt(soCauStr);
+                    String date = android.text.format.DateFormat.format("dd-MM-yyyy", new java.util.Date()).toString();
+
+                    Exam updatedExam = new Exam(exam.id, newTitle, newPhieu, newSoCau, date);
+                    viewModel.updateExam(updatedExam);
+                    Toast.makeText(getContext(), "Đã cập nhật bài thi", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("HỦY", (dialog, which) -> dialog.dismiss());
+        builder.create().show();
+    }
+
+    /**
      * Helper class để giới hạn giá trị nhập cho EditText từ min đến max.
-     * Phương thức filter được implement theo interface InputFilter.
      */
     public static class InputFilterMinMax implements InputFilter {
         private final int min, max;
@@ -270,7 +323,7 @@ public class KiemTraFragment extends Fragment implements ExamAdapter.OnExamItemC
                 if (input >= min && input <= max)
                     return null;
             } catch (NumberFormatException nfe) {
-                // Nếu không phải số, không cho nhập
+                // Không cho nhập nếu không phải số
             }
             return "";
         }

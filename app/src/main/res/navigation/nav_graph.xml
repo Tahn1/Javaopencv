@@ -1,14 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+<navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/kiemTraFragment">
 
+    <!-- Màn hình danh sách bài thi (Kiểm Tra) -->
     <fragment
         android:id="@+id/kiemTraFragment"
         android:name="com.example.javaopencv.ui.KiemTraFragment"
         android:label="Kiểm Tra"
-        tools:layout="@layout/fragment_kiem_tra" />
+        tools:layout="@layout/fragment_kiem_tra">
+        <!-- Action chuyển từ KiemTraFragment sang BaiThiFragment -->
+        <action
+            android:id="@+id/action_kiemTraFragment_to_baiThiFragment"
+            app:destination="@id/baiThiFragment" />
+    </fragment>
 
+    <!-- Màn hình chi tiết hoặc điều khiển bài thi (Bài thi) -->
+    <fragment
+        android:id="@+id/baiThiFragment"
+        android:name="com.example.javaopencv.ui.BaiThiFragment"
+        android:label="Bài thi"
+        tools:layout="@layout/fragment_baithi" />
+
+    <!-- Nếu cần, có thể thêm các fragment khác như DapAnFragment, ChamBaiFragment, v.v. -->
 </navigation>

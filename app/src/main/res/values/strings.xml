@@ -11,7 +11,10 @@
     <string name="previous">Previous</string>
     <string name="description_exam_list">Danh sách bài thi, cuộn để xem thêm</string>
     <string name="cancel_search">Cancel</string>
-
+    <string name="back">Back</string>
+    <string name="chevron">Chevron</string>
+    <string name="exams_list">Danh sách bài thi</string>
+    <string name="bai_thi_title">Bài thi</string>
 
     <string name="lorem_ipsum">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris

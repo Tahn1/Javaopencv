@@ -4,27 +4,29 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
 
-    <!-- CoordinatorLayout dùng để chứa nội dung và FAB -->
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
-        android:id="@+id/coordinator"
+    <!-- Container chính: dùng FrameLayout để dễ đẩy FAB -->
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- LinearLayout (vertical) chứa header và RecyclerView -->
+        <!-- LinearLayout chứa Header và nội dung chính (RecyclerView) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:fitsSystemWindows="true">
 
-            <!-- Khu vực header (tiêu đề + thanh search) -->
+            <!-- Header -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:background="@android:color/white">
 
+                <!-- ConstraintLayout chứa các nút trong header -->
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/header_layout"
                     android:layout_width="match_parent"
@@ -32,7 +34,6 @@
                     android:background="#9C27B0"
                     android:padding="8dp">
 
-                    <!-- Nút Menu -->
                     <ImageButton
                         android:id="@+id/btn_menu"
                         android:layout_width="48dp"
@@ -44,7 +45,6 @@
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent" />
 
-                    <!-- Tiêu đề -->
                     <TextView
                         android:id="@+id/tv_header_title"
                         android:layout_width="0dp"
@@ -54,11 +54,10 @@
                         android:textAppearance="?attr/textAppearanceHeadline6"
                         android:gravity="center"
                         app:layout_constraintStart_toEndOf="@id/btn_menu"
-                        app:layout_constraintEnd_toStartOf="@+id/btn_search"
+                        app:layout_constraintEnd_toStartOf="@id/btn_search"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent" />
 
-                    <!-- Nút search -->
                     <ImageButton
                         android:id="@+id/btn_search"
                         android:layout_width="48dp"
@@ -66,11 +65,10 @@
                         android:src="@drawable/ic_search_white"
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:contentDescription="@string/search"
-                        app:layout_constraintEnd_toStartOf="@+id/btn_filter"
+                        app:layout_constraintEnd_toStartOf="@id/btn_filter"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent" />
 
-                    <!-- Nút filter -->
                     <ImageButton
                         android:id="@+id/btn_filter"
                         android:layout_width="48dp"
@@ -81,22 +79,23 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent" />
+
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <!-- Ô nhập search (ẩn mặc định) -->
+                <!-- Thanh tìm kiếm (ẩn mặc định) -->
                 <EditText
                     android:id="@+id/et_search"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Tìm bài thi..."
                     android:padding="8dp"
+                    android:visibility="gone"
                     android:background="@android:color/white"
                     android:textColor="@android:color/black"
-                    android:inputType="text"
-                    android:visibility="gone" />
+                    android:inputType="text" />
             </LinearLayout>
 
-            <!-- RecyclerView để hiển thị danh sách bài thi -->
+            <!-- Nội dung chính: Danh sách bài thi. Dùng layout_weight để chiếm hết phần còn lại -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_exams"
                 android:layout_width="match_parent"
@@ -107,7 +106,7 @@
 
         </LinearLayout>
 
-        <!-- Nút FAB nằm ở góc dưới bên phải -->
+        <!-- FAB: đặt trên cùng với FrameLayout để hiện bên trên nội dung -->
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab_add"
             android:layout_width="wrap_content"
@@ -118,9 +117,9 @@
             app:backgroundTint="@android:color/holo_red_light"
             android:contentDescription="@string/add_exam" />
 
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </FrameLayout>
 
-    <!-- NavigationView (Drawer) -->
+    <!-- Navigation View (Drawer) -->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/nav_view"
         android:layout_width="wrap_content"
