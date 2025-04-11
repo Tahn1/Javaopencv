@@ -4,12 +4,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.example.javaopencv.R;
-
 import java.util.List;
 
 public class SingleColumnAdapter extends RecyclerView.Adapter<SingleColumnAdapter.ViewHolder> {
@@ -19,6 +16,22 @@ public class SingleColumnAdapter extends RecyclerView.Adapter<SingleColumnAdapte
 
     public SingleColumnAdapter(List<String> digits) {
         this.digits = digits;
+    }
+
+    public void setSelectedDigit(String digit) {
+        for (int i = 0; i < digits.size(); i++) {
+            if (digits.get(i).equals(digit)) {
+                selectedPosition = i;
+                notifyDataSetChanged();
+                return;
+            }
+        }
+        selectedPosition = RecyclerView.NO_POSITION;
+        notifyDataSetChanged();
+    }
+
+    public String getSelectedDigit() {
+        return selectedPosition != RecyclerView.NO_POSITION ? digits.get(selectedPosition) : null;
     }
 
     @NonNull
@@ -32,15 +45,11 @@ public class SingleColumnAdapter extends RecyclerView.Adapter<SingleColumnAdapte
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         String number = digits.get(position);
         holder.tvNumber.setText(number);
-
-        // Nếu đây là item được chọn, đặt background khác
         if (position == selectedPosition) {
             holder.bgCircle.setBackgroundResource(R.drawable.bg_circle_selected);
         } else {
             holder.bgCircle.setBackgroundResource(R.drawable.bg_circle_gray);
         }
-
-        // Xử lý click: đánh dấu item được chọn
         holder.itemView.setOnClickListener(v -> {
             int oldPos = selectedPosition;
             selectedPosition = holder.getAdapterPosition();
@@ -56,15 +65,9 @@ public class SingleColumnAdapter extends RecyclerView.Adapter<SingleColumnAdapte
         return digits.size();
     }
 
-    public String getSelectedDigit() {
-        if (selectedPosition == RecyclerView.NO_POSITION) return null;
-        return digits.get(selectedPosition);
-    }
-
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvNumber;
         View bgCircle;
-
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvNumber = itemView.findViewById(R.id.tv_number);

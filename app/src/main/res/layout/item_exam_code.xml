@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="12dp"
+    android:background="@drawable/bg_item_exam_code"
+    android:gravity="center_vertical">
+
+    <!-- TextView hiển thị 'MÃ ĐỀ' in hoa, cố định (bên trái) -->
+    <TextView
+        android:id="@+id/tv_ma_de_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="MÃ ĐỀ"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black" />
+
+    <!-- Dùng LinearLayout.LayoutParams weight hoặc một Space để đẩy mã đề sang phải -->
+    <Space
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1" />
+
+    <!-- TextView hiển thị giá trị mã đề (bên phải) -->
+    <TextView
+        android:id="@+id/tv_code"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="000"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black" />
+</LinearLayout>

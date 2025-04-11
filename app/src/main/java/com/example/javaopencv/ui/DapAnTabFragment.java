@@ -18,7 +18,7 @@ public class DapAnTabFragment extends Fragment {
 
     private RecyclerView rvDapAnGrid;
     private DapAnGridAdapter adapter;
-    private int questionCount; // Số câu nhận được qua Bundle
+    private int questionCount;
 
     @Nullable
     @Override
@@ -28,26 +28,13 @@ public class DapAnTabFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_dap_an_tab, container, false);
         rvDapAnGrid = view.findViewById(R.id.rv_dap_an_grid);
 
-        // Nếu muốn kiểm tra dữ liệu, bạn có thể dùng đoạn sau
-//        Bundle args = getArguments();
-//        if (args == null || !args.containsKey("questionCount")) {
-//            throw new IllegalArgumentException("Missing questionCount in arguments");
-//        }
-//        questionCount = args.getInt("questionCount");
-//        Log.d("DapAnTabFragment", "questionCount = " + questionCount);
-
-        // Ví dụ: nếu bạn muốn hiển thị dữ liệu dựa trên số câu, bạn có thể cài đặt tương ứng ở đây.
-        // Nếu không, bạn có thể sử dụng một giá trị mặc định hoặc cấu hình khác.
-        // Ở đây tôi giữ nguyên biến questionCount (bạn có thể truyền từ Bundle nếu cần)
-
-        // Ví dụ, nếu bạn muốn lấy dữ liệu từ arguments:
+        // Nhận questionCount từ Bundle
         if (getArguments() != null && getArguments().containsKey("questionCount")) {
             questionCount = getArguments().getInt("questionCount");
             Log.d("DapAnTabFragment", "questionCount = " + questionCount);
         } else {
-            // Nếu không có, bạn có thể đặt mặc định nếu muốn
-            questionCount = 0;
-            Log.e("DapAnTabFragment", "No questionCount provided");
+            questionCount = 10; // Giá trị mặc định nếu thiếu
+            Log.e("DapAnTabFragment", "No questionCount provided; defaulting to 10");
         }
 
         GridLayoutManager layoutManager = new GridLayoutManager(requireContext(), 5);
@@ -63,5 +50,19 @@ public class DapAnTabFragment extends Fragment {
         rvDapAnGrid.setAdapter(adapter);
 
         return view;
+    }
+
+    // Đây là phương thức được gọi từ AddMaDeFragment để thu thập đáp án dưới dạng chuỗi
+    public String buildAnswersListString() {
+        List<String> answersList = adapter.buildAnswersList();
+        StringBuilder sb = new StringBuilder();
+        for (String ans : answersList) {
+            if (ans != null) {
+                sb.append(ans);
+            } else {
+                sb.append("-");
+            }
+        }
+        return sb.toString();
     }
 }

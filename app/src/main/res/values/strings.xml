@@ -19,6 +19,7 @@
     <string name="no_exam_code">Chưa có mã đề</string>
     <string name="title_ma_de">Nhập mã đề</string>
     <string name="save">Lưu</string>
+    <string name="rv_codes_description">Danh sách mã đề</string>
 
     <string name="lorem_ipsum">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris

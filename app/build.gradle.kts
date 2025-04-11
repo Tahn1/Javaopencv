@@ -9,6 +9,7 @@ android {
     defaultConfig {
         applicationId = "com.example.javaopencv"
         minSdk = 24
+        //noinspection OldTargetApi
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -35,16 +36,16 @@ android {
 }
 
 dependencies {
-    implementation ("androidx.navigation:navigation-fragment-ktx:2.7.7")
-    implementation ("androidx.navigation:navigation-ui-ktx:2.7.7")
-    implementation("androidx.room:room-runtime:2.5.2")
-    annotationProcessor("androidx.room:room-compiler:2.5.2")
+    implementation ("androidx.navigation:navigation-fragment-ktx:2.8.9")
+    implementation("androidx.room:room-runtime:2.7.0")
+    implementation(libs.recyclerview)
+    annotationProcessor("androidx.room:room-compiler:2.7.0")
     implementation(project(":openCVLibrary"))
     implementation(libs.appcompat)
+    implementation ("androidx.lifecycle:lifecycle-livedata:2.8.7")
+    implementation ("androidx.sqlite:sqlite:2.5.0")
     implementation(libs.material)
     implementation(libs.constraintlayout)
-    implementation(libs.navigation.fragment)
-    implementation(libs.navigation.ui)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
