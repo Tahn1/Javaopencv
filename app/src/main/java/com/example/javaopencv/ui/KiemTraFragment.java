@@ -24,6 +24,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -206,15 +207,17 @@ public class KiemTraFragment extends Fragment implements ExamAdapter.OnExamItemC
     @Override
     public void onExamItemClick(Exam exam) {
         int questionCount = exam.getSoCau();
+        int examId = exam.getId(); // THÊM lấy examId (quan trọng)
+
         Bundle bundle = new Bundle();
         bundle.putInt("questionCount", questionCount);
-        NavHostFragment.findNavController(this)
-                .navigate(R.id.action_kiemTraFragment_to_examDetailFragment, bundle);
+        bundle.putInt("examId", examId); // Gửi examId qua luôn
 
-
-
-
+        // Dùng NavController tìm từ view của fragment (không dùng requireActivity())
+        NavController navController = NavHostFragment.findNavController(this);
+        navController.navigate(R.id.action_kiemTraFragment_to_examDetailFragment, bundle);
     }
+
     /**
      * Xử lý long press trên một bài thi, hiển thị dialog lựa chọn: Sửa, Xóa, Sao chép.
      */

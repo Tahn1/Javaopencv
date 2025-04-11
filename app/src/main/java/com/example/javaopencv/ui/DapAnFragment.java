@@ -6,41 +6,116 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.fragment.NavHostFragment;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.javaopencv.R;
+import com.example.javaopencv.ui.adapter.ExamCodeAdapter;
+import com.example.javaopencv.viewmodel.DapAnViewModel;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class DapAnFragment extends Fragment {
 
     private ImageButton btnBack, btnCamera, btnAdd;
     private TextView tvNoExamCode;
+    private RecyclerView recyclerView;
+    private ExamCodeAdapter adapter;
+    private DapAnViewModel viewModel;
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
-        // Inflate layout từ fragment_dap_an.xml
-        View view = inflater.inflate(R.layout.fragment_dap_an, container, false);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_dap_an, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
         btnBack = view.findViewById(R.id.btn_back);
         btnCamera = view.findViewById(R.id.btn_camera);
         btnAdd = view.findViewById(R.id.btn_add);
         tvNoExamCode = view.findViewById(R.id.tv_no_exam_code);
+        recyclerView = view.findViewById(R.id.recyclerView);
+
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        adapter = new ExamCodeAdapter(new ArrayList<>());
+        recyclerView.setAdapter(adapter);
+
+        viewModel = new ViewModelProvider(requireActivity()).get(DapAnViewModel.class);
 
         btnBack.setOnClickListener(v -> requireActivity().onBackPressed());
-        btnCamera.setOnClickListener(v -> {
-            // Xử lý mở camera nếu cần
-        });
-        // Khi ấn nút Add, điều hướng sang AddMaDeFragment và chuyển Bundle từ DapAnFragment
+
         btnAdd.setOnClickListener(v -> {
-            Bundle bundle = getArguments(); // Bundle chứa questionCount được truyền từ trước
-            NavHostFragment.findNavController(DapAnFragment.this)
-                    .navigate(R.id.action_dapAnFragment_to_addMaDeFragment, bundle);
+            // Bấm nút thêm → mở AddMaDeFragment (tạo mới)
+            FragmentTransaction transaction = requireActivity().getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.nav_host_fragment, new AddMaDeFragment());
+            transaction.addToBackStack(null);
+            transaction.commit();
         });
 
-        return view;
+        btnCamera.setOnClickListener(v -> {
+            // TODO: mở Camera
+        });
+
+        // Lắng nghe LiveData thay đổi danh sách mã đề
+        viewModel.getMaDeList().observe(getViewLifecycleOwner(), maDeItemList -> {
+            List<String> maDeStrings = new ArrayList<>();
+            for (DapAnViewModel.MaDeItem item : maDeItemList) {
+                maDeStrings.add(item.maDe);
+            }
+            adapter.updateData(maDeStrings);
+            updateUI(maDeStrings);
+        });
+
+        // Xử lý click vào mã đề
+        adapter.setOnExamCodeClickListener(new ExamCodeAdapter.OnExamCodeClickListener() {
+            @Override
+            public void onExamCodeClick(int position, String maDe) {
+                // Tạo Bundle chứa Mã đề và Đáp án cũ
+                Bundle bundle = new Bundle();
+                bundle.putString("maDeToEdit", maDe);
+                bundle.putInt("positionToEdit", position);
+
+                // ✅ Lấy oldAnswerList từ ViewModel
+                List<String> oldAnswerList = viewModel.getAnswerListByPosition(position);
+                if (oldAnswerList != null) {
+                    bundle.putStringArrayList("oldAnswerList", new ArrayList<>(oldAnswerList)); // <-- cái này
+                }
+
+                AddMaDeFragment fragment = new AddMaDeFragment();
+                fragment.setArguments(bundle);
+
+                FragmentTransaction transaction = requireActivity().getSupportFragmentManager().beginTransaction();
+                transaction.replace(R.id.nav_host_fragment, fragment);
+                transaction.addToBackStack(null);
+                transaction.commit();
+            }
+
+
+            @Override
+            public void onExamCodeLongClick(int position, String maDe) {
+                // Long press: xóa mã đề
+                viewModel.removeMaDe(position);
+            }
+        });
+    }
+
+    private void updateUI(java.util.List<String> maDeList) {
+        if (maDeList == null || maDeList.isEmpty()) {
+            tvNoExamCode.setVisibility(View.VISIBLE);
+            recyclerView.setVisibility(View.GONE);
+        } else {
+            tvNoExamCode.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
+        }
     }
 }

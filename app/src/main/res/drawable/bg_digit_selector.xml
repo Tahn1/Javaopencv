@@ -1,0 +1,12 @@
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_selected="true">
+        <shape android:shape="oval">
+            <solid android:color="#FF5722" /> <!-- Cam khi chọn -->
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#B0BEC5" /> <!-- Xám xanh khi chưa chọn -->
+        </shape>
+    </item>
+</selector>

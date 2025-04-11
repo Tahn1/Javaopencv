@@ -35,10 +35,10 @@ android {
 }
 
 dependencies {
-    implementation ("androidx.navigation:navigation-fragment-ktx:2.7.7")
-    implementation ("androidx.navigation:navigation-ui-ktx:2.7.7")
-    implementation("androidx.room:room-runtime:2.5.2")
-    annotationProcessor("androidx.room:room-compiler:2.5.2")
+    implementation ("androidx.navigation:navigation-fragment-ktx:2.8.9")
+    implementation("androidx.room:room-runtime:2.7.0")
+    annotationProcessor("androidx.room:room-compiler:2.7.0")
+    implementation ("com.google.code.gson:gson:2.8.9")
     implementation(project(":openCVLibrary"))
     implementation(libs.appcompat)
     implementation(libs.material)
