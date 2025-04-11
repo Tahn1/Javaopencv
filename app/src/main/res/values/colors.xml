@@ -10,4 +10,6 @@
     <color name="orange">#FFA500</color>
     <color name="white">#FFFFFFFF</color>
     <color name="holo_pink_light">#FF69B4</color>
+    <color name="orange_500">#FF9800</color>
+
 </resources>

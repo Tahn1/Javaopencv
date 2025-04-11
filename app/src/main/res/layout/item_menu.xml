@@ -17,36 +17,32 @@
         android:gravity="center_vertical"
         android:background="@android:color/white">
 
-        <TextView
-            android:id="@+id/tv_menu_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Menu Label"
-            android:textColor="@android:color/black"
-            android:padding="8dp" />
-
+        <!-- Icon bên trái -->
         <ImageView
             android:id="@+id/iv_menu_icon"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_marginEnd="12dp"
-            android:src="@drawable/ic_placeholder" />
+            android:src="@drawable/ic_placeholder"
+            android:contentDescription="@null" />
 
-        <!-- TextView hiển thị tiêu đề -->
+        <!-- Text hiển thị nhãn menu, chiếm không gian còn lại -->
         <TextView
-            android:id="@+id/tv_exam_title"
+            android:id="@+id/tv_menu_label"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Exam Title"
-            android:textSize="16sp"
-            android:textColor="@android:color/black" />
+            android:text="Menu Label"
+            android:textColor="@android:color/black"
+            android:textSize="16sp" />
 
+        <!-- Chevron bên phải -->
         <ImageView
             android:id="@+id/iv_chevron"
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:src="@drawable/ic_chevron_forward"
-            app:tint="@android:color/darker_gray"/>
+            app:tint="@android:color/darker_gray"
+            android:contentDescription="@null"/>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

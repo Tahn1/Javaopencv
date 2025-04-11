@@ -11,7 +11,14 @@
     <string name="previous">Previous</string>
     <string name="description_exam_list">Danh sách bài thi, cuộn để xem thêm</string>
     <string name="cancel_search">Cancel</string>
-
+    <string name="back">Quay lại</string>
+    <string name="title_baithi">Bài Thi</string>
+    <string name="title_dap_an">Đáp án</string>
+    <string name="camera">Camera</string>
+    <string name="add">Thêm</string>
+    <string name="no_exam_code">Chưa có mã đề</string>
+    <string name="title_ma_de">Nhập mã đề</string>
+    <string name="save">Lưu</string>
 
     <string name="lorem_ipsum">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris

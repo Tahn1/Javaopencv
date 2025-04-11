@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!-- Header màu cam (hoặc tím) chứa nút back, tiêu đề, icon... -->
+    <LinearLayout
+        android:id="@+id/header_layout"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:background="@color/purple_500"
+        android:gravity="center_vertical">
+
+        <!-- Nút back -->
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_arrow_back_white"
+            android:contentDescription="@string/back"
+            android:tint="@android:color/white"
+            android:background="?attr/selectableItemBackgroundBorderless" />
+
+        <!-- Tiêu đề Đáp án -->
+        <TextView
+            android:id="@+id/tv_header_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/title_dap_an"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:layout_marginStart="16dp" />
+
+        <!-- (TÙY CHỌN) Thêm icon máy ảnh -->
+        <ImageButton
+            android:id="@+id/btn_camera"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_camera"
+            android:contentDescription="@string/camera"
+            android:tint="@android:color/white"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
+
+        <ImageButton
+            android:id="@+id/btn_add"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_add_white"
+            android:contentDescription="@string/add"
+            android:tint="@android:color/white"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
+    </LinearLayout>
+
+    <!-- Nội dung màn hình: hiển thị "Chưa có mã đề" ở giữa -->
+    <TextView
+        android:id="@+id/tv_no_exam_code"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/no_exam_code"
+        android:gravity="center"
+        android:textSize="16sp"
+        android:textColor="@android:color/darker_gray"
+        android:layout_marginTop="50dp"/>
+</LinearLayout>

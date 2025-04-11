@@ -1,14 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
-<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+<navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/kiemTraFragment">
 
+    <!-- Fragment Kiểm Tra -->
     <fragment
         android:id="@+id/kiemTraFragment"
         android:name="com.example.javaopencv.ui.KiemTraFragment"
         android:label="Kiểm Tra"
-        tools:layout="@layout/fragment_kiem_tra" />
+        tools:layout="@layout/fragment_kiem_tra">
+        <!-- Action từ Kiểm Tra sang Exam Detail -->
+        <action
+            android:id="@+id/action_kiemTraFragment_to_examDetailFragment"
+            app:destination="@id/examDetailFragment" />
+    </fragment>
+
+    <!-- Fragment Exam Detail -->
+    <fragment
+        android:id="@+id/examDetailFragment"
+        android:name="com.example.javaopencv.ui.ExamDetailFragment"
+        android:label="Exam Detail"
+        tools:layout="@layout/fragment_exam_detail">
+        <argument
+            android:name="examId"
+            app:argType="string" />
+        <!-- Action chuyển Exam Detail sang Đáp án -->
+        <action
+            android:id="@+id/action_examDetailFragment_to_dapAnFragment"
+            app:destination="@id/dapAnFragment" />
+    </fragment>
+
+    <!-- Fragment Đáp án -->
+    <fragment
+        android:id="@+id/dapAnFragment"
+        android:name="com.example.javaopencv.ui.DapAnFragment"
+        android:label="Đáp án"
+        tools:layout="@layout/fragment_dap_an">
+        <!-- Action chuyển từ Đáp án sang Nhập mã đề -->
+        <action
+            android:id="@+id/action_dapAnFragment_to_addMaDeFragment"
+            app:destination="@id/addMaDeFragment" />
+    </fragment>
+
+    <!-- Fragment Nhập mã đề -->
+    <fragment
+        android:id="@+id/addMaDeFragment"
+        android:name="com.example.javaopencv.ui.AddMaDeFragment"
+        android:label="Nhập mã đề"
+        tools:layout="@layout/fragment_add_ma_de" />
 
 </navigation>

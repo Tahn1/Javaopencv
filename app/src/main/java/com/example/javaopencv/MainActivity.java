@@ -23,12 +23,15 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         // Load Fragment vào container
+        // MainActivity.java
         if (savedInstanceState == null) {
-            Fragment fragment = new KiemTraFragment();
-            FragmentManager fm = getSupportFragmentManager();
-            FragmentTransaction ft = fm.beginTransaction();
-            ft.replace(R.id.container_fragment, fragment);
-            ft.commit();
+//            Fragment fragment = new KiemTraFragment();
+//            FragmentManager fm = getSupportFragmentManager();
+//            FragmentTransaction ft = fm.beginTransaction();
+//            ft.replace(R.id.container_fragment, fragment);
+//            ft.commit();
         }
+
     }
 }
+
