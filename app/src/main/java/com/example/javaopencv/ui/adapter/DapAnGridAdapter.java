@@ -121,4 +121,14 @@ public class DapAnGridAdapter extends RecyclerView.Adapter<DapAnGridAdapter.View
             bgCircle = itemView.findViewById(R.id.bg_circle);
         }
     }
+
+    public void updateData(List<Integer> newItemList, int newQuestionCount) {
+        this.itemList = newItemList;
+        this.questionCount = newQuestionCount;
+        // Khởi tạo lại mảng lưu trạng thái chọn với kích thước mới
+        this.selectedAnswer = new int[newQuestionCount];
+        Arrays.fill(selectedAnswer, -1);
+        notifyDataSetChanged();
+    }
+
 }

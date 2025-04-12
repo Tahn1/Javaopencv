@@ -1,6 +1,7 @@
 package com.example.javaopencv.ui;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,10 +30,14 @@ public class DapAnFragment extends Fragment {
     private RecyclerView recyclerView;
     private ExamCodeAdapter adapter;
     private DapAnViewModel viewModel;
+    // THÊM: Biến questionCount để lưu số câu được truyền từ Bundle
+    private int questionCount = 20;
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_dap_an, container, false);
     }
 
@@ -52,12 +57,25 @@ public class DapAnFragment extends Fragment {
 
         viewModel = new ViewModelProvider(requireActivity()).get(DapAnViewModel.class);
 
+        // THÊM: Đọc questionCount từ Bundle nếu có
+        Bundle args = getArguments();
+        if (args != null && args.containsKey("questionCount")) {
+            questionCount = args.getInt("questionCount");
+            Log.d("DapAnFragment", "Question count received in DapAnFragment: " + questionCount);
+        }
+
         btnBack.setOnClickListener(v -> requireActivity().onBackPressed());
 
         btnAdd.setOnClickListener(v -> {
-            // Bấm nút thêm → mở AddMaDeFragment (tạo mới)
+            // Khi bấm vào nút Add, chuyển sang AddMaDeFragment
             FragmentTransaction transaction = requireActivity().getSupportFragmentManager().beginTransaction();
-            transaction.replace(R.id.nav_host_fragment, new AddMaDeFragment());
+            Bundle bundle = new Bundle();
+            // THÊM: truyền examId và questionCount từ DapAnFragment
+            bundle.putInt("examId", /* Bạn lấy examId từ ViewModel hoặc Bundle trước đó */  viewModel.getExamId());
+            bundle.putInt("questionCount", questionCount);
+            AddMaDeFragment fragment = new AddMaDeFragment();
+            fragment.setArguments(bundle);
+            transaction.replace(R.id.nav_host_fragment, fragment);
             transaction.addToBackStack(null);
             transaction.commit();
         });
@@ -66,7 +84,7 @@ public class DapAnFragment extends Fragment {
             // TODO: mở Camera
         });
 
-        // Lắng nghe LiveData thay đổi danh sách mã đề
+        // Lắng nghe LiveData từ ViewModel để cập nhật danh sách mã đề
         viewModel.getMaDeList().observe(getViewLifecycleOwner(), maDeItemList -> {
             List<String> maDeStrings = new ArrayList<>();
             for (DapAnViewModel.MaDeItem item : maDeItemList) {
@@ -76,19 +94,19 @@ public class DapAnFragment extends Fragment {
             updateUI(maDeStrings);
         });
 
-        // Xử lý click vào mã đề
+        // Xử lý click vào mã đề trong adapter
         adapter.setOnExamCodeClickListener(new ExamCodeAdapter.OnExamCodeClickListener() {
             @Override
             public void onExamCodeClick(int position, String maDe) {
-                // Tạo Bundle chứa Mã đề và Đáp án cũ
+                // Tạo Bundle chứa các thông tin cần thiết
                 Bundle bundle = new Bundle();
                 bundle.putString("maDeToEdit", maDe);
                 bundle.putInt("positionToEdit", position);
-
-                // ✅ Lấy oldAnswerList từ ViewModel
+                bundle.putInt("questionCount", questionCount);  // CHUYÊN số câu truyền xuống
+                // Lấy oldAnswerList từ ViewModel (nếu có)
                 List<String> oldAnswerList = viewModel.getAnswerListByPosition(position);
                 if (oldAnswerList != null) {
-                    bundle.putStringArrayList("oldAnswerList", new ArrayList<>(oldAnswerList)); // <-- cái này
+                    bundle.putStringArrayList("oldAnswerList", new ArrayList<>(oldAnswerList));
                 }
 
                 AddMaDeFragment fragment = new AddMaDeFragment();
@@ -100,16 +118,14 @@ public class DapAnFragment extends Fragment {
                 transaction.commit();
             }
 
-
             @Override
             public void onExamCodeLongClick(int position, String maDe) {
-                // Long press: xóa mã đề
                 viewModel.removeMaDe(position);
             }
         });
     }
 
-    private void updateUI(java.util.List<String> maDeList) {
+    private void updateUI(List<String> maDeList) {
         if (maDeList == null || maDeList.isEmpty()) {
             tvNoExamCode.setVisibility(View.VISIBLE);
             recyclerView.setVisibility(View.GONE);

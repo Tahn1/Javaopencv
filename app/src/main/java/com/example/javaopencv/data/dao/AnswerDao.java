@@ -9,8 +9,9 @@ import java.util.List;
 
 @Dao
 public interface AnswerDao {
-    @Query("SELECT * FROM answers WHERE examId = :examId ORDER BY code, cauSo")
-    List<Answer> getAnswersByExam(int examId);
+
+    @Query("SELECT DISTINCT code FROM answers WHERE examId = :examId")
+    List<String> getDistinctCodes(int examId);
 
     @Query("SELECT * FROM answers WHERE examId = :examId AND code = :code ORDER BY cauSo")
     List<Answer> getAnswersByExamAndCode(int examId, String code);
