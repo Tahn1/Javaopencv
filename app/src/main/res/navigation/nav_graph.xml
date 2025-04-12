@@ -8,7 +8,6 @@
         android:id="@+id/kiemTraFragment"
         android:name="com.example.javaopencv.ui.KiemTraFragment"
         android:label="Kiểm Tra" >
-
         <action
             android:id="@+id/action_kiemTraFragment_to_examDetailFragment"
             app:destination="@id/examDetailFragment" />
@@ -18,17 +17,19 @@
         android:id="@+id/examDetailFragment"
         android:name="com.example.javaopencv.ui.ExamDetailFragment"
         android:label="Chi tiết bài thi" >
-
         <action
             android:id="@+id/action_examDetailFragment_to_dapAnFragment"
             app:destination="@id/dapAnFragment" />
+        <!-- Thêm action điều hướng đến ThongTinFragment -->
+        <action
+            android:id="@+id/action_examDetailFragment_to_thongTinFragment"
+            app:destination="@id/thongTinFragment" />
     </fragment>
 
     <fragment
         android:id="@+id/dapAnFragment"
         android:name="com.example.javaopencv.ui.DapAnFragment"
         android:label="Đáp án" >
-
         <action
             android:id="@+id/action_dapAnFragment_to_addMaDeFragment"
             app:destination="@id/addMaDeFragment" />
@@ -38,4 +39,10 @@
         android:id="@+id/addMaDeFragment"
         android:name="com.example.javaopencv.ui.AddMaDeFragment"
         android:label="Tạo mã đề" />
+
+    <!-- Khai báo ThongTinFragment -->
+    <fragment
+        android:id="@+id/thongTinFragment"
+        android:name="com.example.javaopencv.ui.ThongTinFragment"
+        android:label="Thông tin" />
 </navigation>

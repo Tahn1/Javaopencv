@@ -6,13 +6,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.javaopencv.R;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +26,9 @@ public class ExamDetailFragment extends Fragment {
     private MenuAdapter adapter;
     private List<MenuItem> menuItems;
 
+    // Lưu examId của bài thi hiện hành (được truyền từ màn hình trước)
+    private int examId = -1;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -30,6 +36,12 @@ public class ExamDetailFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         // Inflate layout fragment_exam_detail.xml
         View view = inflater.inflate(R.layout.fragment_exam_detail, container, false);
+
+        // Lấy examId từ Bundle nếu có (được truyền từ KiemTraFragment)
+        Bundle args = getArguments();
+        if (args != null && args.containsKey("examId")) {
+            examId = args.getInt("examId");
+        }
 
         // Ánh xạ View
         btnBack = view.findViewById(R.id.btn_back);
@@ -42,14 +54,20 @@ public class ExamDetailFragment extends Fragment {
         rvMenu.setLayoutManager(new LinearLayoutManager(requireContext()));
         initializeMenuItems();
 
-        // Tạo adapter, tích hợp điều hướng khi click vào mục "Đáp án"
+        // Tạo adapter, tích hợp điều hướng khi click vào các mục menu
         adapter = new MenuAdapter(menuItems, item -> {
             Toast.makeText(requireContext(), "Chọn: " + item.label, Toast.LENGTH_SHORT).show();
+            // Tạo Bundle và đưa examId vào để chuyển sang màn hình con
+            Bundle bundle = new Bundle();
+            bundle.putInt("examId", examId);
             if (item.label.equals("Đáp án")) {
                 // Khi người dùng bấm vào "Đáp án" chuyển qua màn hình DapAnFragment
-                Bundle bundle = getArguments();  // Chuyển tiếp Bundle từ KiemTraFragment
                 NavHostFragment.findNavController(ExamDetailFragment.this)
                         .navigate(R.id.action_examDetailFragment_to_dapAnFragment, bundle);
+            } else if (item.label.equals("Thông tin")) {
+                // Khi người dùng bấm vào "Thông tin", điều hướng sang ThongTinFragment
+                NavHostFragment.findNavController(ExamDetailFragment.this)
+                        .navigate(R.id.action_examDetailFragment_to_thongTinFragment, bundle);
             }
             // Xử lý các mục khác nếu cần...
         });
