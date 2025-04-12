@@ -26,10 +26,12 @@ public class AddMaDeFragment extends Fragment {
     private MaDeViewPagerAdapter viewPagerAdapter;
     private ImageButton btnBack, btnSave;
     private DapAnViewModel viewModel;
+
     private String maDeToEdit = null;
     private int positionToEdit = -1;
     private List<String> oldAnswerList = null;
-    private int questionCount = 20; // Mặc định 20
+    // Số câu được truyền từ Bundle, mặc định là 20
+    private int questionCount = 20;
 
     @Nullable
     @Override
@@ -54,6 +56,10 @@ public class AddMaDeFragment extends Fragment {
 
         Bundle args = getArguments();
         if (args != null) {
+            if (args.containsKey("examId")) {
+                int examId = args.getInt("examId");
+                viewModel.setExamId(examId);
+            }
             if (args.containsKey("questionCount")) {
                 questionCount = args.getInt("questionCount");
                 Log.d("AddMaDeFragment", "Question count received: " + questionCount);
@@ -65,14 +71,13 @@ public class AddMaDeFragment extends Fragment {
             oldAnswerList = args.getStringArrayList("oldAnswerList");
             Log.d("AddMaDeFragment", "Received maDeToEdit: " + maDeToEdit + ", positionToEdit: " + positionToEdit);
             if (oldAnswerList != null) {
-                Log.d("AddMaDeFragment", "Old answer list: " + oldAnswerList.toString());
+                Log.d("AddMaDeFragment", "Old answer list: " + oldAnswerList);
             }
         }
 
-        // Gọi setter của DapAnTabFragment để truyền đúng số câu
+        // Cập nhật số câu cho DapAnTabFragment qua setter
         if (viewPagerAdapter.getDapAnTabFragment() != null) {
-            final int qc = questionCount;
-            viewPagerAdapter.getDapAnTabFragment().setQuestionCount(qc);
+            viewPagerAdapter.getDapAnTabFragment().setQuestionCount(questionCount);
         }
 
         btnBack.setOnClickListener(v -> requireActivity().onBackPressed());
@@ -88,16 +93,18 @@ public class AddMaDeFragment extends Fragment {
             if (viewPagerAdapter.getDapAnTabFragment() != null) {
                 viewPagerAdapter.getDapAnTabFragment().setQuestionCount(questionCount);
             }
+            // Nếu đang ở chế độ sửa, gọi các phương thức highlight lại
             MaDeTabFragment maDeTabFragment = viewPagerAdapter.getMaDeTabFragment();
             DapAnTabFragment dapAnTabFragment = viewPagerAdapter.getDapAnTabFragment();
 
             if (maDeTabFragment != null && maDeToEdit != null) {
                 maDeTabFragment.setSelectedMaDe(maDeToEdit);
             }
+
             if (dapAnTabFragment != null && positionToEdit != -1) {
-                List<String> answerList = viewModel.getAnswerListByPosition(positionToEdit);
-                if (answerList != null) {
-                    dapAnTabFragment.setAnswerListToEdit(answerList);
+                List<String> answers = viewModel.getAnswerListByPosition(positionToEdit);
+                if (answers != null && !answers.isEmpty()) {
+                    dapAnTabFragment.setAnswerListToEdit(answers);
                 }
             }
         });
@@ -106,16 +113,19 @@ public class AddMaDeFragment extends Fragment {
     private void saveMaDe() {
         MaDeTabFragment maDeTabFragment = viewPagerAdapter.getMaDeTabFragment();
         DapAnTabFragment dapAnTabFragment = viewPagerAdapter.getDapAnTabFragment();
+
         if (maDeTabFragment == null || dapAnTabFragment == null) return;
 
         final String maDe = maDeTabFragment.getMaDe();
         final List<String> answers = dapAnTabFragment.getAnswerList();
+
         if (maDe == null || maDe.isEmpty()) {
             Toast.makeText(getContext(), "Vui lòng nhập mã đề", Toast.LENGTH_SHORT).show();
             return;
         }
 
         final List<String> finalAnswers = new ArrayList<>();
+        // Tạo danh sách đáp án sao cho có đúng questionCount phần tử
         for (int i = 0; i < questionCount; i++) {
             if (answers != null && answers.size() > i) {
                 finalAnswers.add(answers.get(i));
@@ -124,32 +134,31 @@ public class AddMaDeFragment extends Fragment {
             }
         }
 
+        // Khi ở chế độ sửa (maDeToEdit được truyền)
         if (maDeToEdit != null && positionToEdit != -1) {
             new androidx.appcompat.app.AlertDialog.Builder(requireContext())
                     .setTitle("Xác nhận")
                     .setMessage("Bạn có chắc chắn muốn thay thế mã đề này không?")
                     .setPositiveButton("Có", (dialog, which) -> {
-                        viewModel.updateMaDe(positionToEdit, maDe, finalAnswers);
+                        // Gọi updateMaDe với 4 tham số
+                        viewModel.updateMaDe(positionToEdit, maDe, finalAnswers, questionCount);
                         requireActivity().onBackPressed();
                     })
                     .setNegativeButton("Không", null)
                     .show();
         } else {
+            // Kiểm tra trùng
             List<DapAnViewModel.MaDeItem> currentList = viewModel.getMaDeList().getValue();
             if (currentList != null) {
-                boolean exists = false;
                 for (DapAnViewModel.MaDeItem item : currentList) {
-                    if (item.maDe.equals(maDe)) {
-                        exists = true;
-                        break;
+                    if (item.code.equals(maDe)) {
+                        Toast.makeText(getContext(), "Mã đề đã tồn tại. Vui lòng nhập mã đề khác.", Toast.LENGTH_SHORT).show();
+                        return;
                     }
                 }
-                if (exists) {
-                    Toast.makeText(getContext(), "Mã đề đã tồn tại. Vui lòng nhập mã đề khác.", Toast.LENGTH_SHORT).show();
-                    return;
-                }
             }
-            viewModel.addMaDe(maDe, finalAnswers);
+            // addMaDe
+            viewModel.addMaDe(maDe, finalAnswers, questionCount);
             requireActivity().onBackPressed();
         }
     }

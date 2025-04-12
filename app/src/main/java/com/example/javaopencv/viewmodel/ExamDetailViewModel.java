@@ -32,7 +32,7 @@ public class ExamDetailViewModel extends AndroidViewModel {
     public void updateExamAnswers(final int examId, final String maDe, final List<String> answerList) {
         new Thread(() -> {
             // Lấy danh sách đáp án hiện có cho bài thi với mã đề (code) cụ thể
-            List<Answer> existingAnswers = answerDao.getAnswersByExamAndCode(examId, maDe);
+            List<Answer> existingAnswers = answerDao.getAnswersByExamAndCodeSync(examId, maDe);
 
             // Duyệt qua danh sách đáp án từ UI
             for (int i = 0; i < answerList.size(); i++) {

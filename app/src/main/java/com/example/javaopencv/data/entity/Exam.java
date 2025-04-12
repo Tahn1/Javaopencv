@@ -6,10 +6,10 @@ import androidx.room.PrimaryKey;
 @Entity(tableName = "exams")
 public class Exam {
     @PrimaryKey
-    public int id;
+    public int id;       // examId (phải là duy nhất)
     public String title;
     public String phieu;
-    public int soCau;
+    public int soCau;    // Số câu
     public String date;
 
     public Exam(int id, String title, String phieu, int soCau, String date) {
@@ -20,10 +20,11 @@ public class Exam {
         this.date = date;
     }
 
-    // Getters
-    public int getId() { return id; }
-    public String getTitle() { return title; }
-    public String getPhieu() { return phieu; }
-    public int getSoCau() { return soCau; }
-    public String getDate() { return date; }
+    public int getId() {
+        return id;
+    }
+
+    public int getSoCau() {
+        return soCau;
+    }
 }
