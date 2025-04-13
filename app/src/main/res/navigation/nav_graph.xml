@@ -13,7 +13,14 @@
         <action
             android:id="@+id/action_kiemTraFragment_to_examDetailFragment"
             app:destination="@id/examDetailFragment" />
+        <action
+            android:id="@+id/action_kiemTraFragment_to_giayThiFragment"
+            app:destination="@id/giayThiFragment" />
     </fragment>
+
+
+    <!-- Các fragment khác -->
+
 
     <!-- Exam Detail Fragment -->
     <fragment

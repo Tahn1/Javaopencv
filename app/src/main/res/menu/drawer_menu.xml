@@ -6,6 +6,8 @@
             android:title="Kiểm Tra" />
         <item
             android:id="@+id/nav_giay_thi"
-            android:title="Giấy thi" />
+            android:title="Giấy thi"
+            android:checkable="false" />
+
     </group>
 </menu>

@@ -1,31 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/coordinator_giay_thi"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#eaf4fa">
 
-    <!-- Phần header của màn hình Giấy thi -->
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar_giay_thi"
-        android:layout_width="0dp"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@color/purple_500"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
-
-    <!-- Nội dung của màn hình Giấy thi -->
-    <TextView
-        android:id="@+id/tv_giay_thi"
-        android:layout_width="wrap_content"
+    <!-- AppBarLayout chứa Toolbar -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBar_giay_thi"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Giấy thi của bạn"
-        android:textSize="20sp"
-        app:layout_constraintTop_toBottomOf="@id/toolbar_giay_thi"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp" />
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar_giay_thi"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/purple_500"
+            app:title="Giấy thi"
+            app:titleTextColor="@android:color/white"
+            app:navigationIcon="@drawable/ic_arrow_back_white" />
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- Nội dung scrollable dưới header -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/nestedScroll_giay_thi"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Phần hiển thị Phiếu 20 câu -->
+            <LinearLayout
+                android:id="@+id/layout_phieu20"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:id="@+id/tv_phieu20_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Phiếu 20 câu"
+                    android:textAppearance="?attr/textAppearanceHeadline6"
+                    android:layout_marginBottom="8dp" />
+
+                <ImageView
+                    android:id="@+id/img_phieu_20"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:adjustViewBounds="true"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/phieu_20"
+                    android:layout_marginBottom="8dp" />
+
+                <Button
+                    android:id="@+id/btn_tai_phieu_20"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tải phiếu 20"
+                    android:layout_gravity="center" />
+            </LinearLayout>
+
+            <!-- Khoảng cách giữa các phần -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="16dp" />
+
+            <!-- Phần hiển thị Phiếu 60 câu -->
+            <LinearLayout
+                android:id="@+id/layout_phieu60"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_phieu60_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Phiếu 60 câu"
+                    android:textAppearance="?attr/textAppearanceHeadline6"
+                    android:layout_marginBottom="8dp" />
+
+                <ImageView
+                    android:id="@+id/img_phieu_60"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:adjustViewBounds="true"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/phieu_60"
+                    android:layout_marginBottom="8dp" />
+
+                <Button
+                    android:id="@+id/btn_tai_phieu_60"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tải phiếu 60"
+                    android:layout_gravity="center" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
