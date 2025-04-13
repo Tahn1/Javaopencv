@@ -1,0 +1,22 @@
+package com.example.javaopencv.ui;
+
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import com.example.javaopencv.R;
+
+public class GiayThiFragment extends Fragment {
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        // Inflater layout cho Giấy thi; tạo file layout_thanh_giay_thi.xml theo ý bạn
+        return inflater.inflate(R.layout.fragment_giay_thi, container, false);
+    }
+}

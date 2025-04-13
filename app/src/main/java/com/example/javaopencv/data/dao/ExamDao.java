@@ -13,6 +13,9 @@ import java.util.List;
 
 @Dao
 public interface ExamDao {
+
+    @Query("SELECT * FROM exams WHERE id = :examId")
+    Exam getExamSync(int examId);
     @Query("SELECT * FROM exams ORDER BY id DESC")
     LiveData<List<Exam>> getAllExams();
 

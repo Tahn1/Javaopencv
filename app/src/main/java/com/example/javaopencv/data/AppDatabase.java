@@ -1,11 +1,9 @@
 package com.example.javaopencv.data;
 
 import android.content.Context;
-
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
-
 import com.example.javaopencv.data.dao.AnswerDao;
 import com.example.javaopencv.data.dao.ExamDao;
 import com.example.javaopencv.data.dao.ExamStatsDao;
@@ -26,7 +24,7 @@ public abstract class AppDatabase extends RoomDatabase {
         if (instance == null) {
             instance = Room.databaseBuilder(context.getApplicationContext(),
                             AppDatabase.class, "exams.db")
-                    .fallbackToDestructiveMigration()  // Xoá và tái tạo DB nếu schema thay đổi
+                    .fallbackToDestructiveMigration()
                     .build();
         }
         return instance;

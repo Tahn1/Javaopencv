@@ -1,41 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
-<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+<navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/nav_graph"
     app:startDestination="@id/kiemTraFragment">
 
+    <!-- Kiểm Tra Fragment -->
     <fragment
         android:id="@+id/kiemTraFragment"
         android:name="com.example.javaopencv.ui.KiemTraFragment"
         android:label="Kiểm Tra" >
-
         <action
             android:id="@+id/action_kiemTraFragment_to_examDetailFragment"
             app:destination="@id/examDetailFragment" />
     </fragment>
 
+    <!-- Exam Detail Fragment -->
     <fragment
         android:id="@+id/examDetailFragment"
         android:name="com.example.javaopencv.ui.ExamDetailFragment"
         android:label="Chi tiết bài thi" >
-
+        <!-- Điều hướng từ ExamDetailFragment sang các màn hình con -->
         <action
             android:id="@+id/action_examDetailFragment_to_dapAnFragment"
             app:destination="@id/dapAnFragment" />
+        <action
+            android:id="@+id/action_examDetailFragment_to_chamBaiFragment"
+            app:destination="@id/chamBaiFragment" />
+        <action
+            android:id="@+id/action_examDetailFragment_to_xemLaiFragment"
+            app:destination="@id/xemLaiFragment" />
+        <action
+            android:id="@+id/action_examDetailFragment_to_thongKeFragment"
+            app:destination="@id/thongKeFragment" />
+        <action
+            android:id="@+id/action_examDetailFragment_to_thongTinFragment"
+            app:destination="@id/thongTinFragment" />
     </fragment>
 
+    <!-- Đáp án Fragment -->
     <fragment
         android:id="@+id/dapAnFragment"
         android:name="com.example.javaopencv.ui.DapAnFragment"
         android:label="Đáp án" >
-
         <action
             android:id="@+id/action_dapAnFragment_to_addMaDeFragment"
             app:destination="@id/addMaDeFragment" />
     </fragment>
 
+    <!-- Thêm Màn hình Tạo mã đề -->
     <fragment
         android:id="@+id/addMaDeFragment"
         android:name="com.example.javaopencv.ui.AddMaDeFragment"
         android:label="Tạo mã đề" />
+
+    <!-- Thông tin bài thi -->
+    <fragment
+        android:id="@+id/thongTinFragment"
+        android:name="com.example.javaopencv.ui.ThongTinFragment"
+        android:label="Thông tin bài thi" />
+
+    <!-- Màn hình Chấm bài -->
+    <fragment
+        android:id="@+id/chamBaiFragment"
+        android:name="com.example.javaopencv.ui.ChamBaiFragment"
+        android:label="Chấm bài" />
+
+    <!-- Màn hình Xem lại -->
+    <fragment
+        android:id="@+id/xemLaiFragment"
+        android:name="com.example.javaopencv.ui.XemLaiFragment"
+        android:label="Xem lại" />
+
+    <!-- Màn hình Thống kê -->
+    <fragment
+        android:id="@+id/thongKeFragment"
+        android:name="com.example.javaopencv.ui.ThongKeFragment"
+        android:label="Thống kê" />
+
+    <!-- Màn hình Giấy thi (điều hướng từ Drawer menu) -->
+    <fragment
+        android:id="@+id/giayThiFragment"
+        android:name="com.example.javaopencv.ui.GiayThiFragment"
+        android:label="Giấy thi" />
+
 </navigation>

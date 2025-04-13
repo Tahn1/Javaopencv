@@ -21,6 +21,14 @@
     <string name="save">Lưu</string>
     <string name="description_save">Save</string>
     <string name="tab_layout_desc">Chọn tab hiển thị Mã đề và Đáp án</string>
+    <string name="menu_icon_desc">Icon menu</string>
+    <string name="menu_arrow_desc">Xem thêm</string>
+    <string name="default_menu_label">Menu item</string>
+    <string name="navigation_drawer_open">Mở Navigation Drawer</string>
+    <string name="navigation_drawer_close">Đóng Navigation Drawer</string>
+
+
+
 
 
     <string name="lorem_ipsum">
