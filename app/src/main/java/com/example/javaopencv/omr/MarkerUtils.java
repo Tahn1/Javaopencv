@@ -314,7 +314,17 @@ public class MarkerUtils {
         public Mat maDeRoi;
         public Mat examLeftRoi;
         public Mat examRightRoi;
+        // Thêm các offset của ROI trên ảnh processed (đã căn chỉnh)
+        public double sbdOffsetX;
+        public double sbdOffsetY;
+        public double maDeOffsetX;
+        public double maDeOffsetY;
+        public double examLeftOffsetX;
+        public double examLeftOffsetY;
+        public double examRightOffsetX;
+        public double examRightOffsetY;
     }
+
 
     /**
      * Trích xuất ROI từ ảnh dựa trên 5 marker đã sắp xếp theo thứ tự:
@@ -333,18 +343,18 @@ public class MarkerUtils {
      */
     public static RegionResult extractROI(Mat src, Point marker0, Point marker1, Point marker2, Point marker3, Point marker4, Context context, Mat debugImg) {
         // ROI SBD (Số báo danh)
-        double offset_sbd_left = -12;
+        double offset_sbd_left = -9;
         double offset_sbd_right = 8;
-        double offset_sbd_top = 12.6;
-        double offset_sbd_bottom = 11;
+        double offset_sbd_top = 10;
+        double offset_sbd_bottom = 10;
         double sbd_x = marker2.x + offset_sbd_left;
         double sbd_y = marker4.y + offset_sbd_top;
         double sbd_width = (marker1.x - marker2.x) - (offset_sbd_left + offset_sbd_right);
         double sbd_height = (marker2.y - marker4.y) - (offset_sbd_top + offset_sbd_bottom);
 
         // ROI Mã đề
-        double offset_ma_de_left = 12;
-        double offset_ma_de_right = 46;
+        double offset_ma_de_left = 10;
+        double offset_ma_de_right = 54;
         double offset_ma_de_top = 12;
         double offset_ma_de_bottom = 10;
         double ma_de_x = marker1.x + offset_ma_de_left;
@@ -354,8 +364,8 @@ public class MarkerUtils {
 
         // ROI Exam:
         double total_exam_width = marker3.x - marker2.x;
-        double offset_exam_left_left = 12;
-        double offset_exam_left_right = 30;
+        double offset_exam_left_left = 15;
+        double offset_exam_left_right = 33;
         double offset_exam_left_top = 12;
         double offset_exam_left_bottom = 10;
         double roi_exam_left_x = marker2.x + offset_exam_left_left;
@@ -363,8 +373,8 @@ public class MarkerUtils {
         double roi_exam_left_width = (total_exam_width / 2) - (offset_exam_left_left + offset_exam_left_right);
         double roi_exam_left_height = (marker0.y - marker2.y) - (offset_exam_left_top + offset_exam_left_bottom);
 
-        double offset_exam_right_left = 12;
-        double offset_exam_right_right = 32;
+        double offset_exam_right_left = 15;
+        double offset_exam_right_right = 33;
         double offset_exam_right_top = 12;
         double offset_exam_right_bottom = 10;
         double roi_exam_right_x = marker2.x + (total_exam_width / 2) + offset_exam_right_left;
@@ -385,8 +395,7 @@ public class MarkerUtils {
         if (debugImg.channels() == 1) {
             Imgproc.cvtColor(debugImg, debugImg, Imgproc.COLOR_GRAY2BGR);
         }
-        // Vẽ overlay các ROI lên debugImg với các màu:
-        // SBD: xanh dương, Mã đề: xanh lá, Exam: đỏ
+        // Vẽ overlay các ROI lên debugImg
         Imgproc.rectangle(debugImg, new Point(sbd_x, sbd_y),
                 new Point(sbd_x + sbd_width, sbd_y + sbd_height), new Scalar(255, 0, 0), 2);
         Imgproc.rectangle(debugImg, new Point(ma_de_x, ma_de_y),
@@ -395,7 +404,6 @@ public class MarkerUtils {
                 new Point(roi_exam_left_x + roi_exam_left_width, roi_exam_left_y + roi_exam_left_height), new Scalar(0, 0, 255), 2);
         Imgproc.rectangle(debugImg, new Point(roi_exam_right_x, roi_exam_right_y),
                 new Point(roi_exam_right_x + roi_exam_right_width, roi_exam_right_y + roi_exam_right_height), new Scalar(0, 0, 255), 2);
-        // Lưu debug ảnh overlay ROI
         ImageDebugUtils.saveDebugImage(debugImg, "debug_regions_custom.jpg", context);
         ImageDebugUtils.saveDebugImage(debugImg, "debug_roi_overlay.jpg", context);
 
@@ -410,6 +418,18 @@ public class MarkerUtils {
         roiResult.maDeRoi = src.submat(maDeRect);
         roiResult.examLeftRoi = src.submat(examLeftRect);
         roiResult.examRightRoi = src.submat(examRightRect);
+
+        // --- Gán giá trị offset đã tính được vào RegionResult ---
+        roiResult.sbdOffsetX = sbd_x;
+        roiResult.sbdOffsetY = sbd_y;
+        roiResult.maDeOffsetX = ma_de_x;
+        roiResult.maDeOffsetY = ma_de_y;
+        roiResult.examLeftOffsetX = roi_exam_left_x;
+        roiResult.examLeftOffsetY = roi_exam_left_y;
+        roiResult.examRightOffsetX = roi_exam_right_x;
+        roiResult.examRightOffsetY = roi_exam_right_y;
+
         return roiResult;
     }
+
 }

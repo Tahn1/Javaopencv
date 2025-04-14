@@ -10,7 +10,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Javaopencv">
         <activity
-            android:name=".MainActivity"
+            android:name=".omr.TestOmrActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
