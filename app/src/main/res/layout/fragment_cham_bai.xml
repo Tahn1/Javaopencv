@@ -1,16 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/cham_bai_fragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
+    android:orientation="vertical"
+    android:background="@color/white"
+    android:padding="8dp">
 
+    <!-- Header hiển thị mã đề, số câu đúng và điểm -->
     <TextView
-        android:id="@+id/tvChamBai"
-        android:layout_width="wrap_content"
+        android:id="@+id/textViewHeader"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Chấm bài"
-        android:textSize="24sp"
-        android:layout_gravity="center" />
+        android:text="Thông tin bài làm"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:padding="8dp" />
 
-</FrameLayout>
+    <!-- Ảnh kết quả chấm bài -->
+    <ImageView
+        android:id="@+id/imageViewResult"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scaleType="fitCenter"
+        android:adjustViewBounds="true"
+        android:contentDescription="Ảnh kết quả chấm bài" />
+
+    <androidx.camera.view.PreviewView
+        android:id="@+id/previewView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <Button
+        android:id="@+id/btnCapture"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Chụp và chấm bài" />
+
+
+</LinearLayout>

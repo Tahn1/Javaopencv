@@ -35,6 +35,10 @@ android {
 }
 
 dependencies {
+    implementation ("androidx.camera:camera-core:1.4.2")
+    implementation ("androidx.camera:camera-camera2:1.4.2")
+    implementation ("androidx.camera:camera-lifecycle:1.4.2")
+    implementation ("androidx.camera:camera-view:1.4.2")
     implementation ("androidx.navigation:navigation-fragment-ktx:2.8.9")
     implementation("androidx.room:room-runtime:2.7.0")
     annotationProcessor("androidx.room:room-compiler:2.7.0")

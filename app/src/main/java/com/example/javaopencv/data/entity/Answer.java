@@ -11,6 +11,14 @@ public class Answer {
     public String code;  // Mã đề
     public int cauSo;    // Số thứ tự câu
     public String dapAn; // Đáp án (A/B/C/D hoặc null)
+    public int getCauSo() {
+        return cauSo;
+    }
+
+    public String getDapAn() {
+        return dapAn;
+    }
+
 
     public Answer(int examId, String code, int cauSo, String dapAn) {
         this.examId = examId;
