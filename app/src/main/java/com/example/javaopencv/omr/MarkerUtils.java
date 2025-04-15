@@ -150,9 +150,6 @@ public class MarkerUtils {
         Mat transform = Imgproc.getPerspectiveTransform(srcPts, dstPts);
         Mat aligned = new Mat();
         Imgproc.warpPerspective(image, aligned, transform, new Size(maxWidth, maxHeight));
-
-        // Lưu debug ảnh đã căn chỉnh
-        ImageDebugUtils.saveDebugImage(aligned, "aligned_debug.jpg", context);
         Log.d(TAG, "alignImageUsingMarkers: Aligned debug image saved as 'aligned_debug.jpg'");
         return aligned;
     }
@@ -365,18 +362,18 @@ public class MarkerUtils {
         // ROI Exam:
         double total_exam_width = marker3.x - marker2.x;
         double offset_exam_left_left = 15;
-        double offset_exam_left_right = 33;
+        double offset_exam_left_right = 29;
         double offset_exam_left_top = 12;
-        double offset_exam_left_bottom = 10;
+        double offset_exam_left_bottom = 8;
         double roi_exam_left_x = marker2.x + offset_exam_left_left;
         double roi_exam_left_y = marker2.y + offset_exam_left_top;
         double roi_exam_left_width = (total_exam_width / 2) - (offset_exam_left_left + offset_exam_left_right);
         double roi_exam_left_height = (marker0.y - marker2.y) - (offset_exam_left_top + offset_exam_left_bottom);
 
         double offset_exam_right_left = 15;
-        double offset_exam_right_right = 33;
+        double offset_exam_right_right = 29;
         double offset_exam_right_top = 12;
-        double offset_exam_right_bottom = 10;
+        double offset_exam_right_bottom = 8;
         double roi_exam_right_x = marker2.x + (total_exam_width / 2) + offset_exam_right_left;
         double roi_exam_right_y = marker2.y + offset_exam_right_top;
         double roi_exam_right_width = (total_exam_width - (total_exam_width / 2)) - (offset_exam_right_left + offset_exam_right_right);
@@ -405,7 +402,6 @@ public class MarkerUtils {
         Imgproc.rectangle(debugImg, new Point(roi_exam_right_x, roi_exam_right_y),
                 new Point(roi_exam_right_x + roi_exam_right_width, roi_exam_right_y + roi_exam_right_height), new Scalar(0, 0, 255), 2);
         ImageDebugUtils.saveDebugImage(debugImg, "debug_regions_custom.jpg", context);
-        ImageDebugUtils.saveDebugImage(debugImg, "debug_roi_overlay.jpg", context);
 
         // Cắt ROI từ ảnh gốc src
         Rect sbdRect = new Rect((int) sbd_x, (int) sbd_y, (int) sbd_width, (int) sbd_height);

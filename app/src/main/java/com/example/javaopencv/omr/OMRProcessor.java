@@ -44,31 +44,24 @@ public class OMRProcessor {
             Mat srcMat = new Mat();
             Utils.bitmapToMat(inputBitmap, srcMat);
             Log.d(TAG, "Chuyển Bitmap sang Mat, kích thước: " + srcMat.width() + "x" + srcMat.height());
-            ImageDebugUtils.saveDebugImage(srcMat, "srcMat.jpg", context);
-
             // 2. Đổi màu từ BGR sang RGB nếu cần
             Imgproc.cvtColor(srcMat, srcMat, Imgproc.COLOR_BGR2RGB, 3);
             Log.d(TAG, "Đã chuyển sang RGB");
-            ImageDebugUtils.saveDebugImage(srcMat, "srcMat_rgb.jpg", context);
 
             // 3. Resize ảnh (scaleFactor = 0.4)
             double scaleFactor = 0.4;
             Size newSize = new Size(srcMat.width() * scaleFactor, srcMat.height() * scaleFactor);
             Imgproc.resize(srcMat, srcMat, newSize);
             Log.d(TAG, "Resize ảnh, kích thước mới: " + srcMat.width() + "x" + srcMat.height());
-            ImageDebugUtils.saveDebugImage(srcMat, "srcMat_resized.jpg", context);
-
             // 4. Chuyển sang grayscale
             Mat grayMat = new Mat();
             Imgproc.cvtColor(srcMat, grayMat, Imgproc.COLOR_BGR2GRAY, 1);
             Log.d(TAG, "Chuyển sang grayscale");
-            ImageDebugUtils.saveDebugImage(grayMat, "grayMat.jpg", context);
 
             // 5. Áp dụng threshold với Otsu (binarize)
             Mat threshMat = new Mat();
             Imgproc.threshold(grayMat, threshMat, 0, 255, Imgproc.THRESH_BINARY_INV + Imgproc.THRESH_OTSU);
             Log.d(TAG, "Áp dụng threshold Otsu");
-            ImageDebugUtils.saveDebugImage(threshMat, "threshMat.jpg", context);
 
             // 6. Debug marker lớn: vẽ contour marker lớn (sử dụng MarkerUtils)
             MarkerUtils.debugLargeMarkers(srcMat, 100.0, 5000.0, context);
@@ -79,7 +72,6 @@ public class OMRProcessor {
             try {
                 alignedMat = MarkerUtils.alignImageUsingMarkers(srcMat, 100.0, 1500.0, context);
                 Log.d(TAG, "Ảnh căn chỉnh, kích thước: " + alignedMat.width() + "x" + alignedMat.height());
-                ImageDebugUtils.saveDebugImage(alignedMat, "alignedMat.jpg", context);
                 // Lưu ảnh căn chỉnh vào kết quả
                 result.alignedMat = alignedMat;
             } catch (Exception e) {
@@ -130,10 +122,7 @@ public class OMRProcessor {
                 return result;
             }
             Log.d(TAG, "ROI được xác định thành công");
-            ImageDebugUtils.saveDebugImage(regions.sbdRoi, "roi_sbd.jpg", context);
-            ImageDebugUtils.saveDebugImage(regions.maDeRoi, "roi_maDe.jpg", context);
-            ImageDebugUtils.saveDebugImage(regions.examLeftRoi, "roi_examLeft.jpg", context);
-            ImageDebugUtils.saveDebugImage(regions.examRightRoi, "roi_examRight.jpg", context);
+
 
             // 13. Chia lưới các vùng ROI
             List<List<Mat>> sbdCells = GridUtils.splitRegionIntoCells(regions.sbdRoi, 6, 10);
@@ -184,12 +173,10 @@ public class OMRProcessor {
         CLAHE clahe = Imgproc.createCLAHE(2.0, new Size(8, 8));
         clahe.apply(gray, claheImg);
         Log.d(TAG, "CLAHE đã được áp dụng");
-        ImageDebugUtils.saveDebugImage(claheImg, "claheImg.jpg", context);
 
         Mat binary = new Mat();
         Imgproc.threshold(claheImg, binary, 0, 255, Imgproc.THRESH_BINARY_INV + Imgproc.THRESH_OTSU);
         Log.d(TAG, "Threshold nhị phân được áp dụng");
-        ImageDebugUtils.saveDebugImage(binary, "binaryImg.jpg", context);
 
         return binary;
     }
