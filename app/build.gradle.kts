@@ -35,6 +35,8 @@ android {
 }
 
 dependencies {
+    implementation (libs.material.v190)
+    implementation("androidx.camera:camera-extensions:1.4.2")
     implementation ("androidx.camera:camera-core:1.4.2")
     implementation ("androidx.camera:camera-camera2:1.4.2")
     implementation ("androidx.camera:camera-lifecycle:1.4.2")

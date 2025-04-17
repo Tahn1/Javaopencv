@@ -6,19 +6,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- CoordinatorLayout dùng để chứa nội dung và FAB -->
+    <!-- Nội dung chính: CoordinatorLayout để chứa header, RecyclerView và FAB -->
     <androidx.coordinatorlayout.widget.CoordinatorLayout
-        android:id="@+id/coordinator"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- LinearLayout (vertical) chứa header và RecyclerView -->
         <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_height="match_parent">
 
-            <!-- Khu vực header (tiêu đề + thanh search) -->
+            <!-- Header -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -28,18 +26,21 @@
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/header_layout"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="#9C27B0"
-                    android:padding="8dp">
+                    android:layout_height="56dp"
+                    android:background="@color/purple_500"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp">
 
-                    <!-- Nút Menu -->
+                    <!-- Menu button -->
                     <ImageButton
                         android:id="@+id/btn_menu"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:padding="12dp"
                         android:src="@drawable/ic_menu_white"
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:contentDescription="@string/menu"
+                        app:tint="@android:color/white"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent" />
@@ -51,81 +52,85 @@
                         android:layout_height="wrap_content"
                         android:text="Kiểm Tra"
                         android:textColor="@android:color/white"
-                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
                         android:gravity="center"
                         app:layout_constraintStart_toEndOf="@id/btn_menu"
-                        app:layout_constraintEnd_toStartOf="@+id/btn_search"
+                        app:layout_constraintEnd_toStartOf="@id/btn_search"
                         app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent" />
+                        app:layout_constraintBottom_toBottomOf="parent"/>
 
-                    <!-- Nút search -->
+                    <!-- Search button -->
                     <ImageButton
                         android:id="@+id/btn_search"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:padding="12dp"
                         android:src="@drawable/ic_search_white"
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:contentDescription="@string/search"
-                        app:layout_constraintEnd_toStartOf="@+id/btn_filter"
+                        app:tint="@android:color/white"
+                        app:layout_constraintEnd_toStartOf="@id/btn_filter"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent" />
 
-                    <!-- Nút filter -->
+                    <!-- Filter button -->
                     <ImageButton
                         android:id="@+id/btn_filter"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:padding="12dp"
                         android:src="@drawable/ic_filter_white"
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:contentDescription="@string/filter"
+                        app:tint="@android:color/white"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <!-- Ô nhập search (ẩn mặc định) -->
+                <!-- Thanh tìm kiếm (ẩn theo code) -->
                 <EditText
                     android:id="@+id/et_search"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="40dp"
                     android:hint="Tìm bài thi..."
                     android:padding="8dp"
                     android:background="@android:color/white"
                     android:textColor="@android:color/black"
-                    android:inputType="text"
-                    android:visibility="gone" />
+                    android:visibility="gone"/>
             </LinearLayout>
 
-            <!-- RecyclerView để hiển thị danh sách bài thi -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_exams"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:layout_marginTop="8dp"
-                android:contentDescription="Danh sách bài thi" />
+                android:padding="16dp"
+                android:clipToPadding="false"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                android:contentDescription="@string/exam_list"
+                android:importantForAccessibility="yes"/>
 
         </LinearLayout>
 
-        <!-- Nút FAB nằm ở góc dưới bên phải -->
+        <!-- Nút FAB thêm bài thi -->
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab_add"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
             android:layout_margin="16dp"
-            android:src="@drawable/ic_add_white"
-            app:backgroundTint="@android:color/holo_red_light"
-            android:contentDescription="@string/add_exam" />
-
+            android:contentDescription="@string/add_exam"
+            app:srcCompat="@drawable/ic_add_white"
+            app:backgroundTint="@color/purple_500"/>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-    <!-- NavigationView (Drawer) -->
+    <!-- Drawer menu -->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/nav_view"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        app:menu="@menu/drawer_menu" />
-
+        app:menu="@menu/drawer_menu"/>
 </androidx.drawerlayout.widget.DrawerLayout>

@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
@@ -72,7 +73,7 @@ public class KiemTraFragment extends Fragment implements ExamAdapter.OnExamItemC
         // Setup RecyclerView và Adapter
         rvExams.setLayoutManager(new LinearLayoutManager(getContext()));
         examAdapter = new ExamAdapter();
-        examAdapter.setListener(this);
+        examAdapter.setClickListener(this);
         examAdapter.setLongClickListener(this);
         rvExams.setAdapter(examAdapter);
 
@@ -92,7 +93,7 @@ public class KiemTraFragment extends Fragment implements ExamAdapter.OnExamItemC
                 if (getActivity() instanceof MainActivity) {
                     DrawerLayout drawer = getActivity().findViewById(R.id.drawer_layout);
                     if (drawer != null) {
-                        drawer.openDrawer(androidx.core.view.GravityCompat.START);
+                        drawer.openDrawer(GravityCompat.START);
                     }
                 }
             }
@@ -292,56 +293,46 @@ public class KiemTraFragment extends Fragment implements ExamAdapter.OnExamItemC
         final Spinner spinnerPhieu = dialogView.findViewById(R.id.spinner_exam_phieu);
         final EditText etSoCau = dialogView.findViewById(R.id.et_exam_socau);
 
+        // 1. Thiết lập giá trị ban đầu
         etTitle.setText(exam.title);
 
         ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(getContext(),
                 R.array.exam_phieu_array, android.R.layout.simple_spinner_dropdown_item);
         spinnerPhieu.setAdapter(spinnerAdapter);
-        if (exam.phieu.equals("Phiếu 20") || exam.phieu.equals("Phiếu 60")) {
-            int pos = spinnerAdapter.getPosition(exam.phieu);
-            spinnerPhieu.setSelection(pos);
-        }
+        int pos = spinnerAdapter.getPosition(exam.phieu);
+        spinnerPhieu.setSelection(pos);
 
         etSoCau.setText(String.valueOf(exam.soCau));
 
-        spinnerPhieu.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selected = spinnerPhieu.getSelectedItem().toString();
-                int maxQuestions = selected.equals("Phiếu 20") ? 20 : 60;
-                etSoCau.setFilters(new InputFilter[]{new InputFilterMinMax(1, maxQuestions)});
-            }
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) { }
-        });
+        // 2. Khóa không cho sửa loại phiếu và số câu
+        spinnerPhieu.setEnabled(false);    // spinner bị mờ và không thể chọn
+        etSoCau.setEnabled(false);         // edittext bị mờ và không thể nhập
+        etSoCau.setKeyListener(null);      // tắt bàn phím
 
         new AlertDialog.Builder(getContext())
-                .setTitle("Sửa bài thi")
+                .setTitle("Sửa tên bài thi")
                 .setView(dialogView)
                 .setPositiveButton("LƯU", (dialog, which) -> {
                     String newTitle = etTitle.getText().toString().trim();
-                    String newPhieu = spinnerPhieu.getSelectedItem().toString().trim();
-                    String soCauStr = etSoCau.getText().toString().trim();
-
                     if (TextUtils.isEmpty(newTitle)) {
                         Toast.makeText(getContext(), "Tên bài không được để trống", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    if (TextUtils.isEmpty(soCauStr)) {
-                        Toast.makeText(getContext(), "Vui lòng nhập số câu", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    int newSoCau = Integer.parseInt(soCauStr);
-                    String date = android.text.format.DateFormat.format("dd-MM-yyyy", new java.util.Date()).toString();
-                    Exam updatedExam = new Exam(exam.id, newTitle, newPhieu, newSoCau, date);
+                    // Giữ nguyên loại phiếu và số câu cũ
+                    String oldPhieu = exam.phieu;
+                    int oldSoCau = exam.soCau;
+                    String date = android.text.format.DateFormat.format("dd-MM-yyyy",
+                            new java.util.Date()).toString();
+                    // Tạo Exam mới với title đã chỉnh sửa
+                    Exam updatedExam = new Exam(exam.id, newTitle, oldPhieu, oldSoCau, date);
                     viewModel.updateExam(updatedExam);
-                    Toast.makeText(getContext(), "Đã cập nhật bài thi", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Đã cập nhật tên bài thi", Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("HỦY", (dialog, which) -> dialog.dismiss())
                 .create()
                 .show();
     }
+
 
     public static class InputFilterMinMax implements InputFilter {
         private final int min, max;

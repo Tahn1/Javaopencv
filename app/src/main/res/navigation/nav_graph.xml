@@ -18,9 +18,7 @@
             app:destination="@id/giayThiFragment" />
     </fragment>
 
-
     <!-- Các fragment khác -->
-
 
     <!-- Exam Detail Fragment -->
     <fragment
@@ -71,7 +69,8 @@
     <fragment
         android:id="@+id/chamBaiFragment"
         android:name="com.example.javaopencv.ui.ChamBaiFragment"
-        android:label="Chấm bài" />
+        android:label="Chấm bài"
+        android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
 
     <!-- Màn hình Xem lại -->
     <fragment

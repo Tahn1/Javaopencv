@@ -1,43 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/cham_bai_fragment"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/container_cham_bai"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/white"
-    android:padding="8dp">
+    >
 
-    <!-- Header hiển thị mã đề, số câu đúng và điểm -->
-    <TextView
-        android:id="@+id/textViewHeader"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Thông tin bài làm"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:padding="8dp" />
-
-    <!-- Ảnh kết quả chấm bài -->
-    <ImageView
-        android:id="@+id/imageViewResult"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:scaleType="fitCenter"
-        android:adjustViewBounds="true"
-        android:contentDescription="Ảnh kết quả chấm bài" />
-
+    <!-- Preview của CameraX -->
     <androidx.camera.view.PreviewView
         android:id="@+id/previewView"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_height="match_parent" />
 
-    <Button
-        android:id="@+id/btnCapture"
+    <!-- Overlay 4 vùng trắng nếu cần -->
+    <com.example.javaopencv.ui.OverlayView
+        android:id="@+id/overlayView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Hint vuốt để thoát -->
+    <TextView
+        android:id="@+id/tvSwipeHint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Vuốt từ mép trái để thoát"
+        android:textColor="@android:color/white"
+        android:background="#66000000"
+        android:padding="12dp"
+        android:layout_gravity="center" />
+
+    <!-- ImageView để hiển thị kết quả chấm -->
+    <ImageView
+        android:id="@+id/imageViewResult"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitCenter"/>
+
+    <!-- Header kết quả -->
+    <TextView
+        android:id="@+id/textViewHeader"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Chụp và chấm bài" />
-
-
-</LinearLayout>
+        android:background="#80000000"
+        android:textColor="@android:color/white"
+        android:padding="16dp"
+        android:textSize="16sp"/>
+</FrameLayout>

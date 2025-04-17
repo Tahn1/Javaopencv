@@ -11,5 +11,7 @@
     <color name="white">#FFFFFFFF</color>
     <color name="holo_pink_light">#FF69B4</color>
     <color name="orange_500">#FF9800</color>
+    <color name="dark_gray">#333333</color>
+
 
 </resources>

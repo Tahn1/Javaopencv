@@ -19,107 +19,96 @@ import java.util.List;
 public class ExamAdapter extends RecyclerView.Adapter<ExamAdapter.ExamViewHolder> {
 
     private List<Exam> examList = new ArrayList<>();
-    // Bản sao đầy đủ của danh sách, dùng cho việc lọc
     private List<Exam> examListFull = new ArrayList<>();
 
-    // Listener cho sự kiện click
     private OnExamItemClickListener clickListener;
-    // Listener cho sự kiện long click (nhấn giữ)
     private OnExamItemLongClickListener longClickListener;
 
-    // Interface cho sự kiện click (ngắn)
+    /** Giao diện click thường */
     public interface OnExamItemClickListener {
         void onExamItemClick(Exam exam);
-
-        void onExamItemLongClick(Exam exam);
     }
 
-    // Interface cho sự kiện long click
+    /** Giao diện click giữ */
     public interface OnExamItemLongClickListener {
         void onExamItemLongClick(Exam exam);
     }
 
-    public void setListener(OnExamItemClickListener listener) {
+    public void setClickListener(OnExamItemClickListener listener) {
         this.clickListener = listener;
     }
 
-    public void setLongClickListener(OnExamItemLongClickListener longClickListener) {
-        this.longClickListener = longClickListener;
+    public void setLongClickListener(OnExamItemLongClickListener listener) {
+        this.longClickListener = listener;
     }
 
-    // Hàm set danh sách Exam (với full copy dùng cho việc lọc)
-    public void setExamList(List<Exam> examList) {
-        this.examList = examList;
-        this.examListFull = new ArrayList<>(examList);
+    /** Cập nhật danh sách và bản sao cho filter */
+    public void setExamList(List<Exam> list) {
+        examList = new ArrayList<>(list);
+        examListFull = new ArrayList<>(list);
         notifyDataSetChanged();
     }
 
-    /**
-     * Phương thức filter danh sách theo tiêu đề (không phân biệt chữ hoa chữ thường)
-     */
+    /** Lọc theo title */
     public void filter(String query) {
         if (query == null || query.trim().isEmpty()) {
             examList = new ArrayList<>(examListFull);
         } else {
-            List<Exam> filteredList = new ArrayList<>();
-            String lowerQuery = query.toLowerCase();
-            for (Exam exam : examListFull) {
-                // Giả sử trường title trong Exam được truy cập trực tiếp
-                if (exam.title.toLowerCase().contains(lowerQuery)) {
-                    filteredList.add(exam);
+            String q = query.toLowerCase();
+            List<Exam> filtered = new ArrayList<>();
+            for (Exam e : examListFull) {
+                if (e.title.toLowerCase().contains(q)) {
+                    filtered.add(e);
                 }
             }
-            examList = filteredList;
+            examList = filtered;
         }
         notifyDataSetChanged();
     }
 
     /**
-     * Phương thức sắp xếp danh sách dựa vào option:
-     * "name_asc": theo tên tăng dần.
-     * "name_desc": theo tên giảm dần.
-     * "date_asc": theo ngày tạo tăng dần.
-     * "date_desc": theo ngày tạo giảm dần.
+     * Sắp xếp:
+     * name_asc, name_desc, date_asc, date_desc
      */
     public void sortByOption(String option) {
         if (option == null) return;
-        Comparator<Exam> comparator;
+        Comparator<Exam> cmp;
         switch (option) {
             case "name_asc":
-                comparator = (a, b) -> a.title.compareToIgnoreCase(b.title);
+                cmp = Comparator.comparing(e -> e.title.toLowerCase());
                 break;
             case "name_desc":
-                comparator = (a, b) -> b.title.compareToIgnoreCase(a.title);
+                cmp = (a,b) -> b.title.toLowerCase().compareTo(a.title.toLowerCase());
                 break;
             case "date_asc":
-                comparator = (a, b) -> a.date.compareTo(b.date);
+                cmp = Comparator.comparing(e -> e.date);
                 break;
             case "date_desc":
-                comparator = (a, b) -> b.date.compareTo(a.date);
+                cmp = (a,b) -> b.date.compareTo(a.date);
                 break;
             default:
                 return;
         }
-        Collections.sort(examList, comparator);
-        Collections.sort(examListFull, comparator);
+        Collections.sort(examList, cmp);
+        Collections.sort(examListFull, cmp);
         notifyDataSetChanged();
     }
 
     @NonNull
     @Override
     public ExamViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_exam, parent, false);
-        return new ExamViewHolder(itemView);
+        View v = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_exam_card, parent, false);
+        return new ExamViewHolder(v);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ExamViewHolder holder, int position) {
-        Exam exam = examList.get(position);
-        holder.tvExamTitle.setText(exam.title);
-        holder.tvExamPhieu.setText(exam.phieu);
-        holder.tvExamDate.setText(exam.date);
-        holder.tvExamSocau.setText("Số câu: " + exam.soCau);
+        Exam e = examList.get(position);
+        holder.tvTitle.setText(e.title);
+        holder.tvType.setText(e.phieu);
+        holder.tvDate.setText(e.date);
+        holder.tvCount.setText("Số câu: " + e.soCau);
     }
 
     @Override
@@ -127,35 +116,28 @@ public class ExamAdapter extends RecyclerView.Adapter<ExamAdapter.ExamViewHolder
         return examList.size();
     }
 
-    class ExamViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
-        TextView tvExamTitle, tvExamPhieu, tvExamDate, tvExamSocau;
+    class ExamViewHolder extends RecyclerView.ViewHolder {
+        TextView tvTitle, tvType, tvDate, tvCount;
 
         public ExamViewHolder(@NonNull View itemView) {
             super(itemView);
-            // Lấy tham chiếu đến các TextView ở layout item_exam.xml (đảm bảo các id này khớp với file XML của bạn)
-            tvExamTitle = itemView.findViewById(R.id.tv_exam_title);
-            tvExamPhieu = itemView.findViewById(R.id.tv_exam_phieu);
-            tvExamDate = itemView.findViewById(R.id.tv_exam_date);
-            tvExamSocau = itemView.findViewById(R.id.tv_exam_socau);
+            tvTitle = itemView.findViewById(R.id.tvExamTitle);
+            tvType  = itemView.findViewById(R.id.tvExamType);
+            tvDate  = itemView.findViewById(R.id.tvExamDate);
+            tvCount = itemView.findViewById(R.id.tvQuestionCount);
 
-            itemView.setOnClickListener(this);
-            itemView.setOnLongClickListener(this);
-        }
-
-        @Override
-        public void onClick(View v) {
-            if (clickListener != null) {
-                clickListener.onExamItemClick(examList.get(getAdapterPosition()));
-            }
-        }
-
-        @Override
-        public boolean onLongClick(View v) {
-            if (longClickListener != null) {
-                longClickListener.onExamItemLongClick(examList.get(getAdapterPosition()));
-                return true;
-            }
-            return false;
+            itemView.setOnClickListener(v -> {
+                if (clickListener != null) {
+                    clickListener.onExamItemClick(examList.get(getAdapterPosition()));
+                }
+            });
+            itemView.setOnLongClickListener(v -> {
+                if (longClickListener != null) {
+                    longClickListener.onExamItemLongClick(examList.get(getAdapterPosition()));
+                    return true;
+                }
+                return false;
+            });
         }
     }
 }
