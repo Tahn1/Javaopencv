@@ -14,6 +14,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,7 +23,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.CameraSelector;
-import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageCapture;
 import androidx.camera.core.ImageCaptureException;
 import androidx.camera.core.ImageProxy;
@@ -32,38 +33,35 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.javaopencv.R;
-import com.example.javaopencv.omr.MarkerUtils;
 import com.example.javaopencv.omr.OmrGrader;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
-import org.opencv.core.Core;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class ChamBaiFragment extends Fragment {
     private static final String TAG = "ChamBaiFragment";
-
     static {
         if (!OpenCVLoader.initDebug()) {
-            System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+            System.loadLibrary(org.opencv.core.Core.NATIVE_LIBRARY_NAME);
         }
     }
 
     private PreviewView previewView;
-    private TextView tvSwipeHint;
+    private OverlayView overlayView;
+    private TextView tvSwipeHint, textViewHeader;
     private ImageView imageViewResult;
-    private TextView textViewHeader;
+    private ImageButton btnCapture;
     private ImageCapture imageCapture;
     private ExecutorService cameraExecutor;
-    private boolean hasTriggered = false;
+    private int questionCount = 20;
+    private float originalBrightness;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -76,102 +74,63 @@ public class ChamBaiFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Ẩn toolbar của Activity khi vào màn hình camera
+        // 1) Fullscreen + max brightness
         AppCompatActivity act = (AppCompatActivity) getActivity();
-        if (act != null && act.getSupportActionBar() != null) {
-            act.getSupportActionBar().hide();
+        if (act!=null && act.getSupportActionBar()!=null) act.getSupportActionBar().hide();
+        WindowManager.LayoutParams wl = requireActivity().getWindow().getAttributes();
+        originalBrightness = wl.screenBrightness;
+        wl.screenBrightness = 1f;
+        requireActivity().getWindow().setAttributes(wl);
+        requireActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+        // 2) Đọc questionCount nếu có
+        if (getArguments()!=null) {
+            questionCount = getArguments().getInt("questionCount", questionCount);
         }
 
+        // 3) Ánh xạ view
         previewView     = view.findViewById(R.id.previewView);
+        overlayView     = view.findViewById(R.id.overlayView);
         tvSwipeHint     = view.findViewById(R.id.tvSwipeHint);
         imageViewResult = view.findViewById(R.id.imageViewResult);
         textViewHeader  = view.findViewById(R.id.textViewHeader);
+        btnCapture      = view.findViewById(R.id.btn_capture);
 
         cameraExecutor = Executors.newSingleThreadExecutor();
-
-        // Ẩn hint sau 3 giây
         tvSwipeHint.postDelayed(() -> tvSwipeHint.setVisibility(View.GONE), 3000);
 
         startCamera();
         setupEdgeSwipeToExit();
+
+        // 4) Bấm nút chụp thì gọi takePhotoAndGrade()
+        btnCapture.setOnClickListener(v -> takePhotoAndGrade());
     }
 
     private void startCamera() {
-        ListenableFuture<ProcessCameraProvider> cameraProviderFuture =
-                ProcessCameraProvider.getInstance(requireContext());
-
-        cameraProviderFuture.addListener(() -> {
+        ListenableFuture<ProcessCameraProvider> f = ProcessCameraProvider.getInstance(requireContext());
+        f.addListener(() -> {
             try {
-                ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
-
+                ProcessCameraProvider cp = f.get();
                 Preview preview = new Preview.Builder().build();
                 preview.setSurfaceProvider(previewView.getSurfaceProvider());
 
                 imageCapture = new ImageCapture.Builder().build();
 
-                ImageAnalysis analysis = new ImageAnalysis.Builder()
-                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                        .build();
-                analysis.setAnalyzer(cameraExecutor, this::analyzeFrame);
-
-                cameraProvider.unbindAll();
-                cameraProvider.bindToLifecycle(
-                        this,
+                cp.unbindAll();
+                cp.bindToLifecycle(this,
                         new CameraSelector.Builder()
                                 .requireLensFacing(CameraSelector.LENS_FACING_BACK)
                                 .build(),
-                        preview,
-                        imageCapture,
-                        analysis
-                );
+                        preview, imageCapture);
+
             } catch (Exception e) {
-                Log.e(TAG, "Camera start error", e);
+                Log.e(TAG, "startCamera failed", e);
             }
         }, ContextCompat.getMainExecutor(requireContext()));
     }
 
-    private void analyzeFrame(@NonNull ImageProxy imageProxy) {
-        if (hasTriggered) {
-            imageProxy.close();
-            return;
-        }
-        Bitmap bmp = toBitmap(imageProxy);
-        imageProxy.close();
-
-        Mat mat = new Mat();
-        Utils.bitmapToMat(bmp, mat);
-
-        List<MatOfPoint> markers = MarkerUtils.findMarkers(
-                mat, 100.0, 1500.0, 0.6, 0.99);
-
-        if (markers.size() >= 4) {
-            hasTriggered = true;
-            takePhotoAndGrade();
-        }
-    }
-
-    private Bitmap toBitmap(ImageProxy image) {
-        ImageProxy.PlaneProxy[] planes = image.getPlanes();
-        ByteBuffer y = planes[0].getBuffer();
-        ByteBuffer u = planes[1].getBuffer();
-        ByteBuffer v = planes[2].getBuffer();
-
-        int w = image.getWidth(), h = image.getHeight();
-        byte[] nv21 = new byte[y.remaining() + u.remaining() + v.remaining()];
-        y.get(nv21, 0, y.remaining());
-        v.get(nv21, y.remaining(), v.remaining());
-        u.get(nv21, y.remaining() + v.remaining(), u.remaining());
-
-        YuvImage yuv = new YuvImage(nv21, ImageFormat.NV21, w, h, null);
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        yuv.compressToJpeg(new Rect(0, 0, w, h), 90, out);
-        byte[] jpg = out.toByteArray();
-        return BitmapFactory.decodeByteArray(jpg, 0, jpg.length);
-    }
-
     private void takePhotoAndGrade() {
-        if (imageCapture == null) return;
-
+        if (imageCapture==null) return;
         imageCapture.takePicture(
                 ContextCompat.getMainExecutor(requireContext()),
                 new ImageCapture.OnImageCapturedCallback() {
@@ -179,8 +138,11 @@ public class ChamBaiFragment extends Fragment {
                     public void onCaptureSuccess(@NonNull ImageProxy proxy) {
                         Bitmap bmp = toBitmap(proxy);
                         proxy.close();
+                        Mat mat = new Mat();
+                        Utils.bitmapToMat(bmp, mat);
 
-                        OmrGrader.Result result = OmrGrader.grade(
+                        // Gọi OMR
+                        OmrGrader.Result r = OmrGrader.grade(
                                 bmp,
                                 getArguments().getInt("examId", -1),
                                 requireContext()
@@ -188,18 +150,20 @@ public class ChamBaiFragment extends Fragment {
 
                         requireActivity().runOnUiThread(() -> {
                             previewView.setVisibility(View.GONE);
-                            tvSwipeHint.setVisibility(View.GONE);
+                            overlayView.setVisibility(View.GONE);
+                            btnCapture.setVisibility(View.GONE);
                             textViewHeader.setVisibility(View.VISIBLE);
                             imageViewResult.setVisibility(View.VISIBLE);
 
-                            if (result != null) {
+                            if (r != null) {
                                 textViewHeader.setText(
-                                        "Mã đề: "   + result.maDe +
-                                                "\nSBD: "   + result.sbd +
-                                                "\nĐúng: "  + result.correctCount +
-                                                "/20   Điểm: " + String.format("%.1f", result.score)
+                                        "Mã đề: " + r.maDe +
+                                                "\nSBD: "  + r.sbd +
+                                                "\nĐúng: " + r.correctCount +
+                                                "/" + questionCount +
+                                                "   Điểm: " + String.format("%.1f", r.score)
                                 );
-                                imageViewResult.setImageBitmap(result.annotatedBitmap);
+                                imageViewResult.setImageBitmap(r.annotatedBitmap);
                             } else {
                                 Toast.makeText(requireContext(),
                                         "Chấm bài thất bại", Toast.LENGTH_SHORT).show();
@@ -207,53 +171,69 @@ public class ChamBaiFragment extends Fragment {
                         });
                     }
                     @Override
-                    public void onError(@NonNull ImageCaptureException exception) {
-                        Log.e(TAG, "Photo capture failed", exception);
+                    public void onError(@NonNull ImageCaptureException e) {
+                        Log.e(TAG, "capture failed", e);
                     }
                 }
         );
     }
 
+    private Bitmap toBitmap(@NonNull ImageProxy image) {
+        ImageProxy.PlaneProxy[] planes = image.getPlanes();
+        if (planes.length==1 && image.getFormat()==ImageFormat.JPEG) {
+            ByteBuffer buf = planes[0].getBuffer();
+            byte[] data = new byte[buf.remaining()];
+            buf.get(data);
+            return BitmapFactory.decodeByteArray(data, 0, data.length);
+        }
+        // YUV -> JPEG
+        ByteBuffer y = planes[0].getBuffer(), u = planes[1].getBuffer(), v = planes[2].getBuffer();
+        int w = image.getWidth(), h = image.getHeight();
+        byte[] nv21 = new byte[y.remaining()+u.remaining()+v.remaining()];
+        y.get(nv21,0,y.remaining());
+        v.get(nv21,y.remaining(),v.remaining());
+        u.get(nv21,y.remaining()+v.remaining(),u.remaining());
+
+        YuvImage yi = new YuvImage(nv21, ImageFormat.NV21, w, h, null);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        yi.compressToJpeg(new Rect(0,0,w,h), 90, out);
+        byte[] bytes = out.toByteArray();
+        return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+    }
+
     private void setupEdgeSwipeToExit() {
         DisplayMetrics dm = getResources().getDisplayMetrics();
-        final int edgeSizePx = (int)(20 * dm.density);
-        final int swipeSlop = ViewConfiguration.get(requireContext()).getScaledTouchSlop();
-
+        final int edgePx = (int)(20 * dm.density);
+        final int slop   = ViewConfiguration.get(requireContext()).getScaledTouchSlop();
         GestureDetector.SimpleOnGestureListener listener =
-                new GestureDetector.SimpleOnGestureListener() {
-                    private float startX, startY;
-                    @Override
-                    public boolean onDown(MotionEvent e) {
-                        startX = e.getX();
-                        startY = e.getY();
+                new GestureDetector.SimpleOnGestureListener(){
+                    float startX, startY;
+                    @Override public boolean onDown(MotionEvent e){
+                        startX=e.getX(); startY=e.getY();
                         return true;
                     }
-                    @Override
-                    public boolean onScroll(MotionEvent e1, MotionEvent e2,
-                                            float dx, float dy) {
-                        float deltaX = e2.getX() - startX;
-                        float deltaY = Math.abs(e2.getY() - startY);
-                        if (startX <= edgeSizePx && deltaX > swipeSlop && deltaY < deltaX/2) {
-                            tvSwipeHint.setVisibility(View.GONE);
+                    @Override public boolean onScroll(MotionEvent e1, MotionEvent e2,
+                                                      float dx, float dy){
+                        float dX=e2.getX()-startX, dY=Math.abs(e2.getY()-startY);
+                        if (startX<=edgePx && dX>slop && dY<dX/2) {
                             requireActivity().onBackPressed();
                             return true;
                         }
                         return false;
                     }
                 };
-
-        GestureDetector detector = new GestureDetector(requireContext(), listener);
-        previewView.setOnTouchListener((v, event) -> detector.onTouchEvent(event));
+        GestureDetector gd = new GestureDetector(requireContext(), listener);
+        previewView.setOnTouchListener((v,e)->gd.onTouchEvent(e));
     }
 
-    @Override
-    public void onDestroyView() {
+    @Override public void onDestroyView(){
         super.onDestroyView();
-        // Khi rời ChamBaiFragment, hiện lại toolbar của Activity
-        AppCompatActivity act = (AppCompatActivity) getActivity();
-        if (act != null && act.getSupportActionBar() != null) {
-            act.getSupportActionBar().show();
-        }
+        AppCompatActivity act = (AppCompatActivity)getActivity();
+        if (act!=null && act.getSupportActionBar()!=null) act.getSupportActionBar().show();
+        WindowManager.LayoutParams wl = requireActivity().getWindow().getAttributes();
+        wl.screenBrightness = originalBrightness;
+        requireActivity().getWindow().setAttributes(wl);
+        requireActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         cameraExecutor.shutdown();
     }
 }

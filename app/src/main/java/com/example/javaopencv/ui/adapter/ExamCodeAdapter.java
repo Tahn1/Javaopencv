@@ -12,70 +12,71 @@ import java.util.List;
 
 public class ExamCodeAdapter extends RecyclerView.Adapter<ExamCodeAdapter.ViewHolder> {
 
-    private List<String> examCodeList = new ArrayList<>();
+    private List<String> examCodeList;
+    private OnExamCodeClickListener listener;
 
+    /** Giao diện callback */
     public interface OnExamCodeClickListener {
         void onExamCodeClick(int position, String maDe);
         void onExamCodeLongClick(int position, String maDe);
     }
 
-    private OnExamCodeClickListener listener;
+    /** Constructor không tham số để có thể khởi tạo trước */
+    public ExamCodeAdapter() {
+        this.examCodeList = new ArrayList<>();
+    }
 
+    /** Nếu muốn khởi tạo cùng danh sách ngay từ đầu */
     public ExamCodeAdapter(List<String> examCodeList) {
-        this.examCodeList = examCodeList;
+        this.examCodeList = new ArrayList<>(examCodeList);
     }
 
     public void setOnExamCodeClickListener(OnExamCodeClickListener listener) {
         this.listener = listener;
     }
 
-    @NonNull
-    @Override
-    public ExamCodeAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    @NonNull @Override
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_exam_code, parent, false);
         return new ViewHolder(view);
     }
 
-    @Override
-    public void onBindViewHolder(@NonNull ExamCodeAdapter.ViewHolder holder, int position) {
+    @Override public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.bind(examCodeList.get(position), listener);
     }
 
-    @Override
-    public int getItemCount() {
+    @Override public int getItemCount() {
         return examCodeList.size();
     }
 
+    /** Gọi khi want refresh data */
     public void updateData(List<String> newExamCodes) {
-        this.examCodeList.clear();
-        this.examCodeList.addAll(newExamCodes);
+        examCodeList.clear();
+        examCodeList.addAll(newExamCodes);
         notifyDataSetChanged();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    static class ViewHolder extends RecyclerView.ViewHolder {
         private final TextView tvExamCode, tvLabel;
 
-        public ViewHolder(@NonNull View itemView) {
+        ViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvLabel = itemView.findViewById(R.id.tv_label);
+            tvLabel    = itemView.findViewById(R.id.tv_label);
             tvExamCode = itemView.findViewById(R.id.tv_exam_code);
         }
 
-        public void bind(String examCode, OnExamCodeClickListener listener) {
+        void bind(String examCode, OnExamCodeClickListener listener) {
             tvLabel.setText("Mã đề");
             tvExamCode.setText(examCode);
 
             itemView.setOnClickListener(v -> {
-                if (listener != null) {
+                if (listener != null)
                     listener.onExamCodeClick(getAdapterPosition(), examCode);
-                }
             });
-
             itemView.setOnLongClickListener(v -> {
-                if (listener != null) {
+                if (listener != null)
                     listener.onExamCodeLongClick(getAdapterPosition(), examCode);
-                }
                 return true;
             });
         }

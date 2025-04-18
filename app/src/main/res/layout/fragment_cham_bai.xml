@@ -2,22 +2,21 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/container_cham_bai"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    >
+    android:layout_height="match_parent">
 
-    <!-- Preview của CameraX -->
+    <!-- 1. Preview của CameraX -->
     <androidx.camera.view.PreviewView
         android:id="@+id/previewView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- Overlay 4 vùng trắng nếu cần -->
+    <!-- 2. Overlay 4 vùng trắng để canh marker -->
     <com.example.javaopencv.ui.OverlayView
         android:id="@+id/overlayView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- Hint vuốt để thoát -->
+    <!-- 3. Hint vuốt để thoát -->
     <TextView
         android:id="@+id/tvSwipeHint"
         android:layout_width="wrap_content"
@@ -28,15 +27,26 @@
         android:padding="12dp"
         android:layout_gravity="center" />
 
-    <!-- ImageView để hiển thị kết quả chấm -->
+    <!-- 4. Nút chụp đặt giữa dưới màn hình -->
+    <ImageButton
+        android:id="@+id/btn_capture"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="32dp"
+        android:background="@android:color/transparent"
+        android:src="@drawable/ic_camera"
+        android:contentDescription="Chụp ảnh" />
+
+    <!-- 5. ImageView để hiển thị kết quả chấm -->
     <ImageView
         android:id="@+id/imageViewResult"
         android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="fitCenter"/>
+        android:scaleType="fitCenter" />
 
-    <!-- Header kết quả -->
+    <!-- 6. Header kết quả -->
     <TextView
         android:id="@+id/textViewHeader"
         android:visibility="gone"
@@ -45,5 +55,6 @@
         android:background="#80000000"
         android:textColor="@android:color/white"
         android:padding="16dp"
-        android:textSize="16sp"/>
+        android:textSize="16sp" />
+
 </FrameLayout>
