@@ -2,12 +2,9 @@ package com.example.javaopencv.omr;
 
 import android.content.Context;
 import android.util.Log;
-
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
-import org.opencv.imgproc.Moments;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
@@ -15,7 +12,7 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
-
+import org.opencv.imgproc.Moments;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,162 +23,179 @@ public class MarkerUtils {
     private static final String TAG = "MarkerUtils";
 
     // ---------------------- Marker Large Detection ----------------------
-    /**
-     * Tìm marker lớn (hình gần tròn, 4 cạnh) trong ảnh, tự động chuyển kênh gray nếu cần.
-     */
-    public static List<MatOfPoint> findMarkers(
-            Mat image,
-            double minArea,
-            double maxArea,
-            double circularityLow,
-            double circularityHigh
-    ) {
-        // 1) Chuẩn bị ảnh gray
+    public static List<MatOfPoint> findMarkers(Mat image, double minArea, double maxArea, double circularityLow, double circularityHigh) {
         Mat gray = new Mat();
-        int ch = image.channels();
-        if (ch == 1) {
-            gray = image.clone();
-        } else if (ch == 3) {
-            Imgproc.cvtColor(image, gray, Imgproc.COLOR_BGR2GRAY);
-        } else if (ch == 4) {
-            Imgproc.cvtColor(image, gray, Imgproc.COLOR_RGBA2GRAY);
-        } else {
-            throw new IllegalArgumentException("Unsupported number of channels: " + ch);
-        }
+        Imgproc.cvtColor(image, gray, Imgproc.COLOR_BGR2GRAY);
 
-        // 2) Threshold với Otsu + đảo
         Mat thresh = new Mat();
+        // Sử dụng Otsu để tự động xác định ngưỡng, tạo ảnh nhị phân đảo
         Imgproc.threshold(gray, thresh, 0, 255, Imgproc.THRESH_BINARY_INV + Imgproc.THRESH_OTSU);
+        // Lưu debug ảnh threshold vào file
         Imgcodecs.imwrite("debug_threshold_large.jpg", thresh);
 
-        // 3) Tìm contours
         List<MatOfPoint> contours = new ArrayList<>();
         Mat hierarchy = new Mat();
         Imgproc.findContours(thresh, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
         Log.d(TAG, "findMarkers: Contours found: " + contours.size());
 
-        // 4) Vẽ debug contours
+        // Lưu debug ảnh với các contour (vẽ bằng màu đỏ)
         Mat debugContoursImg = new Mat();
         Imgproc.cvtColor(gray, debugContoursImg, Imgproc.COLOR_GRAY2BGR);
         Imgproc.drawContours(debugContoursImg, contours, -1, new Scalar(0, 0, 255), 2);
         Imgcodecs.imwrite("debug_initial_contours_large.jpg", debugContoursImg);
 
-        // 5) Lọc theo area, circularity, approxPolyDP
         List<MatOfPoint> markers = new ArrayList<>();
         for (MatOfPoint cnt : contours) {
             double area = Imgproc.contourArea(cnt);
             Log.d(TAG, "Processing contour, area = " + area);
             if (area < minArea || area > maxArea) {
-                Log.d(TAG, " - Loại: area không trong [" + minArea + ", " + maxArea + "]");
+                Log.d(TAG, "Contour bị loại do area không thuộc khoảng [" + minArea + ", " + maxArea + "]");
                 continue;
             }
-            MatOfPoint2f cnt2f = new MatOfPoint2f(cnt.toArray());
-            double perim = Imgproc.arcLength(cnt2f, true);
-            if (perim == 0) continue;
-            double circ = 4 * Math.PI * area / (perim * perim);
-            Log.d(TAG, String.format(" - circularity = %.3f", circ));
-            if (circ < circularityLow || circ > circularityHigh) {
-                Log.d(TAG, " - Loại: circularity không trong [" + circularityLow + ", " + circularityHigh + "]");
+            double perimeter = Imgproc.arcLength(new MatOfPoint2f(cnt.toArray()), true);
+            if (perimeter == 0)
+                continue;
+            double circularity = 4 * Math.PI * area / (perimeter * perimeter);
+            Log.d(TAG, "Contour: area = " + area + ", perimeter = " + perimeter + ", circularity = " + circularity);
+            if (circularity < circularityLow || circularity > circularityHigh) {
+                Log.d(TAG, "Contour bị loại do circularity không thuộc khoảng [" + circularityLow + ", " + circularityHigh + "]");
                 continue;
             }
             MatOfPoint2f approx = new MatOfPoint2f();
-            Imgproc.approxPolyDP(cnt2f, approx, 0.02 * perim, true);
+            Imgproc.approxPolyDP(new MatOfPoint2f(cnt.toArray()), approx, 0.02 * perimeter, true);
             if (approx.total() == 4) {
-                // chuyển về 4 điểm int
-                RotatedRect rect = Imgproc.minAreaRect(cnt2f);
+                // Dùng minAreaRect để lấy hộp chứa contour với 4 điểm chính xác
+                RotatedRect rect = Imgproc.minAreaRect(new MatOfPoint2f(cnt.toArray()));
                 Point[] box = new Point[4];
                 rect.points(box);
-                for (int i = 0; i < 4; i++) {
+                for (int i = 0; i < box.length; i++) {
                     box[i].x = Math.round(box[i].x);
                     box[i].y = Math.round(box[i].y);
                 }
-                markers.add(new MatOfPoint(box));
-                Log.d(TAG, " -> Thêm marker: " + Arrays.toString(box));
+                MatOfPoint marker = new MatOfPoint(box);
+                markers.add(marker);
+                Log.d(TAG, "findMarkers: Found marker: " + Arrays.toString(box) +
+                        ", circularity = " + String.format("%.2f", circularity));
             }
         }
         Log.d(TAG, "findMarkers: Total markers: " + markers.size());
         return markers;
     }
 
-    /** Tính tâm contour/marker */
+    // Tính trung tâm của marker bằng cách lấy trung bình các tọa độ của các đỉnh
     public static Point centerOf(MatOfPoint marker) {
-        Moments m = Imgproc.moments(marker);
-        return new Point(m.get_m10() / m.get_m00(), m.get_m01() / m.get_m00());
-    }
-
-    // ---------------------- Debug Large ----------------------
-    public static void debugLargeMarkers(Mat image, double minArea, double maxArea, Context ctx) {
-        List<MatOfPoint> markers = findMarkers(image, minArea, maxArea, 0.65, 0.9);
-        Log.d(TAG, "debugLargeMarkers: Found " + markers.size());
-        Mat debug = image.clone();
-        for (int i = 0; i < markers.size(); i++) {
-            MatOfPoint m = markers.get(i);
-            Imgproc.drawContours(debug, Collections.singletonList(m), -1, new Scalar(0,255,0), 2);
-            Point c = centerOf(m);
-            Imgproc.circle(debug, c, 8, new Scalar(0,255,0), 2);
-            Imgproc.putText(debug, "M"+i, new Point(c.x+5, c.y),
-                    Imgproc.FONT_HERSHEY_SIMPLEX, 0.7, new Scalar(0,255,0), 2);
+        Point[] pts = marker.toArray();
+        double sumX = 0, sumY = 0;
+        for (Point p : pts) {
+            sumX += p.x;
+            sumY += p.y;
         }
-        ImageDebugUtils.saveDebugImage(debug, "debug_large_markers.jpg", ctx);
+        return new Point(sumX / pts.length, sumY / pts.length);
     }
 
-    // ---------------------- Align Using 4 Markers ----------------------
-    public static Mat alignImageUsingMarkers(Mat image, double minArea, double maxArea, Context ctx) throws Exception {
+    // Debug marker lớn: Vẽ các marker lên ảnh debug và lưu debug ảnh
+    public static void debugLargeMarkers(Mat image, double minArea, double maxArea, Context context) {
+        List<MatOfPoint> markers = findMarkers(image, minArea, maxArea, 0.65, 0.9);
+        Log.d(TAG, "debugLargeMarkers: Found " + markers.size() + " large markers.");
+        for (int i = 0; i < markers.size(); i++) {
+            Point center = centerOf(markers.get(i));
+            Log.d(TAG, "debugLargeMarkers: Marker " + i + " center: (" + center.x + ", " + center.y + ")");
+        }
+        Mat debugImg = image.clone();
+        for (int i = 0; i < markers.size(); i++) {
+            Imgproc.drawContours(debugImg, Collections.singletonList(markers.get(i)), -1, new Scalar(0, 255, 0), 2);
+            Point center = centerOf(markers.get(i));
+            Imgproc.circle(debugImg, center, 8, new Scalar(0, 255, 0), 2);
+            Imgproc.putText(debugImg, "M" + i, new Point(center.x + 5, center.y),
+                    Imgproc.FONT_HERSHEY_SIMPLEX, 0.7, new Scalar(0, 255, 0), 2);
+        }
+        ImageDebugUtils.saveDebugImage(debugImg, "debug_large_markers.jpg", context);
+    }
+
+    /**
+     * Hàm căn chỉnh ảnh sử dụng 4 marker lớn.
+     * Tìm 4 marker lớn, xác định các góc theo trung tâm của chúng dựa trên Moments,
+     * sau đó tính toán ma trận biến đổi phối cảnh và warp ảnh.
+     * Sẽ in log các giá trị góc và lưu debug ảnh căn chỉnh với tên "aligned_debug.jpg".
+     *
+     * @param image    Ảnh đầu vào.
+     * @param minArea  Diện tích tối thiểu.
+     * @param maxArea  Diện tích tối đa.
+     * @param context  Context để lưu debug ảnh.
+     * @return Ảnh đã căn chỉnh.
+     * @throws Exception Nếu không đủ marker.
+     */
+    public static Mat alignImageUsingMarkers(Mat image, double minArea, double maxArea, Context context) throws Exception {
         List<MatOfPoint> markers = findMarkers(image, minArea, maxArea, 0.6, 0.99);
-        if (markers.size() < 4)
-            throw new Exception("Không đủ 4 marker lớn để căn chỉnh");
+        Log.d(TAG, "alignImageUsingMarkers: Found " + markers.size() + " markers.");
+        if (markers.size() < 4) {
+            throw new Exception("Không đủ marker lớn để căn chỉnh ảnh");
+        }
+        // Lấy 4 góc marker từ danh sách các marker lớn
         Point[] corners = getCornerMarkers(markers);
+        for (int i = 0; i < corners.length; i++) {
+            Log.d(TAG, String.format("alignImageUsingMarkers: Corner %d: (%.1f, %.1f)", i, corners[i].x, corners[i].y));
+        }
+        int maxWidth = (int) Math.max(distance(corners[0], corners[1]), distance(corners[2], corners[3]));
+        int maxHeight = (int) Math.max(distance(corners[1], corners[2]), distance(corners[3], corners[0]));
+        Log.d(TAG, "alignImageUsingMarkers: Calculated width = " + maxWidth + ", height = " + maxHeight);
 
-        // tính kích thước mới
-        double w1 = distance(corners[0], corners[1]);
-        double w2 = distance(corners[2], corners[3]);
-        double h1 = distance(corners[1], corners[2]);
-        double h2 = distance(corners[3], corners[0]);
-        int maxW = (int)Math.max(w1, w2);
-        int maxH = (int)Math.max(h1, h2);
-
-        MatOfPoint2f src = new MatOfPoint2f(corners);
-        MatOfPoint2f dst = new MatOfPoint2f(
-                new Point(0,0),
-                new Point(maxW-1,0),
-                new Point(maxW-1,maxH-1),
-                new Point(0,maxH-1)
+        MatOfPoint2f srcPts = new MatOfPoint2f(corners);
+        MatOfPoint2f dstPts = new MatOfPoint2f(
+                new Point(0, 0),
+                new Point(maxWidth - 1, 0),
+                new Point(maxWidth - 1, maxHeight - 1),
+                new Point(0, maxHeight - 1)
         );
-        Mat M = Imgproc.getPerspectiveTransform(src, dst);
+        Mat transform = Imgproc.getPerspectiveTransform(srcPts, dstPts);
         Mat aligned = new Mat();
-        Imgproc.warpPerspective(image, aligned, M, new Size(maxW, maxH));
-        Log.d(TAG, "Aligned saved");
+        Imgproc.warpPerspective(image, aligned, transform, new Size(maxWidth, maxHeight));
+        Log.d(TAG, "alignImageUsingMarkers: Aligned debug image saved as 'aligned_debug.jpg'");
         return aligned;
     }
 
-    private static double distance(Point a, Point b) {
-        return Math.hypot(a.x - b.x, a.y - b.y);
-    }
-
+    /**
+     * Từ danh sách marker lớn, tính trung tâm của mỗi marker dựa trên Moments và xác định 4 góc theo:
+     * - Top-left: có tổng (x+y) nhỏ nhất.
+     * - Top-right: có hiệu (y-x) nhỏ nhất.
+     * - Bottom-right: có tổng (x+y) lớn nhất.
+     * - Bottom-left: có hiệu (y-x) lớn nhất.
+     *
+     * @param markers Danh sách marker lớn.
+     * @return Mảng 4 điểm theo thứ tự: [top-left, top-right, bottom-right, bottom-left].
+     */
     public static Point[] getCornerMarkers(List<MatOfPoint> markers) {
         List<Point> centers = new ArrayList<>();
-        for (MatOfPoint m : markers) centers.add(centerOf(m));
-        int n = centers.size();
-        double[] sums = new double[n], diffs = new double[n];
-        for (int i = 0; i < n; i++) {
+        for (MatOfPoint marker : markers) {
+            centers.add(centerOf(marker));
+        }
+        double[] sums = new double[centers.size()];
+        double[] diffs = new double[centers.size()];
+        for (int i = 0; i < centers.size(); i++) {
             Point p = centers.get(i);
             sums[i] = p.x + p.y;
             diffs[i] = p.y - p.x;
         }
-        int idxTL=0, idxBR=0, idxTR=0, idxBL=0;
-        for (int i = 1; i < n; i++) {
-            if (sums[i] < sums[idxTL]) idxTL = i;
-            if (sums[i] > sums[idxBR]) idxBR = i;
-            if (diffs[i] < diffs[idxTR]) idxTR = i;
-            if (diffs[i] > diffs[idxBL]) idxBL = i;
+        int idxTL = 0, idxBR = 0, idxTR = 0, idxBL = 0;
+        double minSum = sums[0], maxSum = sums[0];
+        double minDiff = diffs[0], maxDiff = diffs[0];
+        for (int i = 1; i < centers.size(); i++) {
+            if (sums[i] < minSum) { minSum = sums[i]; idxTL = i; }
+            if (sums[i] > maxSum) { maxSum = sums[i]; idxBR = i; }
+            if (diffs[i] < minDiff) { minDiff = diffs[i]; idxTR = i; }
+            if (diffs[i] > maxDiff) { maxDiff = diffs[i]; idxBL = i; }
         }
-        return new Point[]{
-                centers.get(idxTL),
-                centers.get(idxTR),
-                centers.get(idxBR),
-                centers.get(idxBL)
-        };
+        Point topLeft = centers.get(idxTL);
+        Point topRight = centers.get(idxTR);
+        Point bottomRight = centers.get(idxBR);
+        Point bottomLeft = centers.get(idxBL);
+        return new Point[]{ topLeft, topRight, bottomRight, bottomLeft };
     }
+
+    private static double distance(Point p1, Point p2) {
+        return Math.hypot(p1.x - p2.x, p1.y - p2.y);
+    }
+
     // ---------------------- Small Marker Detection ----------------------
     public static List<MatOfPoint> findSmallMarkersOnBChannel(Mat image, double minArea, double maxArea) {
         List<MatOfPoint> contours = new ArrayList<>();

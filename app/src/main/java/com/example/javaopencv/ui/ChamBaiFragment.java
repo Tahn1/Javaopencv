@@ -37,8 +37,6 @@ import com.example.javaopencv.omr.OmrGrader;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import org.opencv.android.OpenCVLoader;
-import org.opencv.android.Utils;
-import org.opencv.core.Mat;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
@@ -49,19 +47,20 @@ public class ChamBaiFragment extends Fragment {
     private static final String TAG = "ChamBaiFragment";
     static {
         if (!OpenCVLoader.initDebug()) {
+            // load lib if cần thiết
             System.loadLibrary(org.opencv.core.Core.NATIVE_LIBRARY_NAME);
         }
     }
 
     private PreviewView previewView;
     private OverlayView overlayView;
-    private TextView tvSwipeHint, textViewHeader;
-    private ImageView imageViewResult;
     private ImageButton btnCapture;
-    private ImageCapture imageCapture;
+    private ImageView imageViewResult;
+    private TextView  textViewHeader;
+    private ImageCapture   imageCapture;
     private ExecutorService cameraExecutor;
-    private int questionCount = 20;
-    private float originalBrightness;
+    private int    questionCount = 20;
+    private float  originalBrightness;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -74,54 +73,59 @@ public class ChamBaiFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // 1) Fullscreen + max brightness
+        // Giữ full‐screen và tăng độ sáng
         AppCompatActivity act = (AppCompatActivity) getActivity();
-        if (act!=null && act.getSupportActionBar()!=null) act.getSupportActionBar().hide();
-        WindowManager.LayoutParams wl = requireActivity().getWindow().getAttributes();
-        originalBrightness = wl.screenBrightness;
-        wl.screenBrightness = 1f;
-        requireActivity().getWindow().setAttributes(wl);
+        if (act != null && act.getSupportActionBar() != null) {
+            act.getSupportActionBar().hide();
+        }
+        WindowManager.LayoutParams lp = requireActivity().getWindow().getAttributes();
+        originalBrightness = lp.screenBrightness;
+        lp.screenBrightness = 1f;
+        requireActivity().getWindow().setAttributes(lp);
         requireActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-        // 2) Đọc questionCount nếu có
-        if (getArguments()!=null) {
+        // đọc questionCount nếu có
+        if (getArguments() != null) {
             questionCount = getArguments().getInt("questionCount", questionCount);
         }
 
-        // 3) Ánh xạ view
+        // Ánh xạ view
         previewView     = view.findViewById(R.id.previewView);
         overlayView     = view.findViewById(R.id.overlayView);
-        tvSwipeHint     = view.findViewById(R.id.tvSwipeHint);
+        btnCapture      = view.findViewById(R.id.btn_capture);
         imageViewResult = view.findViewById(R.id.imageViewResult);
         textViewHeader  = view.findViewById(R.id.textViewHeader);
-        btnCapture      = view.findViewById(R.id.btn_capture);
+
+        // ban đầu ẩn kết quả
+        imageViewResult.setVisibility(View.GONE);
+        textViewHeader.setVisibility(View.GONE);
 
         cameraExecutor = Executors.newSingleThreadExecutor();
-        tvSwipeHint.postDelayed(() -> tvSwipeHint.setVisibility(View.GONE), 3000);
 
         startCamera();
         setupEdgeSwipeToExit();
 
-        // 4) Bấm nút chụp thì gọi takePhotoAndGrade()
         btnCapture.setOnClickListener(v -> takePhotoAndGrade());
     }
 
     private void startCamera() {
-        ListenableFuture<ProcessCameraProvider> f = ProcessCameraProvider.getInstance(requireContext());
-        f.addListener(() -> {
+        ListenableFuture<ProcessCameraProvider> future =
+                ProcessCameraProvider.getInstance(requireContext());
+        future.addListener(() -> {
             try {
-                ProcessCameraProvider cp = f.get();
+                ProcessCameraProvider provider = future.get();
                 Preview preview = new Preview.Builder().build();
                 preview.setSurfaceProvider(previewView.getSurfaceProvider());
 
                 imageCapture = new ImageCapture.Builder().build();
 
-                cp.unbindAll();
-                cp.bindToLifecycle(this,
+                provider.unbindAll();
+                provider.bindToLifecycle(this,
                         new CameraSelector.Builder()
                                 .requireLensFacing(CameraSelector.LENS_FACING_BACK)
                                 .build(),
-                        preview, imageCapture);
+                        preview,
+                        imageCapture);
 
             } catch (Exception e) {
                 Log.e(TAG, "startCamera failed", e);
@@ -130,77 +134,101 @@ public class ChamBaiFragment extends Fragment {
     }
 
     private void takePhotoAndGrade() {
-        if (imageCapture==null) return;
+        if (imageCapture == null) return;
+        btnCapture.setEnabled(false);
+
         imageCapture.takePicture(
                 ContextCompat.getMainExecutor(requireContext()),
                 new ImageCapture.OnImageCapturedCallback() {
-                    @Override
-                    public void onCaptureSuccess(@NonNull ImageProxy proxy) {
+                    @Override public void onCaptureSuccess(@NonNull ImageProxy proxy) {
                         Bitmap bmp = toBitmap(proxy);
                         proxy.close();
-                        Mat mat = new Mat();
-                        Utils.bitmapToMat(bmp, mat);
 
-                        // Gọi OMR
-                        OmrGrader.Result r = OmrGrader.grade(
-                                bmp,
-                                getArguments().getInt("examId", -1),
-                                requireContext()
-                        );
+                        // Gọi OMR trong try–catch để bắt lỗi không đủ marker lớn
+                        OmrGrader.Result result;
+                        try {
+                            result = OmrGrader.grade(
+                                    bmp,
+                                    getArguments() != null ? getArguments().getInt("examId", -1) : -1,
+                                    requireContext()
+                            );
+                        } catch (Exception e) {
+                            Log.e(TAG, "OMR failed: not enough markers", e);
+                            requireActivity().runOnUiThread(() -> {
+                                Toast.makeText(requireContext(),
+                                        "Không tìm đủ 4 marker để căn chỉnh, vui lòng chụp lại gần hơn",
+                                        Toast.LENGTH_LONG).show();
+                                btnCapture.setEnabled(true);
+                            });
+                            return;
+                        }
 
                         requireActivity().runOnUiThread(() -> {
+                            // Ẩn camera + overlay + nút chụp
                             previewView.setVisibility(View.GONE);
                             overlayView.setVisibility(View.GONE);
                             btnCapture.setVisibility(View.GONE);
+
+                            // Hiện kết quả
                             textViewHeader.setVisibility(View.VISIBLE);
                             imageViewResult.setVisibility(View.VISIBLE);
 
-                            if (r != null) {
+                            if (result != null) {
                                 textViewHeader.setText(
-                                        "Mã đề: " + r.maDe +
-                                                "\nSBD: "  + r.sbd +
-                                                "\nĐúng: " + r.correctCount +
+                                        "Mã đề: " + result.maDe +
+                                                "\nSBD: "   + result.sbd +
+                                                "\nĐúng: "  + result.correctCount +
                                                 "/" + questionCount +
-                                                "   Điểm: " + String.format("%.1f", r.score)
+                                                "   Điểm: " + String.format("%.1f", result.score)
                                 );
-                                imageViewResult.setImageBitmap(r.annotatedBitmap);
+                                imageViewResult.setImageBitmap(result.annotatedBitmap);
                             } else {
                                 Toast.makeText(requireContext(),
                                         "Chấm bài thất bại", Toast.LENGTH_SHORT).show();
+                                btnCapture.setEnabled(true);
                             }
                         });
                     }
-                    @Override
-                    public void onError(@NonNull ImageCaptureException e) {
+
+                    @Override public void onError(@NonNull ImageCaptureException e) {
                         Log.e(TAG, "capture failed", e);
+                        requireActivity().runOnUiThread(() -> {
+                            Toast.makeText(requireContext(),
+                                    "Chụp ảnh thất bại, thử lại", Toast.LENGTH_SHORT).show();
+                            btnCapture.setEnabled(true);
+                        });
                     }
                 }
         );
     }
 
+    /** Chuyển ImageProxy (JPEG hoặc YUV) → Bitmap */
     private Bitmap toBitmap(@NonNull ImageProxy image) {
         ImageProxy.PlaneProxy[] planes = image.getPlanes();
-        if (planes.length==1 && image.getFormat()==ImageFormat.JPEG) {
+        if (planes.length == 1 && image.getFormat() == ImageFormat.JPEG) {
             ByteBuffer buf = planes[0].getBuffer();
             byte[] data = new byte[buf.remaining()];
             buf.get(data);
             return BitmapFactory.decodeByteArray(data, 0, data.length);
         }
-        // YUV -> JPEG
-        ByteBuffer y = planes[0].getBuffer(), u = planes[1].getBuffer(), v = planes[2].getBuffer();
+        // YUV_420_888 → NV21 → JPEG → Bitmap
+        ByteBuffer y = planes[0].getBuffer(),
+                u = planes[1].getBuffer(),
+                v = planes[2].getBuffer();
         int w = image.getWidth(), h = image.getHeight();
-        byte[] nv21 = new byte[y.remaining()+u.remaining()+v.remaining()];
-        y.get(nv21,0,y.remaining());
-        v.get(nv21,y.remaining(),v.remaining());
-        u.get(nv21,y.remaining()+v.remaining(),u.remaining());
+        byte[] nv21 = new byte[y.remaining() + u.remaining() + v.remaining()];
+        y.get(nv21, 0, y.remaining());
+        v.get(nv21, y.remaining(), v.remaining());
+        u.get(nv21, y.remaining()+v.remaining(), u.remaining());
 
         YuvImage yi = new YuvImage(nv21, ImageFormat.NV21, w, h, null);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         yi.compressToJpeg(new Rect(0,0,w,h), 90, out);
-        byte[] bytes = out.toByteArray();
-        return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+        byte[] jpeg = out.toByteArray();
+        return BitmapFactory.decodeByteArray(jpeg, 0, jpeg.length);
     }
 
+    /** Vuốt từ mép trái để thoát */
     private void setupEdgeSwipeToExit() {
         DisplayMetrics dm = getResources().getDisplayMetrics();
         final int edgePx = (int)(20 * dm.density);
@@ -209,13 +237,12 @@ public class ChamBaiFragment extends Fragment {
                 new GestureDetector.SimpleOnGestureListener(){
                     float startX, startY;
                     @Override public boolean onDown(MotionEvent e){
-                        startX=e.getX(); startY=e.getY();
-                        return true;
+                        startX = e.getX(); startY = e.getY(); return true;
                     }
                     @Override public boolean onScroll(MotionEvent e1, MotionEvent e2,
                                                       float dx, float dy){
-                        float dX=e2.getX()-startX, dY=Math.abs(e2.getY()-startY);
-                        if (startX<=edgePx && dX>slop && dY<dX/2) {
+                        float dX = e2.getX() - startX, dY = Math.abs(e2.getY() - startY);
+                        if (startX <= edgePx && dX > slop && dY < dX/2) {
                             requireActivity().onBackPressed();
                             return true;
                         }
@@ -223,16 +250,17 @@ public class ChamBaiFragment extends Fragment {
                     }
                 };
         GestureDetector gd = new GestureDetector(requireContext(), listener);
-        previewView.setOnTouchListener((v,e)->gd.onTouchEvent(e));
+        previewView.setOnTouchListener((v,e)-> gd.onTouchEvent(e));
     }
 
     @Override public void onDestroyView(){
         super.onDestroyView();
+        // khôi phục brightness và full‐screen
         AppCompatActivity act = (AppCompatActivity)getActivity();
         if (act!=null && act.getSupportActionBar()!=null) act.getSupportActionBar().show();
-        WindowManager.LayoutParams wl = requireActivity().getWindow().getAttributes();
-        wl.screenBrightness = originalBrightness;
-        requireActivity().getWindow().setAttributes(wl);
+        WindowManager.LayoutParams lp = requireActivity().getWindow().getAttributes();
+        lp.screenBrightness = originalBrightness;
+        requireActivity().getWindow().setAttributes(lp);
         requireActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         cameraExecutor.shutdown();
     }

@@ -1,44 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/container_cham_bai"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- 1. Preview của CameraX -->
+    <!-- Preview của CameraX -->
     <androidx.camera.view.PreviewView
         android:id="@+id/previewView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- 2. Overlay 4 vùng trắng để canh marker -->
+    <!-- Overlay 4 vùng trắng để căn -->
     <com.example.javaopencv.ui.OverlayView
         android:id="@+id/overlayView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- 3. Hint vuốt để thoát -->
-    <TextView
-        android:id="@+id/tvSwipeHint"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Vuốt từ mép trái để thoát"
-        android:textColor="@android:color/white"
-        android:background="#66000000"
-        android:padding="12dp"
-        android:layout_gravity="center" />
-
-    <!-- 4. Nút chụp đặt giữa dưới màn hình -->
+    <!-- Nút chụp ảnh -->
     <ImageButton
         android:id="@+id/btn_capture"
         android:layout_width="72dp"
         android:layout_height="72dp"
         android:layout_gravity="bottom|center_horizontal"
         android:layout_marginBottom="32dp"
-        android:background="@android:color/transparent"
+        android:background="@drawable/bg_capture_button"
         android:src="@drawable/ic_camera"
-        android:contentDescription="Chụp ảnh" />
+        app:tint="@android:color/white"
+        android:contentDescription="@string/desc_capture_button" />
 
-    <!-- 5. ImageView để hiển thị kết quả chấm -->
+    <!-- ImageView để hiển thị kết quả chấm -->
     <ImageView
         android:id="@+id/imageViewResult"
         android:visibility="gone"
@@ -46,7 +37,7 @@
         android:layout_height="match_parent"
         android:scaleType="fitCenter" />
 
-    <!-- 6. Header kết quả -->
+    <!-- Header kết quả -->
     <TextView
         android:id="@+id/textViewHeader"
         android:visibility="gone"

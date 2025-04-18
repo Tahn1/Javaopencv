@@ -36,7 +36,6 @@ public class OMRProcessor {
      * Xử lý OMR từ ảnh Bitmap đầu vào, lưu debug ảnh qua mỗi bước.
      */
     public static OMRResult process(Bitmap inputBitmap, Context context) {
-        Log.d(TAG, "Bắt đầu xử lý OMR");
         OMRResult result = new OMRResult();
 
         try {

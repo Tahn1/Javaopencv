@@ -27,6 +27,7 @@
     <string name="navigation_drawer_open">Mở Navigation Drawer</string>
     <string name="navigation_drawer_close">Đóng Navigation Drawer</string>
     <string name="exam_list">Danh sách bài thi</string>
+    <string name="desc_capture_button">Chụp ảnh để chấm bài</string>
 
 
 
