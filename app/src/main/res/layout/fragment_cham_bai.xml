@@ -1,51 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/container_cham_bai"
+    xmlns:opencv="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Preview của CameraX -->
-    <androidx.camera.view.PreviewView
-        android:id="@+id/previewView"
+    <!-- 1) Camera preview từ OpenCV -->
+    <org.opencv.android.JavaCameraView
+        android:id="@+id/javaCameraView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        opencv:camera_id="0"
+        opencv:show_fps="false" />
 
-    <!-- Overlay 4 vùng trắng để căn -->
+    <!-- 2) Overlay để vẽ khung quanh marker -->
     <com.example.javaopencv.ui.OverlayView
         android:id="@+id/overlayView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent" />
 
-    <!-- Nút chụp ảnh -->
-    <ImageButton
-        android:id="@+id/btn_capture"
-        android:layout_width="72dp"
-        android:layout_height="72dp"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="32dp"
-        android:background="@drawable/bg_capture_button"
-        android:src="@drawable/ic_camera"
-        app:tint="@android:color/white"
-        android:contentDescription="@string/desc_capture_button" />
-
-    <!-- ImageView để hiển thị kết quả chấm -->
+    <!-- 3) Ảnh kết quả OMR (ẩn khi chưa có) -->
     <ImageView
         android:id="@+id/imageViewResult"
-        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="fitCenter" />
+        android:scaleType="fitCenter"
+        android:visibility="gone"/>
 
-    <!-- Header kết quả -->
+    <!-- 4) Header kết quả -->
     <TextView
         android:id="@+id/textViewHeader"
-        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#80000000"
         android:textColor="@android:color/white"
         android:padding="16dp"
-        android:textSize="16sp" />
-
+        android:textSize="16sp"
+        android:visibility="gone"/>
 </FrameLayout>
