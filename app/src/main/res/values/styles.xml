@@ -10,4 +10,12 @@
     <!-- Ứng dụng sử dụng theme này -->
     <style name="Theme.Javaopencv" parent="Base.Theme.Javaopencv" />
 
+        <style name="ToolbarTitleSmall" parent="TextAppearance.AppCompat.Title">
+            <item name="android:textSize">15sp</item>
+            <item name="android:textColor">?attr/colorOnPrimary</item>
+        </style>
+
+
+
+
 </resources>

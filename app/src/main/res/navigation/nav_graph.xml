@@ -18,16 +18,18 @@
             app:destination="@id/giayThiFragment" />
     </fragment>
 
+<<<<<<< Updated upstream
 
     <!-- Các fragment khác -->
 
 
+=======
+>>>>>>> Stashed changes
     <!-- Exam Detail Fragment -->
     <fragment
         android:id="@+id/examDetailFragment"
         android:name="com.example.javaopencv.ui.ExamDetailFragment"
         android:label="Chi tiết bài thi" >
-        <!-- Điều hướng từ ExamDetailFragment sang các màn hình con -->
         <action
             android:id="@+id/action_examDetailFragment_to_dapAnFragment"
             app:destination="@id/dapAnFragment" />
@@ -55,7 +57,7 @@
             app:destination="@id/addMaDeFragment" />
     </fragment>
 
-    <!-- Thêm Màn hình Tạo mã đề -->
+    <!-- Tạo mã đề -->
     <fragment
         android:id="@+id/addMaDeFragment"
         android:name="com.example.javaopencv.ui.AddMaDeFragment"
@@ -67,25 +69,54 @@
         android:name="com.example.javaopencv.ui.ThongTinFragment"
         android:label="Thông tin bài thi" />
 
-    <!-- Màn hình Chấm bài -->
+    <!-- Chấm bài -->
     <fragment
         android:id="@+id/chamBaiFragment"
         android:name="com.example.javaopencv.ui.ChamBaiFragment"
         android:label="Chấm bài" />
 
-    <!-- Màn hình Xem lại -->
+    <!-- Xem lại danh sách kết quả -->
     <fragment
         android:id="@+id/xemLaiFragment"
         android:name="com.example.javaopencv.ui.XemLaiFragment"
-        android:label="Xem lại" />
+        android:label="Xem lại" >
+        <!-- từ xemLai sang GradeDetail -->
+        <action
+            android:id="@+id/action_xemLaiFragment_to_gradeDetailFragment"
+            app:destination="@id/gradeDetailFragment" />
+    </fragment>
 
-    <!-- Màn hình Thống kê -->
+    <!-- Chi tiết 1 kết quả đã chấm -->
+    <fragment
+        android:id="@+id/gradeDetailFragment"
+        android:name="com.example.javaopencv.ui.GradeDetailFragment"
+        android:label="Chi tiết bài đã chấm" >
+        <argument
+            android:name="gradeId"
+            app:argType="long" />
+        <!-- từ GradeDetail sang EditGrade -->
+        <action
+            android:id="@+id/action_gradeDetailFragment_to_editGradeFragment"
+            app:destination="@id/editGradeFragment" />
+    </fragment>
+
+    <!-- Chỉnh sửa kết quả đã chấm -->
+    <fragment
+        android:id="@+id/editGradeFragment"
+        android:name="com.example.javaopencv.ui.EditGradeFragment"
+        android:label="Chỉnh sửa kết quả" >
+        <argument
+            android:name="gradeId"
+            app:argType="long" />
+    </fragment>
+
+    <!-- Thống kê -->
     <fragment
         android:id="@+id/thongKeFragment"
         android:name="com.example.javaopencv.ui.ThongKeFragment"
         android:label="Thống kê" />
 
-    <!-- Màn hình Giấy thi (điều hướng từ Drawer menu) -->
+    <!-- Giấy thi (drawer) -->
     <fragment
         android:id="@+id/giayThiFragment"
         android:name="com.example.javaopencv.ui.GiayThiFragment"

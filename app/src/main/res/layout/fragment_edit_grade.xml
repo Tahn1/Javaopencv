@@ -1,0 +1,6 @@
+<!-- File: res/layout/fragment_edit_grade.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:padding="16dp"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+    <!-- TODO: các trường chỉnh sửa mã đề, SBD, đáp án, v.v. -->
+</LinearLayout>

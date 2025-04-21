@@ -69,4 +69,6 @@
     </string>
     <string name="image_preview_desc">a</string>
     <string name="annotated_image_desc">a</string>
+    <string name="cham_bai_title">Chấm bài</string>
+    <string name="preview_image">ảnh</string>
 </resources>
