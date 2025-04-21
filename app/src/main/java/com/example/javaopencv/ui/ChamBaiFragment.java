@@ -1,26 +1,5 @@
 package com.example.javaopencv.ui;
 
-<<<<<<< Updated upstream
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import com.example.javaopencv.R;
-
-public class ChamBaiFragment extends Fragment {
-
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
-        // Inflate layout cho ChamBaiFragment (tạo file res/layout/fragment_cham_bai.xml)
-        return inflater.inflate(R.layout.fragment_cham_bai, container, false);
-    }
-=======
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
@@ -28,11 +7,12 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -62,7 +42,6 @@ public class ChamBaiFragment extends Fragment {
     private static final int   REQ_READ_EXTERNAL   = 200;
     private static final long  PREVIEW_DURATION_MS = 3000;
 
-    private String   lastImageUri;
     private MaterialToolbar toolbar;
     private Button          btnPickImage;
     private ImageView       imageViewDebug;
@@ -86,6 +65,14 @@ public class ChamBaiFragment extends Fragment {
         super(R.layout.fragment_cham_bai);
     }
 
+    @Nullable @Override
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        // Layout inflation sẽ được xử lý bởi super(), nhưng ta vẫn giữ onCreateView nếu cần custom
+        return inflater.inflate(R.layout.fragment_cham_bai, container, false);
+    }
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         // 1) Lấy examId và questionCount từ arguments
@@ -100,7 +87,7 @@ public class ChamBaiFragment extends Fragment {
         btnPickImage   = view.findViewById(R.id.btnPickImage);
         imageViewDebug = view.findViewById(R.id.imageViewDebug);
 
-        // 3) Lưu lại icon back để restore sau
+        // 3) Lưu icon back để restore sau
         navigationIconRes = R.drawable.ic_arrow_back_white;
 
         // 4) Cấu hình back arrow
@@ -118,7 +105,7 @@ public class ChamBaiFragment extends Fragment {
                 Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(
-                    new String[]{ Manifest.permission.READ_EXTERNAL_STORAGE },
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                     REQ_READ_EXTERNAL
             );
         } else {
@@ -172,19 +159,19 @@ public class ChamBaiFragment extends Fragment {
                     return;
                 }
 
-                // 1) Cập nhật title
+                // cập nhật toolbar
                 toolbar.setTitle(String.format(
-                        "Mã đề %s – Điểm: %d/20 = %.2f",
-                        res.maDe, res.correctCount, res.score
+                        "Mã đề %s – Điểm: %d/%d = %.2f",
+                        res.maDe, res.correctCount, questionCount, res.score
                 ));
 
-                // 2) Hiển thị ảnh debug
+                // hiển thị ảnh debug
                 imageViewDebug.setImageBitmap(res.annotatedBitmap);
                 imageViewDebug.setVisibility(View.VISIBLE);
                 btnPickImage.setVisibility(View.GONE);
                 toolbar.setNavigationIcon(null);
 
-                // 3) Lưu ảnh debug ra file và lấy URI
+                // lưu ảnh debug ra file
                 String debugUri = null;
                 try {
                     File dir = new File(
@@ -197,34 +184,32 @@ public class ChamBaiFragment extends Fragment {
                         res.annotatedBitmap.compress(
                                 Bitmap.CompressFormat.JPEG, 90, fos
                         );
-                        fos.flush();
                     }
                     debugUri = Uri.fromFile(out).toString();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
-                // 4) Lưu vào DB với đúng đường dẫn vừa tạo
+                // lưu vào DB
                 final String imagePathToSave = debugUri;
-                final float focusX = 0.5f, focusY = 0.5f; // hoặc tính từ user
                 new Thread(() -> {
                     GradeResult gr = new GradeResult(
-                            examId,                // ID của bài kiểm tra
+                            examId,
                             res.maDe,
                             res.sbd,
                             res.correctCount,
                             questionCount,
                             res.score,
-                            imagePathToSave,       // đường dẫn ảnh đã chấm
-                            focusX,
-                            focusY
+                            imagePathToSave,
+                            0.5f,  // focusX giả định, bạn có thể tính lại
+                            0.5f   // focusY giả định
                     );
                     AppDatabase.getInstance(requireContext())
                             .gradeResultDao()
                             .insert(gr);
                 }).start();
 
-                // 5) Sau PREVIEW_DURATION_MS, reset UI
+                // reset UI sau preview
                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
                     imageViewDebug.setVisibility(View.GONE);
                     btnPickImage.setVisibility(View.VISIBLE);
@@ -234,5 +219,4 @@ public class ChamBaiFragment extends Fragment {
             });
         }).start();
     }
->>>>>>> Stashed changes
 }

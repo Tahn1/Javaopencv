@@ -1,39 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<<<<<<< Updated upstream
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/cham_bai_fragment"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/white">
-
-    <TextView
-        android:id="@+id/tvChamBai"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Chấm bài"
-        android:textSize="24sp"
-        android:layout_gravity="center" />
-
-</FrameLayout>
-=======
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/fragment_cham_bai"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@color/white">
 
-    <!-- Toolbar nhỏ cao ~56dp, có back và icon edit -->
+    <!-- Toolbar với nút Back và nút Edit (nếu cần) -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
-        app:navigationIcon="@drawable/ic_arrow_back_white"
+        android:layout_height="wrap_content"
         android:background="?attr/colorPrimary"
-        app:titleTextAppearance="@style/ToolbarTitleSmall"
-        app:title="Chọn ảnh từ thư viện" />
+        app:navigationIcon="@drawable/ic_arrow_back_white"
+        app:menu="@menu/menu_cham_bai"
+        app:title="Chọn ảnh từ thư viện"
+        app:titleTextAppearance="@style/ToolbarTitleSmall" />
 
-    <!-- Nút pick image (ban đầu visible) -->
+    <!-- Nút chọn ảnh từ thư viện -->
     <Button
         android:id="@+id/btnPickImage"
         android:layout_width="wrap_content"
@@ -41,7 +26,7 @@
         android:layout_margin="16dp"
         android:text="Chọn ảnh từ thư viện" />
 
-    <!-- ImageView sẽ hiển thị ảnh debug khi đã chấm xong -->
+    <!-- Hiển thị ảnh debug đã chấm -->
     <ImageView
         android:id="@+id/imageViewDebug"
         android:layout_width="match_parent"
@@ -52,4 +37,3 @@
         android:contentDescription="Ảnh debug OMR" />
 
 </LinearLayout>
->>>>>>> Stashed changes
