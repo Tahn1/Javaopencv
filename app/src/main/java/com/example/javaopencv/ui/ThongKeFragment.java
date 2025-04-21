@@ -16,7 +16,6 @@ public class ThongKeFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        // Inflate layout cho ThongKeFragment (tạo file res/layout/fragment_thong_ke.xml)
         return inflater.inflate(R.layout.fragment_thong_ke, container, false);
     }
 }

@@ -21,7 +21,6 @@ public class GiayThiFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        // Inflate layout từ fragment_giay_thi.xml
         View view = inflater.inflate(R.layout.fragment_giay_thi, container, false);
 
         // Lấy Toolbar và thiết lập hành động cho nút back

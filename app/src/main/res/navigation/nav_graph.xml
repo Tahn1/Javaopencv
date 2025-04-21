@@ -18,13 +18,9 @@
             app:destination="@id/giayThiFragment" />
     </fragment>
 
-<<<<<<< Updated upstream
 
     <!-- Các fragment khác -->
 
-
-=======
->>>>>>> Stashed changes
     <!-- Exam Detail Fragment -->
     <fragment
         android:id="@+id/examDetailFragment"

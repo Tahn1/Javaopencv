@@ -1,26 +1,5 @@
 package com.example.javaopencv.ui;
 
-<<<<<<< Updated upstream
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import com.example.javaopencv.R;
-
-public class ChamBaiFragment extends Fragment {
-
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
-        // Inflate layout cho ChamBaiFragment (tạo file res/layout/fragment_cham_bai.xml)
-        return inflater.inflate(R.layout.fragment_cham_bai, container, false);
-    }
-=======
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
@@ -28,11 +7,13 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
+import android.os.FileUtils;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -62,13 +43,13 @@ public class ChamBaiFragment extends Fragment {
     private static final int   REQ_READ_EXTERNAL   = 200;
     private static final long  PREVIEW_DURATION_MS = 3000;
 
-    private String   lastImageUri;
     private MaterialToolbar toolbar;
     private Button          btnPickImage;
     private ImageView       imageViewDebug;
     private int             examId, questionCount;
     private int             navigationIconRes;
 
+    // Launcher để chọn ảnh từ gallery
     private final ActivityResultLauncher<Intent> pickImageLauncher =
             registerForActivityResult(
                     new ActivityResultContracts.StartActivityForResult(),
@@ -76,8 +57,7 @@ public class ChamBaiFragment extends Fragment {
                         if (result.getResultCode() == Activity.RESULT_OK
                                 && result.getData() != null
                                 && result.getData().getData() != null) {
-                            Uri uri = result.getData().getData();
-                            handleImageUri(uri);
+                            handleImageUri(result.getData().getData());
                         }
                     }
             );
@@ -87,29 +67,33 @@ public class ChamBaiFragment extends Fragment {
     }
 
     @Override
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_cham_bai, container, false);
+    }
+
+    @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        // 1) Lấy examId và questionCount từ arguments
+        // Lấy examId và questionCount
         Bundle args = getArguments();
         if (args != null) {
             examId        = args.getInt("examId", -1);
             questionCount = args.getInt("questionCount", 20);
         }
 
-        // 2) Ánh xạ view
+        // Ánh xạ view
         toolbar        = view.findViewById(R.id.toolbar);
         btnPickImage   = view.findViewById(R.id.btnPickImage);
         imageViewDebug = view.findViewById(R.id.imageViewDebug);
 
-        // 3) Lưu lại icon back để restore sau
+        // Lưu icon back để restore sau
         navigationIconRes = R.drawable.ic_arrow_back_white;
-
-        // 4) Cấu hình back arrow
         toolbar.setNavigationIcon(navigationIconRes);
         toolbar.setNavigationOnClickListener(v ->
                 NavHostFragment.findNavController(this).popBackStack()
         );
 
-        // 5) Bấm nút chọn ảnh
         btnPickImage.setOnClickListener(v -> launchImagePicker());
     }
 
@@ -172,13 +156,13 @@ public class ChamBaiFragment extends Fragment {
                     return;
                 }
 
-                // 1) Cập nhật title
+                // 1) Cập nhật tiêu đề toolbar
                 toolbar.setTitle(String.format(
-                        "Mã đề %s – Điểm: %d/20 = %.2f",
-                        res.maDe, res.correctCount, res.score
+                        "Mã đề %s – Đúng %d/%d = %.2f",
+                        res.maDe, res.correctCount, questionCount, res.score
                 ));
 
-                // 2) Hiển thị ảnh debug
+                // 2) Hiển thị ảnh đã chấm
                 imageViewDebug.setImageBitmap(res.annotatedBitmap);
                 imageViewDebug.setVisibility(View.VISIBLE);
                 btnPickImage.setVisibility(View.GONE);
@@ -197,25 +181,24 @@ public class ChamBaiFragment extends Fragment {
                         res.annotatedBitmap.compress(
                                 Bitmap.CompressFormat.JPEG, 90, fos
                         );
-                        fos.flush();
                     }
                     debugUri = Uri.fromFile(out).toString();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
-                // 4) Lưu vào DB với đúng đường dẫn vừa tạo
+                // 4) Lưu vào DB
                 final String imagePathToSave = debugUri;
-                final float focusX = 0.5f, focusY = 0.5f; // hoặc tính từ user
+                final float focusX = 0.5f, focusY = 0.5f; // nếu chưa có focus thật
                 new Thread(() -> {
                     GradeResult gr = new GradeResult(
-                            examId,                // ID của bài kiểm tra
+                            examId,
                             res.maDe,
                             res.sbd,
                             res.correctCount,
                             questionCount,
                             res.score,
-                            imagePathToSave,       // đường dẫn ảnh đã chấm
+                            imagePathToSave,
                             focusX,
                             focusY
                     );
@@ -224,7 +207,7 @@ public class ChamBaiFragment extends Fragment {
                             .insert(gr);
                 }).start();
 
-                // 5) Sau PREVIEW_DURATION_MS, reset UI
+                // 5) Sau một khoảng, reset UI
                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
                     imageViewDebug.setVisibility(View.GONE);
                     btnPickImage.setVisibility(View.VISIBLE);
@@ -234,5 +217,4 @@ public class ChamBaiFragment extends Fragment {
             });
         }).start();
     }
->>>>>>> Stashed changes
 }
