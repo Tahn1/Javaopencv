@@ -12,5 +12,7 @@
     <color name="holo_pink_light">#FF69B4</color>
     <color name="orange_500">#FF9800</color>
     <color name="dark_gray">#333333</color>
+    <color name="gray_light">#D3D3D3</color>
+
 
 </resources>

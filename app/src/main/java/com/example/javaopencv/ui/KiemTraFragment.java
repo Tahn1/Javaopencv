@@ -292,56 +292,50 @@ public class KiemTraFragment extends Fragment implements ExamAdapter.OnExamItemC
         final Spinner spinnerPhieu = dialogView.findViewById(R.id.spinner_exam_phieu);
         final EditText etSoCau = dialogView.findViewById(R.id.et_exam_socau);
 
+        // Thiết lập dữ liệu ban đầu
         etTitle.setText(exam.title);
 
-        ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(getContext(),
-                R.array.exam_phieu_array, android.R.layout.simple_spinner_dropdown_item);
+        ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(
+                getContext(),
+                R.array.exam_phieu_array,
+                android.R.layout.simple_spinner_dropdown_item
+        );
         spinnerPhieu.setAdapter(spinnerAdapter);
-        if (exam.phieu.equals("Phiếu 20") || exam.phieu.equals("Phiếu 60")) {
-            int pos = spinnerAdapter.getPosition(exam.phieu);
-            spinnerPhieu.setSelection(pos);
-        }
+        spinnerPhieu.setSelection(spinnerAdapter.getPosition(exam.phieu));
 
         etSoCau.setText(String.valueOf(exam.soCau));
 
-        spinnerPhieu.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selected = spinnerPhieu.getSelectedItem().toString();
-                int maxQuestions = selected.equals("Phiếu 20") ? 20 : 60;
-                etSoCau.setFilters(new InputFilter[]{new InputFilterMinMax(1, maxQuestions)});
-            }
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) { }
-        });
+        // Khóa không cho edit spinner và số câu
+        spinnerPhieu.setEnabled(false);
+        spinnerPhieu.setClickable(false);
+        etSoCau.setEnabled(false);
+        etSoCau.setClickable(false);
 
         new AlertDialog.Builder(getContext())
-                .setTitle("Sửa bài thi")
+                .setTitle("Sửa tên bài thi")
                 .setView(dialogView)
                 .setPositiveButton("LƯU", (dialog, which) -> {
                     String newTitle = etTitle.getText().toString().trim();
-                    String newPhieu = spinnerPhieu.getSelectedItem().toString().trim();
-                    String soCauStr = etSoCau.getText().toString().trim();
-
                     if (TextUtils.isEmpty(newTitle)) {
                         Toast.makeText(getContext(), "Tên bài không được để trống", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    if (TextUtils.isEmpty(soCauStr)) {
-                        Toast.makeText(getContext(), "Vui lòng nhập số câu", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    int newSoCau = Integer.parseInt(soCauStr);
-                    String date = android.text.format.DateFormat.format("dd-MM-yyyy", new java.util.Date()).toString();
-                    Exam updatedExam = new Exam(exam.id, newTitle, newPhieu, newSoCau, date);
+                    // Chỉ cập nhật title, giữ nguyên phieu, soCau, date
+                    Exam updatedExam = new Exam(
+                            exam.id,
+                            newTitle,
+                            exam.phieu,
+                            exam.soCau,
+                            exam.date
+                    );
                     viewModel.updateExam(updatedExam);
-                    Toast.makeText(getContext(), "Đã cập nhật bài thi", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Đã cập nhật tên bài thi", Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("HỦY", (dialog, which) -> dialog.dismiss())
                 .create()
                 .show();
     }
+
 
     public static class InputFilterMinMax implements InputFilter {
         private final int min, max;

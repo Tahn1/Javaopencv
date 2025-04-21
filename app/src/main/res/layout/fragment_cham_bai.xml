@@ -16,7 +16,7 @@
         android:background="?attr/colorPrimary"
         android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
         app:titleTextAppearance="@style/ToolbarTitleSmall"
-        app:title="Chọn ảnh từ thư viện" />
+        app:title="Chấm Bài" />
 
     <!-- Nút chọn ảnh -->
     <Button
