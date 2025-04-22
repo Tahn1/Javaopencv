@@ -18,7 +18,7 @@ import com.example.javaopencv.data.entity.Exam;
 import com.example.javaopencv.data.entity.ExamStats;
 import com.example.javaopencv.data.entity.GradeResult;
 
-@Database(entities = {Exam.class, Answer.class, ExamStats.class, GradeResult.class}, version = 9, exportSchema = false)
+@Database(entities = {Exam.class, Answer.class, ExamStats.class, GradeResult.class}, version = 11, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     private static AppDatabase instance;

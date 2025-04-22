@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scrollViewTabDa"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="#FFF5F8FA">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:weightSum="5"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="8dp">
+
+        <!-- Cột 1 (STT, không chọn) -->
+        <GridLayout
+            android:id="@+id/grid_da_col1"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:columnCount="1"
+            android:rowCount="1"
+            android:layout_margin="2dp" />
+
+        <!-- Cột 2..5 (chọn đáp án) -->
+        <GridLayout
+            android:id="@+id/grid_da_col2"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:columnCount="1"
+            android:rowCount="1"
+            android:layout_margin="2dp" />
+
+        <GridLayout
+            android:id="@+id/grid_da_col3"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:columnCount="1"
+            android:rowCount="1"
+            android:layout_margin="2dp" />
+
+        <GridLayout
+            android:id="@+id/grid_da_col4"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:columnCount="1"
+            android:rowCount="1"
+            android:layout_margin="2dp" />
+
+        <GridLayout
+            android:id="@+id/grid_da_col5"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:columnCount="1"
+            android:rowCount="1"
+            android:layout_margin="2dp" />
+
+    </LinearLayout>
+</ScrollView>

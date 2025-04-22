@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scrollViewTabSbd"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="#FFF5F8FA">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <!-- Cột 1 (không chọn được) -->
+        <GridLayout
+            android:id="@+id/grid_sbd_col1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:rowCount="10"
+            android:columnCount="1"
+            android:layout_marginEnd="8dp" />
+
+        <!-- Cột 2 (chọn được) -->
+        <GridLayout
+            android:id="@+id/grid_sbd_col2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:rowCount="10"
+            android:columnCount="1"
+            android:layout_marginEnd="8dp" />
+
+        <!-- Cột 3 (chọn được) -->
+        <GridLayout
+            android:id="@+id/grid_sbd_col3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:rowCount="10"
+            android:columnCount="1"
+            android:layout_marginEnd="8dp" />
+
+        <!-- Cột 4 (chọn được) -->
+        <GridLayout
+            android:id="@+id/grid_sbd_col4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:rowCount="10"
+            android:columnCount="1"
+            android:layout_marginEnd="8dp" />
+
+        <!-- Cột 5 (chọn được) -->
+        <GridLayout
+            android:id="@+id/grid_sbd_col5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:rowCount="10"
+            android:columnCount="1"
+            android:layout_marginEnd="8dp" />
+
+        <!-- Cột 6 (chọn được) -->
+        <GridLayout
+            android:id="@+id/grid_sbd_col6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:rowCount="10"
+            android:columnCount="1"
+            android:layout_marginEnd="8dp" />
+
+        <!-- Cột 7 (chọn được) -->
+        <GridLayout
+            android:id="@+id/grid_sbd_col7"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:rowCount="10"
+            android:columnCount="1" />
+
+    </LinearLayout>
+</ScrollView>

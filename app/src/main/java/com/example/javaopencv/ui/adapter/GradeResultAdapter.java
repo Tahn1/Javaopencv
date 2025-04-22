@@ -29,10 +29,17 @@ public class GradeResultAdapter
         void onItemClick(GradeResult item);
     }
     private OnItemClickListener clickListener;
-
-    /** 2) Setter cho listener */
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.clickListener = listener;
+    }
+
+    /** 2) Interface để lắng nghe long‑click (xóa) */
+    public interface OnItemLongClickListener {
+        void onItemLongClick(GradeResult item);
+    }
+    private OnItemLongClickListener longClickListener;
+    public void setOnItemLongClickListener(OnItemLongClickListener listener) {
+        this.longClickListener = listener;
     }
 
     public GradeResultAdapter() {
@@ -77,30 +84,22 @@ public class GradeResultAdapter
             int vw = h.ivPreview.getWidth();
             int vh = h.ivPreview.getHeight();
 
-            // 2.1) Scale cơ bản (giống centerCrop)
             float baseScale = Math.max(vw / (float) dw, vh / (float) dh);
-
-            // 2.2) Zoom thêm
-            float zoomFactor = 2.69f; // chỉnh tuỳ ý
+            float zoomFactor = 2.69f;
             float scale = baseScale * zoomFactor;
 
-            // 2.3) Kích thước viewport trên ảnh gốc
             float cropW = vw / scale;
             float cropH = vh / scale;
 
-            // 2.4) Tâm crop theo focusX/focusY
             float centerX = dw * focusX;
             float centerY = dh * focusY;
 
-            // 2.5) Tính góc trái-trên
             float left = centerX - cropW / 1.75f;
             float top  = centerY - cropH / 0.15f;
 
-            // 2.6) Clamp trong biên ảnh
             left = Math.max(0f, Math.min(left, dw - cropW));
             top  = Math.max(0f, Math.min(top, dh - cropH));
 
-            // 2.7) Build matrix: scale + translate
             Matrix m = new Matrix();
             m.setScale(scale, scale);
             m.postTranslate(-left * scale, -top * scale);
@@ -116,6 +115,15 @@ public class GradeResultAdapter
             if (clickListener != null) {
                 clickListener.onItemClick(r);
             }
+        });
+
+        // 5) Thiết lập long‑click để xóa
+        h.itemView.setOnLongClickListener(v -> {
+            if (longClickListener != null) {
+                longClickListener.onItemLongClick(r);
+                return true;
+            }
+            return false;
         });
     }
 

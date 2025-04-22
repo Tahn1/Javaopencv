@@ -15,10 +15,12 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.javaopencv.R;
 import com.example.javaopencv.data.AppDatabase;
 import com.example.javaopencv.data.dao.ExamDao;
-import com.example.javaopencv.data.dao.ExamStatsDao;
 import com.example.javaopencv.data.entity.Exam;
-import com.example.javaopencv.data.entity.ExamStats;
 import com.example.javaopencv.viewmodel.DapAnViewModel;
+import com.example.javaopencv.viewmodel.XemLaiViewModel;
+import com.example.javaopencv.data.entity.GradeResult;
+
+import java.util.List;
 
 public class ThongTinFragment extends Fragment {
 
@@ -27,73 +29,86 @@ public class ThongTinFragment extends Fragment {
     private TextView tvExamSoBaiCham, tvExamSoDapAn;
     private TextView tvExamDTB, tvExamMin, tvExamMax;
 
-    // examId truyền từ ExamDetailFragment
-    private int examId = -1;
-    // Số câu của bài thi
-    private int soCau = 20;
+    // examId và questionCount truyền từ ExamDetailFragment
+    private int examId      = -1;
+    private int soCau       = 20;
 
-    // ViewModel của đáp án (chứa danh sách mã đề)
     private DapAnViewModel dapAnViewModel;
+    private XemLaiViewModel xemLaiViewModel;
 
-    @Nullable
-    @Override
+    @Nullable @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_thong_tin, container, false);
     }
 
-    @Override
-    public void onViewCreated(@NonNull View view,
-                              @Nullable Bundle savedInstanceState) {
+    @Override public void onViewCreated(@NonNull View view,
+                                        @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Ánh xạ View
-        btnBack = view.findViewById(R.id.btn_back);
-        tvExamTitle = view.findViewById(R.id.tv_exam_title);
-        tvExamPhieu = view.findViewById(R.id.tv_exam_phieu);
-        tvExamSoCau = view.findViewById(R.id.tv_exam_socau);
+        // Ánh xạ view
+        btnBack         = view.findViewById(R.id.btn_back);
+        tvExamTitle     = view.findViewById(R.id.tv_exam_title);
+        tvExamPhieu     = view.findViewById(R.id.tv_exam_phieu);
+        tvExamSoCau     = view.findViewById(R.id.tv_exam_socau);
         tvExamSoBaiCham = view.findViewById(R.id.tv_exam_sobaicham);
-        tvExamSoDapAn = view.findViewById(R.id.tv_exam_sodapan);
-        tvExamDTB = view.findViewById(R.id.tv_exam_dtb);
-        tvExamMin = view.findViewById(R.id.tv_exam_min);
-        tvExamMax = view.findViewById(R.id.tv_exam_max);
+        tvExamSoDapAn   = view.findViewById(R.id.tv_exam_sodapan);
+        tvExamDTB       = view.findViewById(R.id.tv_exam_dtb);
+        tvExamMin       = view.findViewById(R.id.tv_exam_min);
+        tvExamMax       = view.findViewById(R.id.tv_exam_max);
 
         btnBack.setOnClickListener(v -> requireActivity().onBackPressed());
 
-        // Lấy dữ liệu examId và questionCount từ Bundle truyền sang
+        // Lấy args
         Bundle args = getArguments();
         if (args != null) {
             examId = args.getInt("examId", -1);
-            soCau = args.getInt("questionCount", 20);
+            soCau  = args.getInt("questionCount", 20);
         }
 
-        // Khởi tạo dữ liệu từ DB cho Exam và ExamStats
+        // 1) Load thông tin cơ bản của Exam
         loadExamInfo();
 
-        // Lấy DapAnViewModel để lấy danh sách mã đề (số đáp án)
+        // 2) Quan sát số mã đề (soDapAn)
         dapAnViewModel = new ViewModelProvider(requireActivity()).get(DapAnViewModel.class);
-        // Quan sát LiveData chứa danh sách mã đề, cập nhật Số đáp án theo kích thước
         dapAnViewModel.getMaDeList().observe(getViewLifecycleOwner(), maDeItems -> {
             int soDapAn = (maDeItems != null) ? maDeItems.size() : 0;
             tvExamSoDapAn.setText(String.valueOf(soDapAn));
         });
+
+        // 3) Quan sát kết quả đã chấm để tính soBaiCham, trung bình, min, max
+        xemLaiViewModel = new ViewModelProvider(requireActivity()).get(XemLaiViewModel.class);
+        xemLaiViewModel.getResultsForExam(examId).observe(getViewLifecycleOwner(), results -> {
+            int soBaiCham = (results != null) ? results.size() : 0;
+            tvExamSoBaiCham.setText(String.valueOf(soBaiCham));
+
+            if (results != null && !results.isEmpty()) {
+                double sum = 0, min = Double.MAX_VALUE, max = Double.MIN_VALUE;
+                for (GradeResult gr : results) {
+                    double sc = gr.score;
+                    sum += sc;
+                    if (sc < min) min = sc;
+                    if (sc > max) max = sc;
+                }
+                double avg = sum / results.size();
+                tvExamDTB.setText(String.format("%.2f", avg));
+                tvExamMin.setText(String.format("%.2f", min));
+                tvExamMax.setText(String.format("%.2f", max));
+            } else {
+                tvExamDTB.setText("0.00");
+                tvExamMin.setText("0.00");
+                tvExamMax.setText("0.00");
+            }
+        });
     }
 
-    /**
-     * Load thông tin bài thi từ bảng Exam và thống kê từ ExamStats
-     */
+    /** Load tiêu đề, phiếu, số câu từ bảng Exam */
     private void loadExamInfo() {
         new Thread(() -> {
-            // Lấy instance DB
-            AppDatabase db = AppDatabase.getInstance(requireContext());
-            ExamDao examDao = db.examDao();
-            ExamStatsDao examStatsDao = db.examStatsDao();
-
-            // Lấy dữ liệu bài thi từ bảng Exam (sử dụng phương thức đồng bộ getExamSync)
-            final Exam exam = examDao.getExamSync(examId);
-            // Lấy dữ liệu thống kê của bài thi từ bảng exam_stats
-            final ExamStats stats = examStatsDao.getExamStats(examId);
+            AppDatabase db    = AppDatabase.getInstance(requireContext());
+            ExamDao examDao   = db.examDao();
+            final Exam exam   = examDao.getExamSync(examId);
 
             if (getActivity() != null) {
                 getActivity().runOnUiThread(() -> {
@@ -105,19 +120,6 @@ public class ThongTinFragment extends Fragment {
                         tvExamTitle.setText("N/A");
                         tvExamPhieu.setText("N/A");
                         tvExamSoCau.setText("N/A");
-                    }
-                    // Nếu stats != null, gán dữ liệu thống kê, nếu không, dùng giá trị mặc định
-                    if (stats != null) {
-                        tvExamSoBaiCham.setText(String.valueOf(stats.soBaiCham));
-                        // Số đáp án hiển thị sẽ được cập nhật thông qua LiveData ở ViewModel (xem bên onViewCreated)
-                        tvExamDTB.setText(String.format("%.2f", stats.diemTrungBinh));
-                        tvExamMin.setText(String.format("%.2f", stats.diemThapNhat));
-                        tvExamMax.setText(String.format("%.2f", stats.diemCaoNhat));
-                    } else {
-                        tvExamSoBaiCham.setText("0");
-                        tvExamDTB.setText("0.00");
-                        tvExamMin.setText("0.00");
-                        tvExamMax.setText("0.00");
                     }
                 });
             }
