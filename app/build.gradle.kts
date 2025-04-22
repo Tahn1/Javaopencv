@@ -25,6 +25,8 @@ android {
             )
         }
     }
+
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -34,7 +36,10 @@ android {
     }
 }
 
+
+
 dependencies {
+    implementation (libs.mpandroidchart)
     implementation ("androidx.core:core:1.16.0")
     implementation ("com.google.android.material:material:1.12.0")
     implementation (libs.material)

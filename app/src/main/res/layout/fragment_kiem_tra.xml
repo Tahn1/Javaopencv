@@ -1,131 +1,115 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.drawerlayout.widget.DrawerLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/drawer_layout"
+    android:id="@+id/coordinator"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- CoordinatorLayout dùng để chứa nội dung và FAB -->
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
-        android:id="@+id/coordinator"
+    <!-- LinearLayout chứa header và RecyclerView -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <!-- LinearLayout (vertical) chứa header và RecyclerView -->
+        <!-- Header (Menu button, title, Search, Filter) -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@android:color/white">
 
-            <!-- Khu vực header (tiêu đề + thanh search) -->
-            <LinearLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/header_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:background="@android:color/white">
+                android:background="#9C27B0"
+                android:padding="8dp">
 
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/header_layout"
-                    android:layout_width="match_parent"
+                <!-- Nút Menu -->
+                <ImageButton
+                    android:id="@+id/btn_menu"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_menu_white"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/menu"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
+
+                <!-- Tiêu đề -->
+                <TextView
+                    android:id="@+id/tv_header_title"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:background="#9C27B0"
-                    android:padding="8dp">
+                    android:text="Kiểm Tra"
+                    android:textColor="@android:color/white"
+                    android:textAppearance="?attr/textAppearanceHeadline6"
+                    android:gravity="center"
+                    app:layout_constraintStart_toEndOf="@id/btn_menu"
+                    app:layout_constraintEnd_toStartOf="@+id/btn_search"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
 
-                    <!-- Nút Menu -->
-                    <ImageButton
-                        android:id="@+id/btn_menu"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:src="@drawable/ic_menu_white"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:contentDescription="@string/menu"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent" />
+                <!-- Nút Search -->
+                <ImageButton
+                    android:id="@+id/btn_search"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_search_white"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/search"
+                    app:layout_constraintEnd_toStartOf="@+id/btn_filter"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
 
-                    <!-- Tiêu đề -->
-                    <TextView
-                        android:id="@+id/tv_header_title"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:text="Kiểm Tra"
-                        android:textColor="@android:color/white"
-                        android:textAppearance="?attr/textAppearanceHeadline6"
-                        android:gravity="center"
-                        app:layout_constraintStart_toEndOf="@id/btn_menu"
-                        app:layout_constraintEnd_toStartOf="@+id/btn_search"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent" />
+                <!-- Nút Filter -->
+                <ImageButton
+                    android:id="@+id/btn_filter"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_filter_white"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/filter"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-                    <!-- Nút search -->
-                    <ImageButton
-                        android:id="@+id/btn_search"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:src="@drawable/ic_search_white"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:contentDescription="@string/search"
-                        app:layout_constraintEnd_toStartOf="@+id/btn_filter"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent" />
-
-                    <!-- Nút filter -->
-                    <ImageButton
-                        android:id="@+id/btn_filter"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:src="@drawable/ic_filter_white"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:contentDescription="@string/filter"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent" />
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
-                <!-- Ô nhập search (ẩn mặc định) -->
-                <EditText
-                    android:id="@+id/et_search"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Tìm bài thi..."
-                    android:padding="8dp"
-                    android:background="@android:color/white"
-                    android:textColor="@android:color/black"
-                    android:inputType="text"
-                    android:visibility="gone" />
-            </LinearLayout>
-
-            <!-- RecyclerView để hiển thị danh sách bài thi -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_exams"
+            <!-- Ô nhập search (ẩn theo mặc định) -->
+            <EditText
+                android:id="@+id/et_search"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_marginTop="8dp"
-                android:layout_weight="1"
-                android:contentDescription="Danh sách bài thi" />
-
+                android:layout_height="wrap_content"
+                android:hint="Tìm bài thi..."
+                android:padding="8dp"
+                android:background="@android:color/white"
+                android:textColor="@android:color/black"
+                android:inputType="text"
+                android:visibility="gone" />
         </LinearLayout>
 
-        <!-- Nút FAB nằm ở góc dưới bên phải -->
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab_add"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_margin="16dp"
-            android:src="@drawable/ic_add_white"
-            app:backgroundTint="@android:color/holo_red_light"
-            android:contentDescription="@string/add_exam" />
+        <!-- RecyclerView danh sách exams -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_exams"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="8dp"
+            android:contentDescription="Danh sách bài thi" />
 
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </LinearLayout>
 
-    <!-- NavigationView (Drawer) -->
-    <com.google.android.material.navigation.NavigationView
-        android:id="@+id/nav_view"
+    <!-- FloatingActionButton -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_add"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        app:menu="@menu/drawer_menu" />
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:src="@drawable/ic_add_white"
+        app:backgroundTint="@android:color/holo_red_light"
+        android:contentDescription="@string/add_exam" />
 
-</androidx.drawerlayout.widget.DrawerLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
