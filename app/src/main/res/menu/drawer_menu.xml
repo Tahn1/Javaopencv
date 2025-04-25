@@ -1,13 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <group android:checkableBehavior="single">
+        <!-- trùng với @+id/kiemTraFragment trong nav_graph.xml -->
         <item
-            android:id="@+id/nav_kiem_tra"
+            android:id="@+id/kiemTraFragment"
             android:title="Kiểm Tra" />
+        <!-- trùng với @+id/giayThiFragment trong nav_graph.xml -->
         <item
-            android:id="@+id/nav_giay_thi"
-            android:title="Giấy thi"
-            android:checkable="false" />
-
+            android:id="@+id/giayThiFragment"
+            android:title="Giấy thi" />
+        <!-- trùng với @+id/subjectFragment trong nav_graph.xml -->
+        <item
+            android:id="@+id/subjectFragment"
+            android:title="Quản lý Môn học" />
+        <!-- trùng với @+id/classFragment trong nav_graph.xml -->
+        <item
+            android:id="@+id/classFragment"
+            android:title="Quản lý Lớp học" />
     </group>
 </menu>

@@ -5,6 +5,32 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/kiemTraFragment">
 
+    <!-- Quản lý Môn học -->
+    <fragment
+        android:id="@+id/subjectFragment"
+        android:name="com.example.javaopencv.ui.SubjectFragment"
+        android:label="Quản lý Môn học" />
+
+    <!-- Quản lý Lớp học -->
+    <fragment
+        android:id="@+id/classFragment"
+        android:name="com.example.javaopencv.ui.ClassFragment"
+        android:label="Quản lý Lớp học">
+        <argument
+            android:name="subjectId"
+            app:argType="integer"
+            android:defaultValue="0" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/classDetailFragment"
+        android:name="com.example.javaopencv.ui.ClassDetailFragment"
+        android:label="Chi tiết Lớp học">
+        <argument
+            android:name="classId"
+            app:argType="integer" />
+    </fragment>
+
     <!-- Kiểm Tra Fragment -->
     <fragment
         android:id="@+id/kiemTraFragment"
@@ -17,9 +43,6 @@
             android:id="@+id/action_kiemTraFragment_to_giayThiFragment"
             app:destination="@id/giayThiFragment" />
     </fragment>
-
-
-    <!-- Các fragment khác -->
 
     <!-- Exam Detail Fragment -->
     <fragment
@@ -76,7 +99,6 @@
         android:id="@+id/xemLaiFragment"
         android:name="com.example.javaopencv.ui.XemLaiFragment"
         android:label="Xem lại" >
-        <!-- từ xemLai sang GradeDetail -->
         <action
             android:id="@+id/action_xemLaiFragment_to_gradeDetailFragment"
             app:destination="@id/gradeDetailFragment" />
@@ -90,7 +112,6 @@
         <argument
             android:name="gradeId"
             app:argType="long" />
-        <!-- từ GradeDetail sang EditGrade -->
         <action
             android:id="@+id/action_gradeDetailFragment_to_editGradeFragment"
             app:destination="@id/editGradeFragment" />

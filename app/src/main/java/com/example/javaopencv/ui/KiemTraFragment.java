@@ -108,7 +108,7 @@ public class KiemTraFragment extends Fragment implements ExamAdapter.OnExamItemC
                     NavController navController = NavHostFragment.findNavController(KiemTraFragment.this);
                     Bundle bundle = new Bundle();
                     // Nếu chọn "Giấy thi", điều hướng sang GiayThiFragment
-                    if (id == R.id.nav_giay_thi) {
+                    if (id == R.id.giayThiFragment) {
                         navController.navigate(R.id.action_kiemTraFragment_to_giayThiFragment, bundle);
                         // Đóng Drawer sau khi chọn
                         DrawerLayout drawer = getActivity().findViewById(R.id.drawer_layout);

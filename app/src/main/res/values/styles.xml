@@ -16,6 +16,23 @@
         </style>
 
 
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Các tuỳ chỉnh màu sắc, phong cách của bạn vẫn như cũ -->
+        <item name="colorPrimary">@color/purple_500</item>
+        <item name="colorPrimaryVariant">@color/purple_500</item>
+        <item name="colorOnPrimary">@android:color/white</item>
+        <!-- … -->
+    </style>
+
+    <style name="AppTheme1" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Tắt window title và action bar gốc -->
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+
+        <!-- Còn lại giữ colorPrimary, v.v. như trước -->
+        <item name="colorPrimary">@color/purple_500</item>
+        <item name="colorOnPrimary">@android:color/white</item>
+    </style>
 
 
 </resources>
