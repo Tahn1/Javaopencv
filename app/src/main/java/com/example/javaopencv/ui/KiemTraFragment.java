@@ -2,29 +2,29 @@ package com.example.javaopencv.ui;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
-import android.text.Editable;
 import android.text.InputFilter;
 import android.text.Spanned;
 import android.text.TextUtils;
-import android.text.TextWatcher;
-import android.view.LayoutInflater;
-import android.view.MenuItem; // Dùng cho NavigationView
+import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -32,330 +32,315 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.javaopencv.MainActivity;
 import com.example.javaopencv.R;
 import com.example.javaopencv.data.entity.Exam;
+import com.example.javaopencv.data.entity.SchoolClass;
 import com.example.javaopencv.ui.adapter.ExamAdapter;
+import com.example.javaopencv.viewmodel.ClassViewModel;
 import com.example.javaopencv.viewmodel.KiemTraViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.navigation.NavigationView;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class KiemTraFragment extends Fragment implements ExamAdapter.OnExamItemClickListener,
+public class KiemTraFragment extends Fragment
+        implements ExamAdapter.OnExamItemClickListener,
         ExamAdapter.OnExamItemLongClickListener {
 
     private KiemTraViewModel viewModel;
     private RecyclerView rvExams;
     private ExamAdapter examAdapter;
     private FloatingActionButton fabAdd;
-    private ImageButton btnMenu, btnSearch, btnFilter;
-    private EditText etSearch; // Thanh tìm kiếm
 
-    public KiemTraFragment() {
-        // Required empty constructor
-    }
-
-    @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
-        // Inflate layout "fragment_kiem_tra.xml"
-        View view = inflater.inflate(R.layout.fragment_kiem_tra, container, false);
+                             ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Cho biết fragment này sẽ thêm menu vào Toolbar
+        setHasOptionsMenu(true);
+        return inflater.inflate(R.layout.fragment_kiem_tra, container, false);
+    }
 
-        // Bind các View từ layout
-        btnMenu = view.findViewById(R.id.btn_menu);
-        btnSearch = view.findViewById(R.id.btn_search);
-        btnFilter = view.findViewById(R.id.btn_filter);
+    @Override
+    public void onViewCreated(@NonNull View view,
+                              @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // 1) Lấy Toolbar từ Activity và inflate menu riêng
+        Toolbar toolbar = requireActivity().findViewById(R.id.toolbar);
+        toolbar.getMenu().clear();
+        toolbar.inflateMenu(R.menu.menu_kiem_tra);
+        toolbar.setTitle("Kiểm Tra");
+        toolbar.setTitleTextColor(getResources().getColor(android.R.color.white));
+
+        // 2) Bắt sự kiện menu item
+        // 2.1) SearchView
+        MenuItem searchItem = toolbar.getMenu().findItem(R.id.action_search);
+        SearchView searchView = (SearchView) searchItem.getActionView();
+        searchView.setQueryHint("Tìm bài thi...");
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                examAdapter.filter(newText);
+                return true;
+            }
+        });
+
+        // 2.2) Filter
+        toolbar.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.action_filter) {
+                showSortDialog();
+                return true;
+            }
+            return false;
+        });
+
+        // 3) RecyclerView + Adapter
         rvExams = view.findViewById(R.id.rv_exams);
-        fabAdd = view.findViewById(R.id.fab_add);
-        etSearch = view.findViewById(R.id.et_search);
-
-        // Setup RecyclerView và Adapter
-        rvExams.setLayoutManager(new LinearLayoutManager(getContext()));
+        rvExams.setLayoutManager(new LinearLayoutManager(requireContext()));
         examAdapter = new ExamAdapter();
         examAdapter.setListener(this);
         examAdapter.setLongClickListener(this);
         rvExams.setAdapter(examAdapter);
 
-        // Lấy ViewModel và quan sát danh sách Exam từ database
-        viewModel = new ViewModelProvider(this).get(KiemTraViewModel.class);
-        viewModel.getExams().observe(getViewLifecycleOwner(), new Observer<List<Exam>>() {
-            @Override
-            public void onChanged(List<Exam> examList) {
-                examAdapter.setExamList(examList);
-            }
+        // 4) ViewModel + LiveData
+        viewModel = new ViewModelProvider(
+                requireActivity(),
+                ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().getApplication())
+        ).get(KiemTraViewModel.class);
+
+        viewModel.getExams().observe(getViewLifecycleOwner(), exams -> {
+            Log.d("KiemTraFragment", "LiveData emit, size = " + (exams == null ? 0 : exams.size()));
+            examAdapter.setExamList(exams);
         });
 
-        // Mở Drawer khi nhấn nút Menu
-        btnMenu.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (getActivity() instanceof MainActivity) {
-                    DrawerLayout drawer = getActivity().findViewById(R.id.drawer_layout);
-                    if (drawer != null) {
-                        drawer.openDrawer(androidx.core.view.GravityCompat.START);
-                    }
-                }
-            }
-        });
-
-        // Thiết lập NavigationView (được định nghĩa trong layout MainActivity)
-        NavigationView navView = getActivity().findViewById(R.id.nav_view);
-        if (navView != null) {
-            navView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-                @Override
-                public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                    int id = item.getItemId();
-                    NavController navController = NavHostFragment.findNavController(KiemTraFragment.this);
-                    Bundle bundle = new Bundle();
-                    // Nếu chọn "Giấy thi", điều hướng sang GiayThiFragment
-                    if (id == R.id.giayThiFragment) {
-                        navController.navigate(R.id.action_kiemTraFragment_to_giayThiFragment, bundle);
-                        // Đóng Drawer sau khi chọn
-                        DrawerLayout drawer = getActivity().findViewById(R.id.drawer_layout);
-                        if (drawer != null) {
-                            drawer.closeDrawers();
-                        }
-                        return true;
-                    }
-                    // Các mục khác có thể được xử lý tại đây
-                    return false;
-                }
-            });
-        }
-
-        // Toggling thanh tìm kiếm khi nhấn nút Search
-        btnSearch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (etSearch.getVisibility() == View.VISIBLE) {
-                    etSearch.setText("");
-                    etSearch.setVisibility(View.GONE);
-                } else {
-                    etSearch.setVisibility(View.VISIBLE);
-                    etSearch.requestFocus();
-                }
-            }
-        });
-
-        // Nút Filter: mở dialog sắp xếp
-        btnFilter.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showSortDialog();
-            }
-        });
-
-        // Lắng nghe thay đổi text của etSearch để lọc danh sách
-        etSearch.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                // Không cần xử lý
-            }
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                examAdapter.filter(s.toString());
-            }
-            @Override
-            public void afterTextChanged(Editable s) {
-                // Không cần xử lý
-            }
-        });
-
-        // FAB mở dialog tạo bài thi mới
-        fabAdd.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showCreateExamDialog();
-            }
-        });
-
-        return view;
+        // 5) FAB thêm bài thi
+        fabAdd = view.findViewById(R.id.fab_add);
+        fabAdd.setOnClickListener(v -> showCreateExamDialog());
     }
 
     private void showSortDialog() {
-        final String[] sortOptions = {"Tên (A-Z)", "Tên (Z-A)", "Ngày (Tăng dần)", "Ngày (Giảm dần)"};
-        final String[] sortCodes = {"name_asc", "name_desc", "date_asc", "date_desc"};
-
-        new AlertDialog.Builder(getContext())
+        final String[] options = {
+                "Tên (A-Z)", "Tên (Z-A)", "Ngày (Tăng dần)", "Ngày (Giảm dần)"
+        };
+        final String[] codes = {
+                "name_asc", "name_desc", "date_asc", "date_desc"
+        };
+        new AlertDialog.Builder(requireContext())
                 .setTitle("Sắp xếp bài thi")
-                .setItems(sortOptions, (dialog, which) -> {
-                    String option = sortCodes[which];
-                    examAdapter.sortByOption(option);
-                })
+                .setItems(options, (dlg, which) ->
+                        examAdapter.sortByOption(codes[which])
+                )
                 .setNegativeButton("HỦY", null)
-                .create()
                 .show();
     }
 
     private void showCreateExamDialog() {
-        LayoutInflater inflater = LayoutInflater.from(getContext());
-        View dialogView = inflater.inflate(R.layout.dialog_create_exam, null);
+        View dlgView = LayoutInflater.from(requireContext())
+                .inflate(R.layout.dialog_create_exam, null);
 
-        final EditText etTitle = dialogView.findViewById(R.id.et_exam_title);
-        final Spinner spinnerPhieu = dialogView.findViewById(R.id.spinner_exam_phieu);
-        final EditText etSoCau = dialogView.findViewById(R.id.et_exam_socau);
+        // Spinner chọn lớp
+        Spinner spClass = dlgView.findViewById(R.id.spinner_exam_class);
+        ArrayAdapter<String> classNames = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_spinner_dropdown_item,
+                new ArrayList<>()
+        );
+        classNames.add("None");
+        spClass.setAdapter(classNames);
 
-        ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(getContext(),
-                R.array.exam_phieu_array, android.R.layout.simple_spinner_dropdown_item);
-        spinnerPhieu.setAdapter(spinnerAdapter);
+        // Load danh sách lớp qua ClassViewModel
+        ClassViewModel classVm = new ViewModelProvider(
+                this,
+                new ClassViewModel.Factory(
+                        requireActivity().getApplication(), 0 /*subjectId=0*/
+                )
+        ).get(ClassViewModel.class);
 
-        spinnerPhieu.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selected = spinnerPhieu.getSelectedItem().toString();
-                int maxQuestions = selected.equals("Phiếu 20") ? 20 : 60;
-                etSoCau.setFilters(new InputFilter[]{new InputFilterMinMax(1, maxQuestions)});
+        classVm.getClasses().observe(getViewLifecycleOwner(),
+                classes -> {
+                    classNames.clear();
+                    classNames.add("None");
+                    for (SchoolClass c : classes) {
+                        classNames.add(c.name);
+                    }
+                    classNames.notifyDataSetChanged();
+                }
+        );
+
+        // Các View còn lại
+        Spinner spPhieu = dlgView.findViewById(R.id.spinner_exam_phieu);
+        EditText etTitle = dlgView.findViewById(R.id.et_exam_title);
+        EditText etSoCau = dlgView.findViewById(R.id.et_exam_socau);
+
+        ArrayAdapter<CharSequence> phieuAdapter =
+                ArrayAdapter.createFromResource(
+                        requireContext(),
+                        R.array.exam_phieu_array,
+                        android.R.layout.simple_spinner_dropdown_item
+                );
+        spPhieu.setAdapter(phieuAdapter);
+        spPhieu.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override public void onItemSelected(AdapterView<?> p, View v, int pos, long id) {
+                int max = spPhieu.getSelectedItem().toString().equals("Phiếu 20") ? 20 : 60;
+                etSoCau.setFilters(new InputFilter[]{ new InputFilterMinMax(1, max) });
             }
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) { }
+            @Override public void onNothingSelected(AdapterView<?> p) {}
         });
 
-        new AlertDialog.Builder(getContext())
+        new AlertDialog.Builder(requireContext())
                 .setTitle("Tạo bài mới")
-                .setView(dialogView)
-                .setPositiveButton("TẠO", (dialog, which) -> {
+                .setView(dlgView)
+                .setPositiveButton("TẠO", (dlg, which) -> {
                     String title = etTitle.getText().toString().trim();
-                    String phieu = spinnerPhieu.getSelectedItem().toString().trim();
+                    String phieu = spPhieu.getSelectedItem().toString();
                     String soCauStr = etSoCau.getText().toString().trim();
 
                     if (TextUtils.isEmpty(title)) {
-                        Toast.makeText(getContext(), "Tên bài không được để trống", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(),
+                                "Tên bài không được để trống",
+                                Toast.LENGTH_SHORT).show();
                         return;
                     }
                     if (TextUtils.isEmpty(soCauStr)) {
-                        Toast.makeText(getContext(), "Vui lòng nhập số câu", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(),
+                                "Vui lòng nhập số câu",
+                                Toast.LENGTH_SHORT).show();
                         return;
                     }
 
                     int soCau = Integer.parseInt(soCauStr);
-                    long idExam = System.currentTimeMillis();
-                    String date = android.text.format.DateFormat.format("dd-MM-yyyy", new java.util.Date()).toString();
+                    long now = System.currentTimeMillis();
+                    String date = android.text.format.DateFormat
+                            .format("dd-MM-yyyy", now).toString();
 
-                    Exam newExam = new Exam((int) idExam, title, phieu, soCau, date);
-                    viewModel.addExam(newExam);
+                    // Xác định classId
+                    int sel = spClass.getSelectedItemPosition();
+                    int classId = 0; // default None
+                    if (sel > 0) classId = sel; // assumes lớp với id tương ứng index; hoặc bạn map đúng id
+
+                    Exam exam = new Exam(classId, title, phieu, soCau, date);
+                    viewModel.insertExam(exam);
+
                 })
-                .setNegativeButton("HỦY", (dialog, which) -> dialog.dismiss())
-                .create()
+                .setNegativeButton("HỦY", null)
                 .show();
     }
 
     @Override
     public void onExamItemClick(Exam exam) {
-        int questionCount = exam.getSoCau();
-        int examId = exam.getId();
-
-        Bundle bundle = new Bundle();
-        bundle.putInt("questionCount", questionCount);
-        bundle.putInt("examId", examId);
-
-        NavController navController = NavHostFragment.findNavController(this);
-        navController.navigate(R.id.action_kiemTraFragment_to_examDetailFragment, bundle);
+        Bundle args = new Bundle();
+        args.putInt("questionCount", exam.getSoCau());
+        args.putInt("examId", exam.getId());
+        NavHostFragment.findNavController(this)
+                .navigate(R.id.action_kiemTraFragment_to_examDetailFragment, args);
     }
 
+    // onLongClick Exam item
     @Override
     public void onExamItemLongClick(Exam exam) {
-        final String[] options = {"Sửa", "Xóa", "Sao chép"};
-        new AlertDialog.Builder(getContext())
+        final String[] opts = {"Sửa", "Xóa", "Sao chép"};
+        new AlertDialog.Builder(requireContext())
                 .setTitle("Chọn hành động")
-                .setItems(options, (dialog, which) -> {
+                .setItems(opts, (dlg, which) -> {
                     switch (which) {
-                        case 0: // Sửa
-                            showEditExamDialog(exam);
-                            break;
-                        case 1: // Xóa
+                        case 0: showEditExamDialog(exam); break;
+                        case 1:
                             viewModel.deleteExam(exam);
-                            Toast.makeText(getContext(), "Đã xóa bài", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(requireContext(),
+                                    "Đã xóa bài", Toast.LENGTH_SHORT
+                            ).show();
                             break;
-                        case 2: // Sao chép
+                        case 2:
+                            int oldClassId = exam.getClassId();
                             Exam copiedExam = new Exam(
-                                    (int) System.currentTimeMillis(),
-                                    exam.title + " (Copy)",
-                                    exam.phieu,
-                                    exam.soCau,
-                                    exam.date
+                                    oldClassId,
+                                    exam.getTitle() + " (Copy)",
+                                    exam.getPhieu(),
+                                    exam.getSoCau(),
+                                    exam.getDate()
                             );
-                            viewModel.addExam(copiedExam);
-                            Toast.makeText(getContext(), "Đã sao chép bài", Toast.LENGTH_SHORT).show();
+                            viewModel.insertExam(copiedExam);
+                            Toast.makeText(requireContext(),
+                                    "Đã sao chép bài", Toast.LENGTH_SHORT
+                            ).show();
                             break;
                     }
                 })
                 .setNegativeButton("HỦY", null)
-                .create()
                 .show();
     }
 
+    // dialog Sửa
     private void showEditExamDialog(Exam exam) {
-        LayoutInflater inflater = LayoutInflater.from(getContext());
-        View dialogView = inflater.inflate(R.layout.dialog_create_exam, null);
+        LayoutInflater inf = LayoutInflater.from(requireContext());
+        View dlgView = inf.inflate(R.layout.dialog_create_exam, null);
 
-        final EditText etTitle = dialogView.findViewById(R.id.et_exam_title);
-        final Spinner spinnerPhieu = dialogView.findViewById(R.id.spinner_exam_phieu);
-        final EditText etSoCau = dialogView.findViewById(R.id.et_exam_socau);
+        EditText etTitle = dlgView.findViewById(R.id.et_exam_title);
+        Spinner spPhieu = dlgView.findViewById(R.id.spinner_exam_phieu);
+        EditText etSo = dlgView.findViewById(R.id.et_exam_socau);
 
-        // Thiết lập dữ liệu ban đầu
         etTitle.setText(exam.title);
-
-        ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(
-                getContext(),
+        ArrayAdapter<CharSequence> adp = ArrayAdapter.createFromResource(
+                requireContext(),
                 R.array.exam_phieu_array,
                 android.R.layout.simple_spinner_dropdown_item
         );
-        spinnerPhieu.setAdapter(spinnerAdapter);
-        spinnerPhieu.setSelection(spinnerAdapter.getPosition(exam.phieu));
+        spPhieu.setAdapter(adp);
+        spPhieu.setSelection(adp.getPosition(exam.phieu));
+        spPhieu.setEnabled(false);
+        etSo.setText(String.valueOf(exam.soCau));
+        etSo.setEnabled(false);
 
-        etSoCau.setText(String.valueOf(exam.soCau));
-
-        // Khóa không cho edit spinner và số câu
-        spinnerPhieu.setEnabled(false);
-        spinnerPhieu.setClickable(false);
-        etSoCau.setEnabled(false);
-        etSoCau.setClickable(false);
-
-        new AlertDialog.Builder(getContext())
+        new AlertDialog.Builder(requireContext())
                 .setTitle("Sửa tên bài thi")
-                .setView(dialogView)
-                .setPositiveButton("LƯU", (dialog, which) -> {
+                .setView(dlgView)
+                .setPositiveButton("LƯU", (dlg, which) -> {
                     String newTitle = etTitle.getText().toString().trim();
                     if (TextUtils.isEmpty(newTitle)) {
-                        Toast.makeText(getContext(), "Tên bài không được để trống", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(),
+                                "Tên bài không được để trống",
+                                Toast.LENGTH_SHORT
+                        ).show();
                         return;
                     }
-                    // Chỉ cập nhật title, giữ nguyên phieu, soCau, date
-                    Exam updatedExam = new Exam(
-                            exam.id,
+                    Exam up = new Exam(
+                            exam.getId(),         // giữ nguyên ID để Room biết cập nhật row nào
+                            exam.getClassId(),    // giữ nguyên classI
                             newTitle,
-                            exam.phieu,
-                            exam.soCau,
-                            exam.date
+                            exam.getPhieu(),
+                            exam.getSoCau(),
+                            exam.getDate()
                     );
-                    viewModel.updateExam(updatedExam);
-                    Toast.makeText(getContext(), "Đã cập nhật tên bài thi", Toast.LENGTH_SHORT).show();
+                    viewModel.updateExam(up);
+                    Toast.makeText(requireContext(),
+                            "Đã cập nhật", Toast.LENGTH_SHORT
+                    ).show();
                 })
-                .setNegativeButton("HỦY", (dialog, which) -> dialog.dismiss())
-                .create()
+                .setNegativeButton("HỦY", null)
                 .show();
     }
 
-
+    // input filter chỉ cho số trong khoảng
     public static class InputFilterMinMax implements InputFilter {
         private final int min, max;
         public InputFilterMinMax(int min, int max) {
-            this.min = min;
-            this.max = max;
+            this.min = min; this.max = max;
         }
-        @Override
-        public CharSequence filter(CharSequence source, int start, int end,
-                                   Spanned dest, int dstart, int dend) {
+        @Override public CharSequence filter(
+                CharSequence src, int start, int end,
+                Spanned   dest,  int dstart,  int dend
+        ) {
             try {
-                String newVal = dest.toString().substring(0, dstart)
-                        + source.toString()
-                        + dest.toString().substring(dend);
-                int input = Integer.parseInt(newVal);
-                if (input >= min && input <= max)
-                    return null;
-            } catch (NumberFormatException nfe) {
-                // Nếu không phải số, không cho nhập
-            }
+                String result = dest.toString()
+                        .substring(0, dstart)
+                        + src.toString()
+                        + dest.toString()
+                        .substring(dend);
+                int val = Integer.parseInt(result);
+                if (val >= min && val <= max) return null;
+            } catch (NumberFormatException e) { }
             return "";
         }
     }

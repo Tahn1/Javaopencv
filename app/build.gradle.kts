@@ -39,6 +39,7 @@ android {
 
 
 dependencies {
+    implementation (libs.cardview)
     implementation (libs.mpandroidchart)
     implementation ("androidx.core:core:1.16.0")
     implementation ("com.google.android.material:material:1.12.0")

@@ -14,24 +14,22 @@ import java.util.concurrent.Executors;
 
 public class KiemTraViewModel extends AndroidViewModel {
 
-    private ExamRepository repository;
-    private LiveData<List<Exam>> exams;
-    private Executor executor = Executors.newSingleThreadExecutor();
+    private final ExamRepository repository;
+    private final LiveData<List<Exam>> exams;
 
     public KiemTraViewModel(@NonNull Application application) {
         super(application);
-        AppDatabase db = Room.databaseBuilder(application, AppDatabase.class, "exams.db")
-                .fallbackToDestructiveMigration() // Nếu không có migration, dùng phương pháp này
-                .build();
+        // ★ Sử dụng singleton thay vì Room.databaseBuilder trực tiếp
+        AppDatabase db = AppDatabase.getInstance(application.getApplicationContext());
         repository = new ExamRepository(db);
-        exams = repository.getAllExams();
+        exams      = repository.getAllExams();
     }
 
     public LiveData<List<Exam>> getExams() {
         return exams;
     }
 
-    public void addExam(Exam exam) {
+    public void insertExam(Exam exam) {
         repository.insertExam(exam);
     }
 

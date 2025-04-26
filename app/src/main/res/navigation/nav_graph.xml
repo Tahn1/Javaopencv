@@ -5,13 +5,16 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/kiemTraFragment">
 
-    <!-- Quản lý Môn học -->
     <fragment
         android:id="@+id/subjectFragment"
         android:name="com.example.javaopencv.ui.SubjectFragment"
-        android:label="Quản lý Môn học" />
+        android:label="Quản lý Môn học">
+        <argument
+            android:name="subjectId"
+            app:argType="integer"
+            android:defaultValue="0" />
+    </fragment>
 
-    <!-- Quản lý Lớp học -->
     <fragment
         android:id="@+id/classFragment"
         android:name="com.example.javaopencv.ui.ClassFragment"
@@ -36,6 +39,14 @@
         android:id="@+id/kiemTraFragment"
         android:name="com.example.javaopencv.ui.KiemTraFragment"
         android:label="Kiểm Tra" >
+        <action
+            android:id="@+id/action_kiemTra_to_subject"
+            app:destination="@id/subjectFragment" />
+
+        <!-- Action tới ClassFragment -->
+        <action
+            android:id="@+id/action_kiemTra_to_class"
+            app:destination="@id/classFragment" />
         <action
             android:id="@+id/action_kiemTraFragment_to_examDetailFragment"
             app:destination="@id/examDetailFragment" />

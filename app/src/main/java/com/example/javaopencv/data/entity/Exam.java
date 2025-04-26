@@ -1,28 +1,23 @@
 package com.example.javaopencv.data.entity;
 
+import androidx.annotation.Nullable;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
-import androidx.room.ForeignKey;
 import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 @Entity(
         tableName = "exams",
-        foreignKeys = @ForeignKey(
-                entity = SchoolClass.class,
-                parentColumns = "id",
-                childColumns = "classId",
-                onDelete = ForeignKey.CASCADE
-        ),
-        indices = {@Index("classId")}
+        indices = {@Index("classId")}  // Chỉ giữ index, bỏ FK constraint
 )
 public class Exam {
     @PrimaryKey(autoGenerate = true)
     public int id;
 
-    // Khóa ngoại liên kết đến lớp học
-    public int classId;
+    @Nullable
+    @ColumnInfo(name = "classId")
+    private Integer classId;
 
     @ColumnInfo(name = "title")
     public String title;
@@ -36,37 +31,47 @@ public class Exam {
     @ColumnInfo(name = "date")
     public String date;
 
-    /**
-     * Constructor dùng để tạo Exam mới (Room sẽ tự gán id).
-     */
-    public Exam(int classId, String title, String phieu, int soCau, String date) {
+    /** Constructor khi tạo mới */
+    public Exam(@Nullable Integer classId,
+                String title,
+                String phieu,
+                int soCau,
+                String date) {
         this.classId = classId;
-        this.title = title;
-        this.phieu = phieu;
-        this.soCau = soCau;
-        this.date = date;
+        this.title   = title;
+        this.phieu   = phieu;
+        this.soCau   = soCau;
+        this.date    = date;
     }
 
-    /**
-     * Constructor đầy đủ, dùng khi Room khôi phục đối tượng từ CSDL.
-     */
+    /** Constructor Room khôi phục từ DB */
     @Ignore
-    public Exam(int id, int classId, String title, String phieu, int soCau, String date) {
-        this.id = id;
+    public Exam(int id,
+                @Nullable Integer classId,
+                String title,
+                String phieu,
+                int soCau,
+                String date) {
+        this.id      = id;
         this.classId = classId;
-        this.title = title;
-        this.phieu = phieu;
-        this.soCau = soCau;
-        this.date = date;
+        this.title   = title;
+        this.phieu   = phieu;
+        this.soCau   = soCau;
+        this.date    = date;
     }
 
-    // Getters
+    // Setter & Getter cho classId
+    public void setClassId(@Nullable Integer classId) {
+        this.classId = classId;
+    }
+
+    @Nullable
+    public Integer getClassId() {
+        return classId;
+    }
+
     public int getId() {
         return id;
-    }
-
-    public int getClassId() {
-        return classId;
     }
 
     public String getTitle() {

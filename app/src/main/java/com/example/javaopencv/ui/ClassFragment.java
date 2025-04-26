@@ -4,12 +4,12 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -20,10 +20,11 @@ import com.example.javaopencv.ui.adapter.ClassAdapter;
 import com.example.javaopencv.viewmodel.ClassViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.util.List;
+
 public class ClassFragment extends Fragment {
     private ClassViewModel viewModel;
     private ClassAdapter adapter;
-    private int subjectId;
 
     @Nullable @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -33,42 +34,45 @@ public class ClassFragment extends Fragment {
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            subjectId = getArguments().getInt("subjectId", 0);
-        }
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view,
+                              @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        // Factory truyền subjectId
-        ClassViewModel.Factory factory =
-                new ClassViewModel.Factory(requireActivity().getApplication(), subjectId);
-        viewModel = new ViewModelProvider(this, factory)
-                .get(ClassViewModel.class);
 
+        // 1) Lấy subjectId từ Bundle (default = 0)
+        int subjectId = 0;
+        Bundle args = getArguments();
+        if (args != null && args.containsKey("subjectId")) {
+            subjectId = args.getInt("subjectId", 0);
+        }
+
+        // 2) RecyclerView
         RecyclerView rv = view.findViewById(R.id.rvClasses);
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         adapter = new ClassAdapter(item -> {
-            Bundle args = new Bundle();
-            args.putInt("classId", item.id);
-            NavController navController = NavHostFragment.findNavController(this);
-            navController.navigate(R.id.classDetailFragment, args);
+            // Click vào 1 lớp -> đi ClassDetailFragment
+            Bundle b = new Bundle();
+            b.putInt("classId", item.id);
+            NavHostFragment.findNavController(this)
+                    .navigate(R.id.classDetailFragment, b);
         });
         rv.setAdapter(adapter);
 
-        // Sử dụng chung getClasses() (đã lấy all hoặc forSubject bên ViewModel)
-        viewModel.getClasses().observe(getViewLifecycleOwner(), list -> {
-            adapter.submitList(list);
-        });
+        // 3) ViewModel (dùng Factory nếu cần truyền subjectId)
+        viewModel = new ViewModelProvider(this,
+                new ClassViewModel.Factory(requireActivity().getApplication(), subjectId)
+        ).get(ClassViewModel.class);
 
+        // Quan sát data và submit cho adapter
+        viewModel.getClasses().observe(getViewLifecycleOwner(),
+                (List<SchoolClass> list) -> adapter.submitList(list)
+        );
+
+        // 4) Nút thêm lớp
         FloatingActionButton fab = view.findViewById(R.id.fab_add_class);
-        fab.setOnClickListener(v -> {
-            Bundle args = new Bundle();
-            args.putInt("subjectId", subjectId);
-            // TODO: show add/edit class dialog
-        });
+        fab.setOnClickListener(v ->
+                Toast.makeText(requireContext(),
+                        "TODO: mở dialog thêm lớp",
+                        Toast.LENGTH_SHORT).show()
+        );
     }
 }

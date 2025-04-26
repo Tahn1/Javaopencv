@@ -17,11 +17,11 @@
 
 
     <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
-        <!-- Các tuỳ chỉnh màu sắc, phong cách của bạn vẫn như cũ -->
+        <!-- Đặt các màu sắc chính tùy app -->
         <item name="colorPrimary">@color/purple_500</item>
         <item name="colorPrimaryVariant">@color/purple_500</item>
         <item name="colorOnPrimary">@android:color/white</item>
-        <!-- … -->
+        <!-- ...các tuỳ chỉnh khác -->
     </style>
 
     <style name="AppTheme1" parent="Theme.MaterialComponents.Light.NoActionBar">

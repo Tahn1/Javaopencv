@@ -20,6 +20,7 @@ public interface SubjectDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(Subject subject);
 
+
     @Update
     void update(Subject subject);
 
