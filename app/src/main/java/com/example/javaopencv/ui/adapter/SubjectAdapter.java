@@ -29,37 +29,40 @@ public class SubjectAdapter extends ListAdapter<Subject, SubjectAdapter.SubjectV
             new DiffUtil.ItemCallback<Subject>() {
                 @Override
                 public boolean areItemsTheSame(@NonNull Subject oldItem, @NonNull Subject newItem) {
-                    return oldItem.id == newItem.id;
+                    return oldItem.getId() == newItem.getId();
                 }
+
                 @Override
                 public boolean areContentsTheSame(@NonNull Subject oldItem, @NonNull Subject newItem) {
-                    return oldItem.name.equals(newItem.name);
+                    return oldItem.getName().equals(newItem.getName());
                 }
             };
 
     @NonNull
     @Override
     public SubjectViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext())
+        View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_subject, parent, false);
-        return new SubjectViewHolder(v);
+        return new SubjectViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull SubjectViewHolder holder, int position) {
-        Subject s = getItem(position);
-        holder.bind(s, listener);
+        Subject subject = getItem(position);
+        holder.bind(subject, listener);
     }
 
     static class SubjectViewHolder extends RecyclerView.ViewHolder {
         private final TextView tvName;
+
         public SubjectViewHolder(@NonNull View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tvSubjectName);
         }
-        public void bind(Subject sub, OnItemClickListener l) {
-            tvName.setText(sub.name);
-            itemView.setOnClickListener(v -> l.onItemClick(sub));
+
+        public void bind(Subject sub, OnItemClickListener listener) {
+            tvName.setText(sub.getName());
+            itemView.setOnClickListener(v -> listener.onItemClick(sub));
         }
     }
 }

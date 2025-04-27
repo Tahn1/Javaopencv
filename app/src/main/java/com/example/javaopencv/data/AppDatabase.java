@@ -1,12 +1,10 @@
 package com.example.javaopencv.data;
 
 import android.content.Context;
-
 import androidx.annotation.NonNull;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
-import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import com.example.javaopencv.data.dao.AnswerDao;
@@ -34,12 +32,12 @@ import com.example.javaopencv.data.entity.Subject;
                 GradeResult.class,
                 ExamStats.class
         },
-        version = 16,    // bạn đã bump lên 15
+        version = 22,
         exportSchema = false
 )
 public abstract class AppDatabase extends RoomDatabase {
-
     private static volatile AppDatabase instance;
+    private static final String DB_NAME = "exams.db";
 
     public abstract SubjectDao subjectDao();
     public abstract ClassDao classDao();
@@ -49,50 +47,20 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract GradeResultDao gradeResultDao();
     public abstract ExamStatsDao examStatsDao();
 
-    public static final Migration MIGRATION_5_6 = new Migration(5, 6) {
-        @Override public void migrate(@NonNull SupportSQLiteDatabase db) {
-            db.execSQL("ALTER TABLE GradeResult ADD COLUMN imagePath TEXT");
-        }
-    };
-
-    public static final Migration MIGRATION_11_12 = new Migration(11, 12) {
-        @Override public void migrate(@NonNull SupportSQLiteDatabase db) {
-            db.execSQL(
-                    "CREATE TABLE exams_new (" +
-                            "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
-                            "classId INTEGER, " +
-                            "title TEXT, " +
-                            "phieu TEXT, " +
-                            "so_cau INTEGER NOT NULL, " +
-                            "date TEXT, " +
-                            "FOREIGN KEY(classId) REFERENCES SchoolClass(id) ON DELETE CASCADE" +
-                            ")"
-            );
-            db.execSQL(
-                    "INSERT INTO exams_new (id, classId, title, phieu, so_cau, date) " +
-                            "SELECT id, classId, title, phieu, so_cau, date FROM exams"
-            );
-            db.execSQL("DROP TABLE exams");
-            db.execSQL("ALTER TABLE exams_new RENAME TO exams");
-            db.execSQL("CREATE INDEX index_exams_classId ON exams(classId)");
-        }
-    };
-
     public static synchronized AppDatabase getInstance(Context context) {
         if (instance == null) {
             instance = Room.databaseBuilder(
                             context.getApplicationContext(),
                             AppDatabase.class,
-                            "exams.db"
+                            DB_NAME
                     )
-                    .addMigrations(MIGRATION_5_6, MIGRATION_11_12)
+                    // Khôi phục destructive khi schema thay đổi
                     .fallbackToDestructiveMigration()
-                    .fallbackToDestructiveMigrationOnDowngrade()
                     .addCallback(new RoomDatabase.Callback() {
                         @Override
                         public void onOpen(@NonNull SupportSQLiteDatabase db) {
                             super.onOpen(db);
-                            // Tắt kiểm tra FOREIGN KEY để không còn crash nữa
+                            // Tắt kiểm tra khóa ngoại để tránh crash khi migration đơn giản
                             db.execSQL("PRAGMA foreign_keys = OFF");
                         }
                     })

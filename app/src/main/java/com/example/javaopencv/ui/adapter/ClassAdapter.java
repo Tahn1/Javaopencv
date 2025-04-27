@@ -6,63 +6,73 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.javaopencv.R;
+import com.example.javaopencv.data.entity.ClassWithCount;
 import com.example.javaopencv.data.entity.SchoolClass;
 
-public class ClassAdapter extends ListAdapter<SchoolClass, ClassAdapter.ClassViewHolder> {
+import java.util.ArrayList;
+import java.util.List;
+
+public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.VH> {
+    private final List<ClassWithCount> list = new ArrayList<>();
+    private final OnItemClickListener clickListener;
+    private final OnItemLongClickListener longClickListener;
+
     public interface OnItemClickListener {
-        void onItemClick(SchoolClass item);
+        void onClick(SchoolClass sc);
+    }
+    public interface OnItemLongClickListener {
+        void onLongClick(ClassWithCount cc);
     }
 
-    private final OnItemClickListener listener;
-
-    public ClassAdapter(OnItemClickListener listener) {
-        super(DIFF_CALLBACK);
-        this.listener = listener;
+    public ClassAdapter(OnItemClickListener clickListener,
+                        OnItemLongClickListener longClickListener) {
+        this.clickListener     = clickListener;
+        this.longClickListener = longClickListener;
     }
 
-    private static final DiffUtil.ItemCallback<SchoolClass> DIFF_CALLBACK =
-            new DiffUtil.ItemCallback<SchoolClass>() {
-                @Override
-                public boolean areItemsTheSame(@NonNull SchoolClass oldItem, @NonNull SchoolClass newItem) {
-                    return oldItem.id == newItem.id;
-                }
+    /**
+     * Gọi mỗi khi LiveData emit
+     */
+    public void submitList(List<ClassWithCount> data) {
+        list.clear();
+        if (data != null) list.addAll(data);
+        notifyDataSetChanged();
+    }
 
-                @Override
-                public boolean areContentsTheSame(@NonNull SchoolClass oldItem, @NonNull SchoolClass newItem) {
-                    return oldItem.name.equals(newItem.name) && oldItem.subjectId == newItem.subjectId;
-                }
-            };
-
-    @NonNull
-    @Override
-    public ClassViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
+    @NonNull @Override
+    public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_class, parent, false);
-        return new ClassViewHolder(view);
+        return new VH(v);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ClassViewHolder holder, int position) {
-        SchoolClass schoolClass = getItem(position);
-        holder.bind(schoolClass, listener);
+    public void onBindViewHolder(@NonNull VH h, int pos) {
+        ClassWithCount cc = list.get(pos);
+        h.tvClassName.setText(cc.klass.getName());
+        h.tvDateValue.setText(cc.klass.getDateCreated());
+        h.tvStudentCount.setText(String.valueOf(cc.studentCount));
+        h.itemView.setOnClickListener(v -> clickListener.onClick(cc.klass));
+        h.itemView.setOnLongClickListener(v -> {
+            longClickListener.onLongClick(cc);
+            return true;
+        });
     }
 
-    static class ClassViewHolder extends RecyclerView.ViewHolder {
-        private final TextView tvClassName;
+    @Override public int getItemCount() {
+        return list.size();
+    }
 
-        public ClassViewHolder(@NonNull View itemView) {
+    static class VH extends RecyclerView.ViewHolder {
+        final TextView tvClassName, tvDateValue, tvStudentCount;
+        VH(@NonNull View itemView) {
             super(itemView);
-            tvClassName = itemView.findViewById(R.id.tvClassName);
-        }
-
-        public void bind(SchoolClass schoolClass, OnItemClickListener listener) {
-            tvClassName.setText(schoolClass.name);
-            itemView.setOnClickListener(v -> listener.onItemClick(schoolClass));
+            tvClassName    = itemView.findViewById(R.id.tvClassName);
+            tvDateValue    = itemView.findViewById(R.id.tvDateValue);
+            tvStudentCount = itemView.findViewById(R.id.tvStudentCount);
         }
     }
 }

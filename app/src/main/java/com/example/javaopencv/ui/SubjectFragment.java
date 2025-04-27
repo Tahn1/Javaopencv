@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.fragment.NavHostFragment;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -17,48 +17,35 @@ import com.example.javaopencv.R;
 import com.example.javaopencv.data.entity.Subject;
 import com.example.javaopencv.ui.adapter.SubjectAdapter;
 import com.example.javaopencv.viewmodel.SubjectViewModel;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class SubjectFragment extends Fragment {
-    private SubjectViewModel viewModel;
+    private RecyclerView recyclerView;
     private SubjectAdapter adapter;
+    private SubjectViewModel viewModel;
 
-    @Nullable @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
-        // inflate layout fragment_subject.xml
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_subject, container, false);
     }
 
     @Override
-    public void onViewCreated(@NonNull View view,
-                              @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        recyclerView = view.findViewById(R.id.rvSubjects);
+        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        // 1) RecyclerView
-        RecyclerView rv = view.findViewById(R.id.rvSubjects);
-        rv.setLayoutManager(new LinearLayoutManager(requireContext()));
-
-        // 2) Adapter với listener click 1 subject -> đi ClassFragment với subjectId
         adapter = new SubjectAdapter(item -> {
             Bundle args = new Bundle();
-            args.putInt("subjectId", item.id);
-            NavHostFragment.findNavController(this)
-                    .navigate(R.id.classFragment, args);
+            // sử dụng getter thay vì truy cập trực tiếp
+            args.putInt("subjectId", item.getId());
+            Navigation.findNavController(requireView()).navigate(R.id.action_subject_to_class, args);
         });
-        rv.setAdapter(adapter);
+        recyclerView.setAdapter(adapter);
 
-        // 3) ViewModel lấy LiveData<List<Subject>>
-        viewModel = new ViewModelProvider(this)
-                .get(SubjectViewModel.class);
-        viewModel.getAllSubjects()
-                .observe(getViewLifecycleOwner(), list -> adapter.submitList(list));
-
-        // 4) Nút thêm môn học (ví dụ mở dialog)
-        FloatingActionButton fab = view.findViewById(R.id.fab_add_subject);
-        fab.setOnClickListener(v -> {
-            // TODO: show dialog nhập tên môn, rồi viewModel.insert(...)
+        viewModel = new ViewModelProvider(this).get(SubjectViewModel.class);
+        viewModel.getAllSubjects().observe(getViewLifecycleOwner(), subjects -> {
+            adapter.submitList(subjects);
         });
     }
 }

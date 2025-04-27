@@ -14,12 +14,45 @@ import java.util.List;
 @Dao
 public interface ExamDao {
 
-
-
+    /** Lấy exam đồng bộ theo id */
     @Query("SELECT * FROM exams WHERE id = :examId")
     Exam getExamSync(int examId);
-    @Query("SELECT * FROM exams ORDER BY id DESC")
-    LiveData<List<Exam>> getAllExams();
+
+    /** Lấy tất cả exams kèm tên lớp (className) */
+    @Query(
+            "SELECT " +
+                    " e.id, " +
+                    " e.classId, " +
+                    " e.title, " +
+                    " e.phieu, " +
+                    " e.so_cau AS so_cau, " +
+                    " e.date, " +
+                    " c.name AS className " +
+                    "FROM exams e " +
+                    "LEFT JOIN classes c ON e.classId = c.id " +
+                    "ORDER BY e.date DESC"
+    )
+    LiveData<List<Exam>> getAllExamsWithClass();
+
+    /** Lấy exams cho 1 lớp, kèm tên lớp */
+    @Query(
+            "SELECT " +
+                    " e.id, " +
+                    " e.classId, " +
+                    " e.title, " +
+                    " e.phieu, " +
+                    " e.so_cau AS so_cau, " +
+                    " e.date, " +
+                    " c.name AS className " +
+                    "FROM exams e " +
+                    "LEFT JOIN classes c ON e.classId = c.id " +
+                    "WHERE e.classId = :classId " +
+                    "ORDER BY e.date DESC"
+    )
+    LiveData<List<Exam>> getExamsForClassWithClassName(int classId);
+
+    @Insert
+    long insert(Exam exam);
 
     @Insert
     void insertExam(Exam exam);

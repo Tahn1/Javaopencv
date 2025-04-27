@@ -7,7 +7,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.javaopencv.R;
@@ -26,16 +25,13 @@ public class ExamAdapter extends RecyclerView.Adapter<ExamAdapter.ExamViewHolder
     private OnExamItemClickListener clickListener;
     private OnExamItemLongClickListener longClickListener;
 
-    /** Interface cho click đơn */
     public interface OnExamItemClickListener {
         void onExamItemClick(Exam exam);
     }
-    /** Interface cho click giữ */
     public interface OnExamItemLongClickListener {
         void onExamItemLongClick(Exam exam);
     }
 
-    /** Đăng ký listener từ Fragment */
     public void setOnExamItemClickListener(OnExamItemClickListener listener) {
         this.clickListener = listener;
     }
@@ -43,14 +39,12 @@ public class ExamAdapter extends RecyclerView.Adapter<ExamAdapter.ExamViewHolder
         this.longClickListener = listener;
     }
 
-    /** Cập nhật danh sách mới */
     public void setExamList(List<Exam> list) {
         this.examList = list != null ? list : new ArrayList<>();
         this.examListFull = new ArrayList<>(this.examList);
         notifyDataSetChanged();
     }
 
-    /** Lọc theo query */
     public void filter(String query) {
         if (query == null || query.trim().isEmpty()) {
             examList = new ArrayList<>(examListFull);
@@ -67,7 +61,6 @@ public class ExamAdapter extends RecyclerView.Adapter<ExamAdapter.ExamViewHolder
         notifyDataSetChanged();
     }
 
-    /** Sắp xếp theo option */
     public void sortByOption(String option) {
         Comparator<Exam> cmp;
         switch (option) {
@@ -94,7 +87,6 @@ public class ExamAdapter extends RecyclerView.Adapter<ExamAdapter.ExamViewHolder
     @NonNull
     @Override
     public ExamViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // inflate layout sử dụng CardView
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_exam, parent, false);
         return new ExamViewHolder(v);
@@ -103,12 +95,14 @@ public class ExamAdapter extends RecyclerView.Adapter<ExamAdapter.ExamViewHolder
     @Override
     public void onBindViewHolder(@NonNull ExamViewHolder holder, int position) {
         Exam exam = examList.get(position);
-        Log.d("ExamAdapter", "Binding pos=" + position + " title=" + exam.getTitle());        holder.tvExamTitle.setText(exam.getTitle());
-        holder.tvExamTitle.setText(exam.getTitle());
-        holder.tvExamPhieu.setText(exam.getPhieu());
-        holder.tvExamDate.setText(exam.getDate());
-        holder.tvExamCountValue.setText(String.valueOf(exam.getSoCau()));
-        // tvExamSocau là label "Số câu" cố định trong XML
+        Log.d("ExamAdapter", "Binding pos=" + position + " title=" + exam.getTitle());
+
+        holder.tvTitle.setText(exam.getTitle());
+        holder.tvClass.setText(exam.getClassName() != null ? exam.getClassName() : "");
+        holder.tvSocau.setText("Số câu");
+        holder.tvPhieu.setText(exam.getPhieu());
+        holder.tvDate.setText(exam.getDate());
+        holder.tvCount.setText(String.valueOf(exam.getSoCau()));
     }
 
     @Override
@@ -119,17 +113,21 @@ public class ExamAdapter extends RecyclerView.Adapter<ExamAdapter.ExamViewHolder
     class ExamViewHolder extends RecyclerView.ViewHolder
             implements View.OnClickListener, View.OnLongClickListener {
 
-        CardView card;
-        TextView tvExamTitle, tvExamSocau, tvExamPhieu, tvExamDate, tvExamCountValue;
+        final TextView tvTitle;
+        final TextView tvClass;
+        final TextView tvSocau;
+        final TextView tvPhieu;
+        final TextView tvDate;
+        final TextView tvCount;
 
-        public ExamViewHolder(@NonNull View itemView) {
+        ExamViewHolder(@NonNull View itemView) {
             super(itemView);
-            // nếu muốn thao tác với CardView: itemView.findViewById(R.id.card_exam);
-            tvExamTitle      = itemView.findViewById(R.id.tv_exam_title);
-            tvExamSocau      = itemView.findViewById(R.id.tv_exam_socau);
-            tvExamPhieu      = itemView.findViewById(R.id.tv_exam_phieu);
-            tvExamDate       = itemView.findViewById(R.id.tv_exam_date);
-            tvExamCountValue = itemView.findViewById(R.id.tv_exam_count_value);
+            tvTitle = itemView.findViewById(R.id.tv_exam_title);
+            tvClass = itemView.findViewById(R.id.tv_exam_class);
+            tvSocau = itemView.findViewById(R.id.tv_exam_socau);
+            tvPhieu = itemView.findViewById(R.id.tv_exam_phieu);
+            tvDate  = itemView.findViewById(R.id.tv_exam_date);
+            tvCount = itemView.findViewById(R.id.tv_exam_count_value);
 
             itemView.setOnClickListener(this);
             itemView.setOnLongClickListener(this);
@@ -137,27 +135,20 @@ public class ExamAdapter extends RecyclerView.Adapter<ExamAdapter.ExamViewHolder
 
         @Override
         public void onClick(View v) {
-            if (clickListener != null) {
-                int pos = getAdapterPosition();
-                if (pos != RecyclerView.NO_POSITION) {
-                    clickListener.onExamItemClick(examList.get(pos));
-                }
+            if (clickListener != null && getAdapterPosition() != RecyclerView.NO_POSITION) {
+                clickListener.onExamItemClick(examList.get(getAdapterPosition()));
             }
         }
 
         @Override
         public boolean onLongClick(View v) {
-            if (longClickListener != null) {
-                int pos = getAdapterPosition();
-                if (pos != RecyclerView.NO_POSITION) {
-                    longClickListener.onExamItemLongClick(examList.get(pos));
-                    return true;
-                }
+            if (longClickListener != null && getAdapterPosition() != RecyclerView.NO_POSITION) {
+                longClickListener.onExamItemLongClick(examList.get(getAdapterPosition()));
+                return true;
             }
             return false;
         }
     }
-
     // alias để tương thích với tên cũ
     public void setListener(OnExamItemClickListener listener) {
         setOnExamItemClickListener(listener);

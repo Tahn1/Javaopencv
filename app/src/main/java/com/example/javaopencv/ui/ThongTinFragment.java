@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -41,7 +42,6 @@ public class ThongTinFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        // Chỉ inflate layout chứa ScrollView + nội dung, đã bỏ header
         return inflater.inflate(R.layout.fragment_thong_tin, container, false);
     }
 
@@ -69,7 +69,7 @@ public class ThongTinFragment extends Fragment {
         // 1) Load thông tin cơ bản của Exam từ DB
         loadExamInfo();
 
-        // 2) Quan sát số mã đề (số đáp án)
+        // 2) Quan sát số mã đề
         dapAnViewModel = new ViewModelProvider(requireActivity())
                 .get(DapAnViewModel.class);
         dapAnViewModel.getMaDeList().observe(getViewLifecycleOwner(), maDeItems -> {
@@ -88,7 +88,7 @@ public class ThongTinFragment extends Fragment {
                     if (results != null && !results.isEmpty()) {
                         double sum = 0, min = Double.MAX_VALUE, max = Double.MIN_VALUE;
                         for (GradeResult gr : results) {
-                            double sc = gr.score;
+                            double sc = gr.score; // sử dụng trường công khai
                             sum += sc;
                             if (sc < min) min = sc;
                             if (sc > max) max = sc;
@@ -116,9 +116,9 @@ public class ThongTinFragment extends Fragment {
             if (getActivity() != null) {
                 getActivity().runOnUiThread(() -> {
                     if (exam != null) {
-                        tvExamTitle.setText(exam.title);
-                        tvExamPhieu.setText(exam.phieu);
-                        tvExamSoCau.setText(String.valueOf(exam.soCau));
+                        tvExamTitle.setText(exam.getTitle());
+                        tvExamPhieu.setText(exam.getPhieu());
+                        tvExamSoCau.setText(String.valueOf(exam.getSoCau()));
                     } else {
                         tvExamTitle.setText("N/A");
                         tvExamPhieu.setText("N/A");
