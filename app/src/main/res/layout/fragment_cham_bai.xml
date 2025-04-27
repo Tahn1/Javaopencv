@@ -1,22 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/fragment_cham_bai"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/white">
-
-    <!-- Toolbar -->
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:navigationIcon="@drawable/ic_arrow_back_white"
-        android:background="?attr/colorPrimary"
-        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
-        app:titleTextAppearance="@style/ToolbarTitleSmall"
-        app:title="Chấm Bài" />
+    android:background="@color/white"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <!-- Nút chọn ảnh -->
     <Button

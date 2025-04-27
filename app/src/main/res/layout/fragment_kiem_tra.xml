@@ -1,57 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/coordinator"
+    xmlns:app   ="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- 1) Thanh AppBar -->
-    <com.google.android.material.appbar.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
-
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar_kiem_tra"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="#9C27B0"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-            app:title="Kiểm Tra"
-            app:titleTextColor="@android:color/white"
-            app:menu="@menu/menu_kiem_tra"/>
-    </com.google.android.material.appbar.AppBarLayout>
-
-    <!-- 2) EditText tìm kiếm (ẩn mặc định) -->
-    <EditText
-        android:id="@+id/et_search"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:hint="Tìm bài thi..."
-        android:background="@android:color/white"
-        android:visibility="gone"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
-
-    <!-- 3) RecyclerView nằm dưới AppBar, xài layout_behavior để cuộn -->
+    <!-- RecyclerView nằm ngay dưới Activity’s Toolbar -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_exams"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:layout_weight="1"
+        android:padding="8dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
-    <!-- 4) FloatingActionButton -->
+    <!-- FAB ghim góc phải dưới -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_add"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
+        android:contentDescription="@string/add_exam"
         android:src="@drawable/ic_add_white"
         app:backgroundTint="@android:color/holo_red_light"
-        android:contentDescription="@string/add_exam"/>
+        app:layout_anchor="@id/rv_exams"
+        app:layout_anchorGravity="bottom|end"/>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

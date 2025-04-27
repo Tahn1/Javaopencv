@@ -29,11 +29,6 @@ public class XemLaiFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        // 1) Toolbar với nút Back
-        MaterialToolbar toolbar = view.findViewById(R.id.toolbar_xem_lai);
-        toolbar.setNavigationOnClickListener(v ->
-                requireActivity().onBackPressed()
-        );
 
         // 2) RecyclerView + Adapter
         RecyclerView rv = view.findViewById(R.id.rvGradeResults);

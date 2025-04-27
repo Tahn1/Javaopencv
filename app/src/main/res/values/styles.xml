@@ -16,13 +16,13 @@
         </style>
 
 
-    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
-        <!-- Đặt các màu sắc chính tùy app -->
-        <item name="colorPrimary">@color/purple_500</item>
-        <item name="colorPrimaryVariant">@color/purple_500</item>
-        <item name="colorOnPrimary">@android:color/white</item>
-        <!-- ...các tuỳ chỉnh khác -->
+    <!-- res/values/styles.xml -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar.Bridge">
+        <!-- Cho phép vẽ status bar backgrounds -->
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@color/my_statusbar_color</item>
     </style>
+
 
     <style name="AppTheme1" parent="Theme.MaterialComponents.Light.NoActionBar">
         <!-- Tắt window title và action bar gốc -->

@@ -25,13 +25,13 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.javaopencv.R;
 import com.example.javaopencv.data.AppDatabase;
 import com.example.javaopencv.data.entity.GradeResult;
 import com.example.javaopencv.omr.OmrGrader;
 import com.example.javaopencv.omr.OmrGrader.Result;
-import com.google.android.material.appbar.MaterialToolbar;
 
 import org.opencv.android.OpenCVLoader;
 
@@ -43,11 +43,10 @@ public class ChamBaiFragment extends Fragment {
     private static final int   REQ_READ_EXTERNAL   = 200;
     private static final long  PREVIEW_DURATION_MS = 3000;
 
-    private MaterialToolbar toolbar;
-    private Button          btnPickImage;
-    private ImageView       imageViewDebug;
-    private int             examId, questionCount;
-    private int             navigationIconRes;
+    private Button    btnPickImage;
+    private ImageView imageViewDebug;
+    private int       examId, questionCount;
+    private int       navigationIconRes;
 
     private final ActivityResultLauncher<Intent> pickImageLauncher =
             registerForActivityResult(
@@ -65,31 +64,34 @@ public class ChamBaiFragment extends Fragment {
         super(R.layout.fragment_cham_bai);
     }
 
-    @Override public View onCreateView(@NonNull LayoutInflater inflater,
-                                       @Nullable ViewGroup container,
-                                       @Nullable Bundle savedInstanceState) {
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        // Chỉ inflate layout chứa nội dung (đã bỏ Toolbar)
         return inflater.inflate(R.layout.fragment_cham_bai, container, false);
     }
 
-    @Override public void onViewCreated(@NonNull View view,
-                                        @Nullable Bundle savedInstanceState) {
+    @Override
+    public void onViewCreated(@NonNull View view,
+                              @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // Lấy examId và questionCount từ args
         Bundle args = getArguments();
         if (args != null) {
             examId        = args.getInt("examId", -1);
             questionCount = args.getInt("questionCount", 20);
         }
 
-        toolbar        = view.findViewById(R.id.toolbar);
         btnPickImage   = view.findViewById(R.id.btnPickImage);
         imageViewDebug = view.findViewById(R.id.imageViewDebug);
 
-        navigationIconRes = R.drawable.ic_arrow_back_white;
-        toolbar.setNavigationIcon(navigationIconRes);
-        toolbar.setNavigationOnClickListener(v ->
-                NavHostFragment.findNavController(this).popBackStack()
-        );
-
+        // Khởi động chọn ảnh
         btnPickImage.setOnClickListener(v -> launchImagePicker());
+
+        // Tự động show nút Up và title do NavigationUI quản lý
+        // (không cần toolbar.setNavigationIcon hay listener ở đây)
     }
 
     private void launchImagePicker() {
@@ -110,9 +112,10 @@ public class ChamBaiFragment extends Fragment {
         }
     }
 
-    @Override public void onRequestPermissionsResult(int requestCode,
-                                                     @NonNull String[] permissions,
-                                                     @NonNull int[] grantResults) {
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQ_READ_EXTERNAL
                 && grantResults.length > 0
@@ -152,17 +155,21 @@ public class ChamBaiFragment extends Fragment {
 
                 double computedScore = ((double) res.correctCount / questionCount) * 10.0;
 
-                toolbar.setTitle(String.format(
-                        "Mã đề %s – Đúng %d/%d = %.2f",
-                        res.maDe, res.correctCount, questionCount, computedScore
-                ));
+                // UPDATE TITLE trên Activity’s ActionBar
+                AppCompatActivity act = (AppCompatActivity) requireActivity();
+                if (act.getSupportActionBar() != null) {
+                    act.getSupportActionBar().setTitle(
+                            String.format("Mã đề %s – Đúng %d/%d = %.2f",
+                                    res.maDe, res.correctCount, questionCount, computedScore)
+                    );
+                }
+
                 // Hiển thị ảnh debug
                 imageViewDebug.setImageBitmap(res.annotatedBitmap);
                 imageViewDebug.setVisibility(View.VISIBLE);
                 btnPickImage.setVisibility(View.GONE);
-                toolbar.setNavigationIcon(null);
 
-                // 3) Lưu ảnh debug ra file
+                // Lưu ảnh debug ra file
                 String debugUri = null;
                 try {
                     File dir = new File(requireContext()
@@ -181,41 +188,34 @@ public class ChamBaiFragment extends Fragment {
                     e.printStackTrace();
                 }
 
-                // 4) Tạo CSV từ res.answers nếu có
+                // Tạo CSV và lưu vào DB
                 String answersCsv = "";
                 if (res.answers != null && res.answers.length > 0) {
                     answersCsv = TextUtils.join(",", res.answers);
                 }
+                final String finalCsv = answersCsv;
+                final String imagePath = debugUri;
 
-                final String finalCsv        = answersCsv;
-                final String imagePathToSave = debugUri;
-                final float focusX = 0.5f, focusY = 0.5f;
-
-                // 5) Lưu vào DB, sử dụng điểm mới computedScore
                 new Thread(() -> {
                     GradeResult gr = new GradeResult(
-                            examId,            // khóa ngoại exam
-                            res.maDe,          // mã đề
-                            res.sbd,           // số báo danh
-                            finalCsv,          // CSV đáp án
-                            res.correctCount,  // số câu đúng
-                            questionCount,     // tổng số câu
-                            computedScore,     // điểm tính mới
-                            imagePathToSave,   // đường dẫn ảnh debug
-                            focusX,
-                            focusY
+                            examId, res.maDe, res.sbd,
+                            finalCsv, res.correctCount,
+                            questionCount, computedScore,
+                            imagePath, 0.5f, 0.5f
                     );
                     AppDatabase.getInstance(requireContext())
                             .gradeResultDao()
                             .insert(gr);
                 }).start();
 
-                // 6) Reset UI sau PREVIEW_DURATION_MS
+                // Reset UI và TITLE sau vài giây
                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
                     imageViewDebug.setVisibility(View.GONE);
                     btnPickImage.setVisibility(View.VISIBLE);
-                    toolbar.setNavigationIcon(navigationIconRes);
-                    toolbar.setTitle(R.string.cham_bai_title);
+                    // Reset title về label gốc "Chấm Bài"
+                    if (act.getSupportActionBar() != null) {
+                        act.getSupportActionBar().setTitle(R.string.cham_bai_title);
+                    }
                 }, PREVIEW_DURATION_MS);
             });
         }).start();

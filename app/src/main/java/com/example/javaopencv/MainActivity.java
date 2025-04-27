@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
+import androidx.navigation.NavDestination;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
@@ -46,14 +47,15 @@ public class MainActivity extends AppCompatActivity {
             );
         }
 
-        // 2) Thiết lập Toolbar (ẩn title mặc định)
+        // 2) Thiết lập Toolbar (hiển thị title)
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        // Đảm bảo hiển thị tiêu đề do NavController điều khiển
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayShowTitleEnabled(false);
+            getSupportActionBar().setDisplayShowTitleEnabled(true);
         }
 
-        // 3) DrawerLayout và NavView
+        // 3) DrawerLayout và NavigationView
         drawerLayout = findViewById(R.id.drawer_layout);
         NavigationView navView = findViewById(R.id.nav_view);
 
@@ -65,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
         }
         navController = host.getNavController();
 
-        // 5) AppBarConfiguration với các top-level destinations
+        // 5) Cấu hình top-level destinations
         appBarConfig = new AppBarConfiguration.Builder(
                 R.id.kiemTraFragment,
                 R.id.giayThiFragment,
@@ -75,11 +77,20 @@ public class MainActivity extends AppCompatActivity {
                 .setOpenableLayout(drawerLayout)
                 .build();
 
-        // 6) Kết nối Toolbar với NavController để NavigationUI tự vẽ hamburger/up
+        // 6) Kết nối Toolbar với NavController
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfig);
 
-        // 7) Kết nối NavigationView với NavController để tự điều hướng khi click
+        // 7) Kết nối NavigationView với NavController
         NavigationUI.setupWithNavController(navView, navController);
+
+        // 8) Lắng nghe thay đổi destination để update title tự động
+        navController.addOnDestinationChangedListener(
+                (controller, destination, arguments) -> {
+                    if (getSupportActionBar() != null) {
+                        CharSequence label = destination.getLabel();
+                        getSupportActionBar().setTitle(label != null ? label : "");
+                    }
+                });
     }
 
     /** Cho phép Fragment gọi để mở Drawer */

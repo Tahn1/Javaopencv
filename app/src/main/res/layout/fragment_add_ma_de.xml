@@ -1,46 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:app   ="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
-    <!-- Header -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:orientation="horizontal"
-        android:background="@color/purple_500"
-        android:gravity="center_vertical"
-        android:padding="8dp">
-
-        <ImageButton
-            android:id="@+id/btn_back"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/ic_arrow_back_white"
-            android:tint="@android:color/white"
-            android:background="?attr/selectableItemBackgroundBorderless"/>
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Tạo mã đề"
-            android:textColor="@android:color/white"
-            android:gravity="center"
-            android:textSize="18sp"/>
-
-        <ImageButton
-            android:id="@+id/btn_save"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/ic_save"
-            android:tint="@android:color/white"
-            android:background="?attr/selectableItemBackgroundBorderless"/>
-    </LinearLayout>
-
+    <!-- TabLayout ngay dưới Toolbar của Activity -->
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tab_layout"
         android:layout_width="match_parent"
@@ -49,10 +15,9 @@
         app:tabSelectedTextColor="@android:color/white"
         app:tabTextColor="@android:color/darker_gray"/>
 
+    <!-- ViewPager2 chứa 2 fragment con -->
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/view_pager"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"/>
-
+        android:layout_height="match_parent"/>
 </LinearLayout>
