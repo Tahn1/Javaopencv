@@ -1,18 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/fragment_edit_grade"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
 
     <!-- Toolbar -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar_edit_grade"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="?attr/actionBarSize"
         android:background="?attr/colorPrimary"
         android:title="Chỉnh sửa kết quả"
-        android:titleTextColor="@android:color/white"
-        app:navigationIcon="@drawable/ic_arrow_back_white" />
+        android:titleTextColor="?attr/colorOnPrimary"
+        app:navigationIcon="@drawable/ic_arrow_back_white"
+        app:titleCentered="true"/>
 
     <!-- Nội dung chính -->
     <ScrollView
@@ -24,78 +28,134 @@
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal">
+            android:layout_height="wrap_content">
 
             <!-- Mã đề -->
             <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Mã đề">
+                android:hint="Mã đề"
+                app:boxBackgroundColor="@android:color/white"
+                app:boxStrokeColor="?attr/colorSecondary"
+                app:boxStrokeErrorColor="?attr/colorError"
+                app:hintTextColor="?attr/colorOnSurfaceVariant"
+                app:boxStrokeWidth="2dp"
+                app:boxStrokeWidthFocused="2dp">
+
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_edit_maDe"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:hint="Nhập mã đề"
+                    android:textColor="@android:color/black"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Số báo danh -->
             <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
                 android:hint="Số báo danh"
-                android:layout_marginTop="8dp">
+                app:boxBackgroundColor="@android:color/white"
+                app:boxStrokeColor="?attr/colorSecondary"
+                app:boxStrokeErrorColor="?attr/colorError"
+                app:hintTextColor="?attr/colorOnSurfaceVariant"
+                app:boxStrokeWidth="2dp"
+                app:boxStrokeWidthFocused="2dp">
+
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_edit_sbd"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:hint="Nhập số báo danh"
+                    android:textColor="@android:color/black"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Số câu đúng -->
             <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
                 android:hint="Số câu đúng"
-                android:layout_marginTop="8dp">
+                app:boxBackgroundColor="@android:color/white"
+                app:boxStrokeColor="?attr/colorSecondary"
+                app:boxStrokeErrorColor="?attr/colorError"
+                app:hintTextColor="?attr/colorOnSurfaceVariant"
+                app:boxStrokeWidth="2dp"
+                app:boxStrokeWidthFocused="2dp">
+
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_edit_correct"
-                    android:inputType="number"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:hint="Nhập số câu đúng"
+                    android:textColor="@android:color/black"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Tổng số câu -->
             <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
                 android:hint="Tổng số câu"
-                android:layout_marginTop="8dp">
+                app:boxBackgroundColor="@android:color/white"
+                app:boxStrokeColor="?attr/colorSecondary"
+                app:boxStrokeErrorColor="?attr/colorError"
+                app:hintTextColor="?attr/colorOnSurfaceVariant"
+                app:boxStrokeWidth="2dp"
+                app:boxStrokeWidthFocused="2dp">
+
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_edit_total"
-                    android:inputType="number"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:hint="Nhập tổng số câu"
+                    android:textColor="@android:color/black"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Điểm -->
             <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
                 android:hint="Điểm"
-                android:layout_marginTop="8dp">
+                app:boxBackgroundColor="@android:color/white"
+                app:boxStrokeColor="?attr/colorSecondary"
+                app:boxStrokeErrorColor="?attr/colorError"
+                app:hintTextColor="?attr/colorOnSurfaceVariant"
+                app:boxStrokeWidth="2dp"
+                app:boxStrokeWidthFocused="2dp">
+
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_edit_score"
-                    android:inputType="numberDecimal"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:inputType="numberDecimal"
+                    android:hint="Nhập điểm"
+                    android:textColor="@android:color/black"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Nút Lưu -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_edit_save"
+                style="@style/Widget.MaterialComponents.Button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
                 android:text="Lưu"
-                android:layout_marginTop="16dp"/>
+                android:textAllCaps="false"
+                android:textColor="@android:color/white"
+                app:backgroundTint="?attr/colorPrimary"
+                app:cornerRadius="8dp"/>
+
         </LinearLayout>
     </ScrollView>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

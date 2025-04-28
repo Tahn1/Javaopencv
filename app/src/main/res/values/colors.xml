@@ -16,6 +16,11 @@
     <color name="my_statusbar_color">#9C27B0</color>
     <color name="teal_200">#03DAC5</color>
     <color name="toolbar_custom">#FF5722</color>
-
+    <color name="tab_background">#6200EE</color>
+    <color name="tab_selected_text">#FFFFFF</color>
+    <color name="tab_unselected_text">#B0BEC5</color>
+    <color name="tab_indicator">#03DAC5</color>
+    <color name="orange_primary">#FF9800</color>
+    <color name="white_50">#80FFFFFF</color>
 
 </resources>

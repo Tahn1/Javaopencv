@@ -15,6 +15,10 @@
             <item name="android:textColor">?attr/colorOnPrimary</item>
         </style>
 
+    <style name="TextAppearance.Toolbar.Title.Small" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <item name="android:textSize">14sp</item>
+    </style>
+
 
     <!-- res/values/styles.xml -->
     <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar.Bridge">

@@ -39,6 +39,7 @@ android {
 
 
 dependencies {
+    implementation ("androidx.gridlayout:gridlayout:1.1.0")
     implementation ("com.google.android.material:material:1.9.0")
     implementation ("androidx.recyclerview:recyclerview:1.4.0")
     implementation (libs.appcompat.v161)
