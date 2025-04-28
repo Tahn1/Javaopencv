@@ -7,18 +7,26 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.javaopencv.R;
+import com.example.javaopencv.data.entity.SchoolClass;
+import com.example.javaopencv.viewmodel.ClassViewModel;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
+/**
+ * Fragment chi tiết lớp: hiển thị TabLayout với 2 tab (Exam, Student)
+ * và đặt title toolbar thành tên lớp được chọn.
+ */
 public class ClassDetailFragment extends Fragment {
-    private TabLayout tabLayout;
-    private ViewPager2 viewPager;
+    private static final String ARG_CLASS_ID = "classId";
     private int classId;
+    private ClassViewModel viewModel;
 
     @Nullable @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -31,16 +39,35 @@ public class ClassDetailFragment extends Fragment {
                                         @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Nhận classId
+        // Nhận classId từ arguments
         if (getArguments() != null) {
-            classId = getArguments().getInt("classId", -1);
+            classId = getArguments().getInt(ARG_CLASS_ID, -1);
         }
 
-        tabLayout = view.findViewById(R.id.tabLayout);
-        viewPager = view.findViewById(R.id.viewPager);
+        // Khởi tạo ViewModel với Factory (subjectId không dùng ở đây)
+        viewModel = new ViewModelProvider(
+                this,
+                new ClassViewModel.Factory(requireActivity().getApplication(), 0)
+        ).get(ClassViewModel.class);
+
+        // Quan sát tên lớp và đặt làm title
+        viewModel.getClassById(classId)
+                .observe(getViewLifecycleOwner(), klass -> {
+                    if (klass != null) {
+                        AppCompatActivity act = (AppCompatActivity) requireActivity();
+                        if (act.getSupportActionBar() != null) {
+                            act.getSupportActionBar().setTitle(klass.getName());
+                        }
+                    }
+                });
+
+        // Thiết lập ViewPager2 và TabLayout
+        TabLayout tabLayout = view.findViewById(R.id.tabLayout);
+        ViewPager2 viewPager = view.findViewById(R.id.viewPager);
 
         viewPager.setAdapter(new FragmentStateAdapter(this) {
             @Override public int getItemCount() { return 2; }
+
             @NonNull @Override
             public Fragment createFragment(int position) {
                 if (position == 0) {

@@ -35,4 +35,9 @@ public class ExamRepository {
     public void deleteExam(Exam exam) {
         new Thread(() -> examDao.deleteExam(exam)).start();
     }
+
+    public LiveData<Exam> getExamById(int id) {
+        return examDao.getExamById(id);
+    }
+
 }

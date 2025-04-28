@@ -32,24 +32,36 @@ public class Student {
     @ColumnInfo(name = "class_id")
     private Integer classId;
 
+    @ColumnInfo(name = "date_created")
+    private String dateCreated;
+
     /**
-     * Constructor cho insert mới (Room sẽ bỏ qua nhờ @Ignore)
+     * Constructor cho insert mới (Room bỏ qua constructor này vì có @Ignore)
      */
     @Ignore
-    public Student(String name, String studentNumber, @Nullable Integer classId) {
+    public Student(String name,
+                   String studentNumber,
+                   @Nullable Integer classId,
+                   String dateCreated) {
         this.name = name;
         this.studentNumber = studentNumber;
         this.classId = classId;
+        this.dateCreated = dateCreated;
     }
 
     /**
-     * Constructor Room sẽ sử dụng để khôi phục từ database
+     * Constructor Room sử dụng để khôi phục từ database
      */
-    public Student(int id, String name, String studentNumber, @Nullable Integer classId) {
+    public Student(int id,
+                   String name,
+                   String studentNumber,
+                   @Nullable Integer classId,
+                   String dateCreated) {
         this.id = id;
         this.name = name;
         this.studentNumber = studentNumber;
         this.classId = classId;
+        this.dateCreated = dateCreated;
     }
 
     // Getters & Setters
@@ -64,4 +76,7 @@ public class Student {
 
     public Integer getClassId() { return classId; }
     public void setClassId(@Nullable Integer classId) { this.classId = classId; }
+
+    public String getDateCreated() { return dateCreated; }
+    public void setDateCreated(String dateCreated) { this.dateCreated = dateCreated; }
 }

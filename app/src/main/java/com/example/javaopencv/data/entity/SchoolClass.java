@@ -27,8 +27,7 @@ public class SchoolClass {
     @PrimaryKey(autoGenerate = true)
     public int id;
 
-    @Nullable
-    @ColumnInfo(name = "subjectId")
+    @Nullable @ColumnInfo(name = "subjectId")
     public Integer subjectId;
 
     @ColumnInfo(name = "name")
@@ -37,27 +36,15 @@ public class SchoolClass {
     @ColumnInfo(name = "dateCreated")
     public String dateCreated;
 
-    /**
-     * Constructor cho insert mới: gán dateCreated mặc định hôm nay.
-     */
     @Ignore
     public SchoolClass(@Nullable Integer subjectId, String name) {
         this.subjectId = subjectId;
         this.name = name;
-        // Đổi format thành ngày/tháng/năm bằng số
-        this.dateCreated = new java.text.SimpleDateFormat(
-                "d/M/yyyy",
-                java.util.Locale.getDefault()
-        ).format(new java.util.Date());
+        this.dateCreated = new SimpleDateFormat("d/M/yyyy", Locale.getDefault())
+                .format(new Date());
     }
 
-    /**
-     * Constructor Room khôi phục từ DB.
-     */
-    public SchoolClass(int id,
-                       @Nullable Integer subjectId,
-                       String name,
-                       String dateCreated) {
+    public SchoolClass(int id, @Nullable Integer subjectId, String name, String dateCreated) {
         this.id = id;
         this.subjectId = subjectId;
         this.name = name;

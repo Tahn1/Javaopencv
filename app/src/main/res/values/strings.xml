@@ -29,6 +29,15 @@
     <string name="add_subject">Thêm môn học</string>
     <string name="add_class">Thêm lớp học</string>
     <string name="select_class">Chọn lớp học</string>
+    <plurals name="student_count">
+        <item quantity="one">%d học sinh</item>
+        <item quantity="other">%d học sinh</item>
+    </plurals>
+    <string name="hint_student_name">Tên học sinh</string>
+    <string name="hint_student_sbd">Số báo danh (6 chữ số)</string>
+    <string name="label_sbd">SBD</string>
+    <string name="label_full_name">Họ và tên</string>
+    <string name="label_student_sbd">Số báo danh</string>
 
 
 
@@ -75,4 +84,5 @@
     <string name="cham_bai_title">Chấm bài</string>
     <string name="preview_image">ảnh</string>
     <string name="add_student">thêm học sinh</string>
+    <string name="label_date_added">ngày tạo</string>
 </resources>

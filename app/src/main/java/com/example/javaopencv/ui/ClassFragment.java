@@ -1,6 +1,7 @@
 package com.example.javaopencv.ui;
 
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,116 +24,124 @@ import com.example.javaopencv.viewmodel.ClassViewModel;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.util.List;
+import java.util.Collections;
 
 public class ClassFragment extends Fragment {
-    private RecyclerView rv;
-    private FloatingActionButton fab;
+    private RecyclerView rvClasses;
+    private FloatingActionButton fabAdd;
     private ClassAdapter adapter;
-    private ClassViewModel vm;
+    private ClassViewModel viewModel;
     private int subjectId;
 
     @Nullable @Override
-    public View onCreateView(@NonNull LayoutInflater inf,
+    public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
-                             @Nullable Bundle saved) {
-        return inf.inflate(R.layout.fragment_class, container, false);
+                             @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_class, container, false);
     }
 
     @Override public void onViewCreated(@NonNull View view,
-                                        @Nullable Bundle saved) {
-        super.onViewCreated(view, saved);
-        // Lấy subjectId (0 = tất cả môn)
+                                        @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // 1) Lấy subjectId từ args (0 = tất cả môn)
         if (getArguments() != null) {
             subjectId = getArguments().getInt("subjectId", 0);
         }
 
-        rv  = view.findViewById(R.id.rvClasses);
-        fab = view.findViewById(R.id.fab_add_class);
+        // 2) Ánh xạ RecyclerView & FAB
+        rvClasses = view.findViewById(R.id.rvClasses);
+        fabAdd    = view.findViewById(R.id.fab_add_class);
+        rvClasses.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        rv.setLayoutManager(new LinearLayoutManager(requireContext()));
+        // 3) Adapter với ClassWithCount
         adapter = new ClassAdapter(
+                // onClick: mở danh sách sinh viên của lớp
                 sc -> {
-                    // click thường: chuyển sang ClassDetail
                     Bundle args = new Bundle();
                     args.putInt("classId", sc.getId());
                     Navigation.findNavController(view)
                             .navigate(R.id.action_classFragment_to_classDetailFragment, args);
                 },
+                // onLongClick: chọn Chỉnh sửa / Xóa
                 cc -> {
-                    // long-click: sửa hoặc xóa
                     String[] opts = {"Chỉnh sửa", "Xóa"};
                     new MaterialAlertDialogBuilder(requireContext())
                             .setTitle("Chọn hành động")
                             .setItems(opts, (dlg, which) -> {
+                                SchoolClass old = cc.getKlass();
                                 if (which == 0) {
-                                    // Chỉnh sửa tên lớp
+                                    // CHỈNH SỬA TÊN LỚP
                                     View dlgView = LayoutInflater.from(requireContext())
                                             .inflate(R.layout.dialog_add_class, null);
-                                    EditText et = dlgView.findViewById(R.id.etClassName);
-                                    et.setText(cc.klass.getName());
+                                    EditText etName = dlgView.findViewById(R.id.etClassName);
+                                    etName.setText(old.getName());
                                     new MaterialAlertDialogBuilder(requireContext())
                                             .setView(dlgView)
                                             .setNegativeButton("Hủy", null)
-                                            .setPositiveButton("Lưu", (d,i)->{
-                                                String newName = et.getText().toString().trim();
-                                                if (newName.isEmpty()) {
+                                            .setPositiveButton("Lưu", (d, i) -> {
+                                                String newName = etName.getText().toString().trim();
+                                                if (TextUtils.isEmpty(newName)) {
                                                     Toast.makeText(requireContext(),
-                                                            "Tên không được để trống",
+                                                            "Tên lớp không được để trống",
                                                             Toast.LENGTH_SHORT).show();
                                                     return;
                                                 }
-                                                // Giữ nguyên id, subjectId, dateCreated
-                                                SchoolClass u = new SchoolClass(
-                                                        cc.klass.getSubjectId(),
-                                                        newName
+                                                // Cập nhật giữ nguyên id, subjectId, dateCreated
+                                                SchoolClass updated = new SchoolClass(
+                                                        old.getId(),
+                                                        old.getSubjectId(),
+                                                        newName,
+                                                        old.getDateCreated()
                                                 );
-                                                u.id = cc.klass.getId();
-                                                u.dateCreated = cc.klass.getDateCreated();
-                                                vm.updateClass(u);
+                                                viewModel.updateClass(updated);
                                             })
                                             .show();
                                 } else {
-                                    // Xóa
-                                    vm.deleteClass(cc.klass);
+                                    // XÓA lớp
+                                    viewModel.deleteClass(old);
                                 }
                             })
                             .show();
                 }
         );
-        rv.setAdapter(adapter);
+        rvClasses.setAdapter(adapter);
 
-        vm = new ViewModelProvider(
+        // 4) ViewModel (truyền subjectId để lọc theo môn nếu cần)
+        viewModel = new ViewModelProvider(
                 this,
                 new ClassViewModel.Factory(requireActivity().getApplication(), subjectId)
         ).get(ClassViewModel.class);
 
-        // Observe LiveData<ClassWithCount>
-        vm.getClassesWithCount().observe(getViewLifecycleOwner(), list -> {
-            adapter.submitList(list);
-        });
+        // 5) Quan sát LiveData<ClassWithCount>
+        viewModel.getClassesWithCount()
+                .observe(getViewLifecycleOwner(),
+                        list -> adapter.submitList(
+                                list != null ? list : Collections.emptyList()
+                        ));
 
-        // FAB Tạo lớp mới
-        fab.setOnClickListener(v -> {
-            View dlg = LayoutInflater.from(requireContext())
+        // 6) FAB thêm lớp mới
+        fabAdd.setOnClickListener(v -> {
+            View dlgView = LayoutInflater.from(requireContext())
                     .inflate(R.layout.dialog_add_class, null);
-            EditText et = dlg.findViewById(R.id.etClassName);
+            EditText etName = dlgView.findViewById(R.id.etClassName);
+
             new MaterialAlertDialogBuilder(requireContext())
-                    .setTitle("Tạo lớp mới")
-                    .setView(dlg)
-                    .setNegativeButton("Hủy", null)
-                    .setPositiveButton("Tạo", (d,i)->{
-                        String name = et.getText().toString().trim();
-                        if (name.isEmpty()) {
+                    .setView(dlgView)
+                    .setNegativeButton("Hủy", (d, w) -> d.dismiss())
+                    .setPositiveButton("Tạo", (d, w) -> {
+                        String name = etName.getText().toString().trim();
+                        if (TextUtils.isEmpty(name)) {
                             Toast.makeText(requireContext(),
-                                    "Vui lòng nhập tên lớp", Toast.LENGTH_SHORT).show();
+                                    "Vui lòng nhập tên lớp",
+                                    Toast.LENGTH_SHORT).show();
                             return;
                         }
                         SchoolClass sc = new SchoolClass(
                                 subjectId == 0 ? null : subjectId,
                                 name
                         );
-                        vm.insertClass(sc);
+                        viewModel.insertClass(sc);
                     })
                     .show();
         });

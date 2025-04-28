@@ -48,4 +48,7 @@ public class ExamViewModel extends AndroidViewModel {
     public void deleteExam(Exam exam) {
         repo.deleteExam(exam);
     }
+    public LiveData<Exam> getExamById(int id) {
+        return repo.getExamById(id);
+    }
 }

@@ -39,6 +39,9 @@ android {
 
 
 dependencies {
+    implementation ("com.google.android.material:material:1.9.0")
+    implementation ("androidx.recyclerview:recyclerview:1.4.0")
+    implementation (libs.appcompat.v161)
     implementation (libs.cardview)
     implementation (libs.mpandroidchart)
     implementation ("androidx.core:core:1.16.0")

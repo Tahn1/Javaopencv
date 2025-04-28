@@ -32,6 +32,11 @@ public class ClassRepository {
         return classDao.getClassesWithCount(subjectId);
     }
 
+    /** Lấy thông tin một lớp theo ID */
+    public LiveData<SchoolClass> getClassById(int classId) {
+        return classDao.getClassById(classId);
+    }
+
     /** Insert */
     public void insertClass(SchoolClass sc) {
         new Thread(() -> classDao.insert(sc)).start();

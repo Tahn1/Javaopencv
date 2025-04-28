@@ -15,6 +15,7 @@
     <color name="gray_light">#D3D3D3</color>
     <color name="my_statusbar_color">#9C27B0</color>
     <color name="teal_200">#03DAC5</color>
+    <color name="toolbar_custom">#FF5722</color>
 
 
 </resources>

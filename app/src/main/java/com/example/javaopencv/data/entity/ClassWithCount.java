@@ -9,4 +9,7 @@ public class ClassWithCount {
 
     @ColumnInfo(name = "studentCount")
     public int studentCount;
+
+    public SchoolClass getKlass() { return klass; }
+    public int getStudentCount() { return studentCount; }
 }

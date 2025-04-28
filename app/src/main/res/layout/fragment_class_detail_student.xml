@@ -7,11 +7,14 @@
     android:layout_height="match_parent"
     tools:context="com.example.javaopencv.ui.ClassDetailStudentFragment">
 
+    <!-- Chỉ còn RecyclerView và FAB -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvStudents"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:clipToPadding="false"
         android:padding="16dp"
+        android:paddingBottom="80dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -23,10 +26,10 @@
         android:id="@+id/fab_add_student"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_add_white"
+        app:srcCompat="@drawable/ic_add_white"
         android:contentDescription="@string/add_student"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_margin="16dp" />
+        android:layout_margin="16dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

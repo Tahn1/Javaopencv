@@ -16,11 +16,31 @@ public class StudentViewModel extends AndroidViewModel {
         repo = new StudentRepository(application);
     }
 
+    /**
+     * Trả về danh sách sinh viên theo lớp
+     */
     public LiveData<List<Student>> getStudentsForClass(int classId) {
         return repo.getStudentsForClass(classId);
     }
 
+    /**
+     * Thêm sinh viên mới
+     */
     public void insertStudent(Student student) {
         repo.insertStudent(student);
+    }
+
+    /**
+     * Cập nhật thông tin sinh viên (chỉ tên)
+     */
+    public void updateStudent(Student student) {
+        repo.updateStudent(student);
+    }
+
+    /**
+     * Xóa sinh viên
+     */
+    public void deleteStudent(Student student) {
+        repo.deleteStudent(student);
     }
 }

@@ -69,6 +69,7 @@
         android:id="@+id/examDetailFragment"
         android:name="com.example.javaopencv.ui.ExamDetailFragment"
         android:label="Chi tiết bài thi" >
+        <argument android:name="examId" app:argType="integer" />
         <action
             android:id="@+id/action_examDetailFragment_to_dapAnFragment"
             app:destination="@id/dapAnFragment" />

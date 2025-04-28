@@ -14,6 +14,9 @@ import java.util.List;
 @Dao
 public interface ExamDao {
 
+    @Query("SELECT * FROM exams WHERE id = :id")
+    LiveData<Exam> getExamById(int id);
+
     /** Lấy exam đồng bộ theo id */
     @Query("SELECT * FROM exams WHERE id = :examId")
     Exam getExamSync(int examId);
@@ -62,4 +65,5 @@ public interface ExamDao {
 
     @Delete
     void deleteExam(Exam exam);
+
 }

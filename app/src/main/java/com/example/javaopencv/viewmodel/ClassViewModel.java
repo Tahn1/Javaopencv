@@ -65,6 +65,13 @@ public class ClassViewModel extends AndroidViewModel {
     }
 
     /**
+     * Lấy thông tin một lớp theo id
+     */
+    public LiveData<SchoolClass> getClassById(int classId) {
+        return repository.getClassById(classId);
+    }
+
+    /**
      * Thêm lớp mới
      */
     public void insertClass(SchoolClass sc) {
