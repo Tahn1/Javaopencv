@@ -6,14 +6,6 @@
     android:orientation="vertical"
     android:background="@android:color/white">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar_thong_ke"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@color/purple_500"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:title="Thống Kê"
-        app:titleTextColor="@android:color/white" />
 
     <!-- Nội dung biểu đồ bên dưới giữ nguyên -->
     <LinearLayout

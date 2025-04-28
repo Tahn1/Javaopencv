@@ -1,41 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+    xmlns:app   ="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Header màu tím -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:orientation="horizontal"
-        android:background="#9C27B0"
-        android:gravity="center_vertical">
-
-        <ImageButton
-            android:id="@+id/btn_back"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:padding="8dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_arrow_back_white"
-            android:contentDescription="@string/back"/>
-
-        <TextView
-            android:id="@+id/tv_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Thông tin"
-            android:textColor="@android:color/white"
-            android:textSize="18sp"
-            android:layout_marginStart="8dp"/>
-    </LinearLayout>
-
-    <!-- Nội dung hiển thị thông tin -->
+    <!-- ScrollView chứa toàn bộ thông tin -->
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
             android:orientation="vertical"
@@ -146,6 +120,7 @@
                 android:layout_height="wrap_content"
                 android:text="0.00"
                 android:layout_marginBottom="8dp"/>
+
         </LinearLayout>
     </ScrollView>
-</LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -24,11 +24,8 @@ public class GiayThiFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_giay_thi, container, false);
 
         // Lấy Toolbar và thiết lập hành động cho nút back
-        toolbar = view.findViewById(R.id.toolbar_giay_thi);
-        toolbar.setNavigationOnClickListener(v -> {
-            NavController navController = NavHostFragment.findNavController(this);
-            navController.navigateUp();  // Quay lại fragment trước (ví dụ: KiemTraFragment)
-        });
+
+
 
         return view;
     }

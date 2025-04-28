@@ -1,30 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:app   ="http://schemas.android.com/apk/res-auto"
     android:id="@+id/coordinator_giay_thi"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#eaf4fa">
 
-    <!-- AppBarLayout chứa Toolbar -->
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/appBar_giay_thi"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
-
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar_giay_thi"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@color/purple_500"
-            app:title="Giấy thi"
-            app:titleTextColor="@android:color/white"
-            app:navigationIcon="@drawable/ic_arrow_back_white" />
-    </com.google.android.material.appbar.AppBarLayout>
-
-    <!-- Nội dung scrollable dưới header -->
+    <!-- Nội dung scrollable, cuộn cùng AppBar của Activity -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/nestedScroll_giay_thi"
         android:layout_width="match_parent"

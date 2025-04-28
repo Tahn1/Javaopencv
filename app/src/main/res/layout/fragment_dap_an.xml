@@ -1,55 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+    xmlns:app   ="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Header -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@color/purple_500"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:padding="8dp">
-
-        <ImageButton
-            android:id="@+id/btn_back"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/ic_arrow_back_white"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:tint="@android:color/white"/>
-
-        <TextView
-            android:id="@+id/tv_title"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Đáp án"
-            android:gravity="center"
-            android:textColor="@android:color/white"
-            android:textSize="18sp" />
-
-        <ImageButton
-            android:id="@+id/btn_camera"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/ic_camera"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:tint="@android:color/white"/>
-
-        <ImageButton
-            android:id="@+id/btn_add"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/ic_add_white"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:tint="@android:color/white"/>
-    </LinearLayout>
-
-    <!-- TextView "Chưa có mã đề" -->
+    <!-- TextView hiển thị khi chưa có mã đề -->
     <TextView
         android:id="@+id/tv_no_exam_code"
         android:layout_width="match_parent"
@@ -59,15 +15,13 @@
         android:textColor="@android:color/darker_gray"
         android:layout_marginTop="50dp"/>
 
-    <!-- RecyclerView -->
+    <!-- RecyclerView chứa danh sách mã đề -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="match_parent"
+        android:padding="8dp"
         android:visibility="gone"
-        android:padding="8dp" />
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
-
-
-</LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

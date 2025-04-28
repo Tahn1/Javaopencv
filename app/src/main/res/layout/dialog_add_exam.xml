@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tạo bài kiểm tra"
+        android:textAppearance="?attr/textAppearanceHeadline6"
+        android:paddingBottom="16dp"/>
+
+    <EditText
+        android:id="@+id/etExamTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Tiêu đề"/>
+
+    <EditText
+        android:id="@+id/etExamPhieu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Mã đề"/>
+
+    <EditText
+        android:id="@+id/etExamSoCau"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Số câu"
+        android:inputType="number"/>
+
+    <EditText
+        android:id="@+id/etExamDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textCapWords|textMultiLine"
+        android:hint="Ngày (dd-MM-yyyy)"/>
+
+</LinearLayout>

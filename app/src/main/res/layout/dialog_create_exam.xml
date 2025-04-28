@@ -6,7 +6,31 @@
     android:padding="16dp"
     android:stretchColumns="1">
 
+    <!-- Chọn Lớp học -->
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="8dp">
 
+        <TextView
+            android:id="@+id/tv_label_exam_class"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Lớp học"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            android:padding="8dp" />
+
+        <Spinner
+            android:id="@+id/spinner_exam_class"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="8dp"
+            android:prompt="@string/select_class" />
+    </TableRow>
+
+    <!-- Tên bài -->
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -33,7 +57,7 @@
             android:padding="8dp" />
     </TableRow>
 
-
+    <!-- Phiếu chấm -->
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -57,7 +81,7 @@
             android:entries="@array/exam_phieu_array" />
     </TableRow>
 
-
+    <!-- Số câu -->
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

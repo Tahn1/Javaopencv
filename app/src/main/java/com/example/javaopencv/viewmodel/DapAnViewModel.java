@@ -2,6 +2,7 @@ package com.example.javaopencv.viewmodel;
 
 import android.app.Application;
 import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
@@ -15,14 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * ViewModel đơn giản:
- * - Tạo mã đề => chèn đủ N row
- * - Sửa mã đề:
- *   + Nếu code thay => rename code cũ sang code mới (giữ đáp án),
- *     rồi partial update
- *   + Nếu code giữ => lặp 1..N, updateSingleAnswer hay insert tùy row
- */
 public class DapAnViewModel extends AndroidViewModel {
 
     private final MutableLiveData<List<MaDeItem>> maDeList =
@@ -37,7 +30,7 @@ public class DapAnViewModel extends AndroidViewModel {
 
     public void setExamId(int examId) {
         this.examId = examId;
-        loadMaDeList(); // Tải data -> maDeList
+        loadMaDeList();
     }
 
     public int getExamId() {
@@ -51,18 +44,15 @@ public class DapAnViewModel extends AndroidViewModel {
     //================== LOADDATA ==================//
     private void loadMaDeList() {
         if (examId < 0) return;
-
         new Thread(() -> {
             List<String> codes = answerRepository.getDistinctCodesSync(examId);
             List<MaDeItem> items = new ArrayList<>();
-
             for (String code : codes) {
-                List<Answer> ansList = answerRepository.getAnswersByExamAndCodeSync(examId, code);
-
-                // Chuyển sang List<String> (đáp án)
+                List<Answer> ansList =
+                        answerRepository.getAnswersByExamAndCodeSync(examId, code);
                 List<String> answersStr = new ArrayList<>();
                 for (Answer a : ansList) {
-                    answersStr.add(a.dapAn); // có thể null hoặc "A/B/C/D"
+                    answersStr.add(a.dapAn);
                 }
                 items.add(new MaDeItem(code, answersStr));
             }
@@ -77,124 +67,90 @@ public class DapAnViewModel extends AndroidViewModel {
                 Log.e("DapAnViewModel", "ExamId chưa set!");
                 return;
             }
-            // Đảm bảo kích cỡ list = questionCount
             List<String> finalAns = ensureSize(answerList, questionCount);
-
-            // Chèn row cauSo=1..questionCount
             for (int i = 0; i < questionCount; i++) {
-                String dapAn = finalAns.get(i);
-                Answer row = new Answer(examId, code, i + 1, dapAn);
+                Answer row = new Answer(examId, code, i + 1, finalAns.get(i));
                 answerRepository.insertAnswerSync(row);
             }
-
-            // 1) Bỏ updateLocalList(...) thủ công
-            //    updateLocalList(code, finalAns, true);  // <-- XÓA hoặc comment
-
-            // 2) Thay bằng loadMaDeList() => để LiveData tự cập nhật 1 lần
             loadMaDeList();
         }).start();
     }
-
 
     //================== UPDATE MA DE ==================//
     public void updateMaDe(int position,
                            String newCode,
                            List<String> newAnsList,
                            int questionCount) {
-        // Đảm bảo list có đúng questionCount phần tử
-        final List<String> finalAns = ensureSize(newAnsList, questionCount);
+        // đảm bảo kích thước
+        List<String> finalNew = ensureSize(newAnsList, questionCount);
 
         new Thread(() -> {
             List<MaDeItem> current = maDeList.getValue();
-            if (current == null || position<0 || position>=current.size()) {
-                return;
-            }
-            if (examId<0) {
-                Log.e("DapAnViewModel","ExamId not set!");
+            if (current == null || position < 0 || position >= current.size()) return;
+            if (examId < 0) {
+                Log.e("DapAnViewModel", "ExamId not set!");
                 return;
             }
 
             MaDeItem oldItem = current.get(position);
             String oldCode = oldItem.code;
 
-            //---1) Nếu user đổi code => rename code cũ => newCode---//
+            // 1) Tạo map đáp án cũ
+            Map<Integer, String> oldMap = new HashMap<>();
             if (!newCode.equals(oldCode)) {
-                Log.d("DapAnViewModel",
-                        "Code changed => rename " + oldCode + " -> " + newCode);
-
-                // Rename code cũ sang code mới => GIỮ đáp án cũ
-                answerRepository.renameCodeSync(examId, oldCode, newCode);
-
-                // Giờ code cũ đã thành newCode trong DB,
-                // partial update cũ => so sánh oldAns vs newAns
-
-                // Lấy row (examId,newCode)
-                List<Answer> oldAnswers =
-                        answerRepository.getAnswersByExamAndCodeSync(examId, newCode);
-
-                // map cauSo => dapAn cũ
-                Map<Integer, String> oldMap = new HashMap<>();
-                for (Answer a : oldAnswers) {
+                // đổi code: lấy từ DB
+                List<Answer> dbAns = answerRepository
+                        .getAnswersByExamAndCodeSync(examId, oldCode);
+                for (Answer a : dbAns) {
                     oldMap.put(a.cauSo, a.dapAn);
                 }
+            } else {
+                // giữ code: lấy từ cache
+                for (int i = 0; i < oldItem.answers.size(); i++) {
+                    oldMap.put(i + 1, oldItem.answers.get(i));
+                }
+            }
 
-                // partial update 1..questionCount
-                for (int i=0; i<finalAns.size(); i++) {
-                    int cauSo = i+1;
-                    String oldAns = oldMap.get(cauSo);
-                    String newAns = finalAns.get(i);
+            // 2) Merge đáp án: ưu tiên finalNew, fallback sang oldMap
+            List<String> merged = new ArrayList<>(questionCount);
+            for (int i = 0; i < questionCount; i++) {
+                String cand = finalNew.get(i);
+                merged.add(cand != null ? cand : oldMap.get(i + 1));
+            }
 
-                    if (newAns == null) {
-                        newAns = oldAns;
+            // 3) Nếu đổi mã đề: rename toàn bộ row
+            if (!newCode.equals(oldCode)) {
+                answerRepository.renameCodeSync(examId, oldCode, newCode);
+            }
+
+            // 4) Duyệt từng câu để insert/update
+            for (int i = 0; i < questionCount; i++) {
+                int cauSo = i + 1;
+                String ans = merged.get(i);
+                Answer exist = answerRepository.findSingleAnswerSync(
+                        examId, newCode, cauSo);
+                if (exist == null) {
+                    if (ans != null) {
+                        answerRepository.insertAnswerSync(
+                                new Answer(examId, newCode, cauSo, ans));
                     }
-
-                    if (oldAns == null && newAns != null) {
-                        // row chưa có => insert
-                        Answer row = new Answer(examId, newCode, cauSo, newAns);
-                        answerRepository.insertAnswerSync(row);
-                    }
-                    else if (oldAns != null && newAns == null) {
-                        // update => dapAn=null
+                } else {
+                    // đã có rồi
+                    String oldAns = exist.dapAn;
+                    if (ans == null) {
+                        // set null
                         answerRepository.updateSingleAnswerSync(
                                 examId, newCode, cauSo, null);
-                    }
-                    else if (oldAns != null && newAns != null
-                            && !oldAns.equals(newAns)) {
-                        // update => dapAn=newAns
+                    } else if (!ans.equals(oldAns)) {
                         answerRepository.updateSingleAnswerSync(
-                                examId, newCode, cauSo, newAns);
-                    }
-                    // cũ == mới => không làm gì
-                }
-                // Cập nhật local list
-                current.set(position, new MaDeItem(newCode, finalAns));
-                maDeList.postValue(current);
-
-            }
-            //---2) code không đổi => partial update---//
-            else {
-                // lặp i=0..questionCount-1 => update row i+1
-                for (int i=0; i<questionCount; i++) {
-                    int cauSo = i+1;
-                    String newAns = finalAns.get(i);
-
-                    // Tìm row cũ
-                    Answer oldRow = answerRepository.findSingleAnswerSync(
-                            examId, oldCode, cauSo);
-                    if (oldRow == null) {
-                        // row chưa có => insert
-                        Answer row = new Answer(examId, oldCode, cauSo, newAns);
-                        answerRepository.insertAnswerSync(row);
-                    } else {
-                        // row có => updateSingleAnswer
-                        answerRepository.updateSingleAnswerSync(
-                                examId, oldCode, cauSo, newAns);
+                                examId, newCode, cauSo, ans);
                     }
                 }
-                // Cập nhật local list
-                current.set(position, new MaDeItem(oldCode, finalAns));
-                maDeList.postValue(current);
             }
+
+            // 5) cập nhật LiveData
+            current.set(position, new MaDeItem(newCode, merged));
+            maDeList.postValue(current);
         }).start();
     }
 
@@ -202,15 +158,11 @@ public class DapAnViewModel extends AndroidViewModel {
     public void removeMaDe(int position) {
         new Thread(() -> {
             List<MaDeItem> current = maDeList.getValue();
-            if (current == null || position<0 || position>=current.size()) {
-                return;
-            }
-            if (examId<0) return;
+            if (current == null || position < 0 || position >= current.size()) return;
+            if (examId < 0) return;
 
-            MaDeItem item = current.get(position);
-            // Xóa toàn bộ code
-            answerRepository.deleteAnswersByCodeSync(examId, item.code);
-
+            String code = current.get(position).code;
+            answerRepository.deleteAnswersByCodeSync(examId, code);
             current.remove(position);
             maDeList.postValue(current);
         }).start();
@@ -219,44 +171,21 @@ public class DapAnViewModel extends AndroidViewModel {
     //================== GET ANSWERLIST BY POS ==================//
     public List<String> getAnswerListByPosition(int position) {
         List<MaDeItem> current = maDeList.getValue();
-        if (current!=null && position>=0 && position<current.size()) {
+        if (current != null && position >= 0 && position < current.size()) {
             return current.get(position).answers;
         }
         return null;
     }
 
     //================== HELPER ==================//
-    // cắt bớt + thêm null => length=questionCount
     private List<String> ensureSize(List<String> base, int questionCount) {
         List<String> copy = new ArrayList<>(base);
-        while (copy.size()>questionCount) {
-            copy.remove(copy.size()-1);
-        }
-        while (copy.size()<questionCount) {
-            copy.add(null);
-        }
+        while (copy.size() > questionCount) copy.remove(copy.size() - 1);
+        while (copy.size() < questionCount) copy.add(null);
         return copy;
     }
 
-    // thêm/ cập nhật local list
-    private void updateLocalList(String code, List<String> finalAns, boolean isAdd) {
-        List<MaDeItem> current = maDeList.getValue();
-        if (current == null) current = new ArrayList<>();
-        if (isAdd) {
-            current.add(new MaDeItem(code, finalAns));
-        } else {
-            // Tìm code cũ -> thay
-            for (int i=0; i<current.size(); i++) {
-                if (current.get(i).code.equals(code)) {
-                    current.set(i, new MaDeItem(code, finalAns));
-                    break;
-                }
-            }
-        }
-        maDeList.postValue(current);
-    }
-
-    //================== CLASS MADEITEM ==================//
+    //================== CLASS MA DE ITEM ==================//
     public static class MaDeItem {
         public String code;
         public List<String> answers;

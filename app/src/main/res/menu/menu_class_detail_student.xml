@@ -1,0 +1,14 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_search"
+        android:icon="@drawable/ic_search_white"
+        android:title="Tìm kiếm"
+        app:showAsAction="ifRoom|collapseActionView"
+        app:actionViewClass="androidx.appcompat.widget.SearchView" />
+    <item
+        android:id="@+id/action_filter"
+        android:icon="@drawable/ic_filter_white"
+        android:title="Lọc"
+        app:showAsAction="ifRoom" />
+</menu>

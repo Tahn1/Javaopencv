@@ -59,10 +59,6 @@ public class ThongKeFragment extends Fragment {
                               @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Set toolbar và nút back
-        Toolbar toolbar = view.findViewById(R.id.toolbar_thong_ke);
-        toolbar.setNavigationIcon(R.drawable.ic_arrow_back_white); // icon back
-        toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
 
         barChart = view.findViewById(R.id.barChart);
         pieChart = view.findViewById(R.id.pieChart);
