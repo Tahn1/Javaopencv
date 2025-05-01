@@ -117,6 +117,8 @@ public class GradeResultAdapter
             h.ivResult.setVisibility(View.INVISIBLE);
             h.tvStudentNamePreview.setVisibility(View.VISIBLE);
             h.tvStudentNamePreview.setText(stu.getName());
+            // Đảm bảo overlay lên trên ảnh
+            h.tvStudentNamePreview.bringToFront();
         }
 
         // 6) Click / Long-click

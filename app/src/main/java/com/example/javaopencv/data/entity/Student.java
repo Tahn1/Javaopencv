@@ -1,14 +1,12 @@
-// Student.java
 package com.example.javaopencv.data.entity;
 
 import androidx.annotation.Nullable;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
-import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
-
+import androidx.room.Ignore;
 
 @Entity(
         tableName = "student",
@@ -19,8 +17,10 @@ import androidx.room.PrimaryKey;
                 onDelete = ForeignKey.SET_NULL
         ),
         indices = {
+                // index thường cho class_id
                 @Index("class_id"),
-                @Index(value = "student_number", unique = true)  // thêm index duy nhất trên số báo danh
+                // enforce unique student_number **trong mỗi class_id**
+                @Index(value = {"class_id", "student_number"}, unique = true)
         }
 )
 public class Student {

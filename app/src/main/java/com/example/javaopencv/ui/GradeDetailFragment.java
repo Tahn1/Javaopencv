@@ -10,15 +10,16 @@ import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
-import com.google.android.material.appbar.MaterialToolbar;
 import com.example.javaopencv.R;
-import com.example.javaopencv.data.entity.GradeResult;
 import com.example.javaopencv.viewmodel.GradeDetailViewModel;
+
+import java.util.Locale;
 
 public class GradeDetailFragment extends Fragment {
 
@@ -26,21 +27,30 @@ public class GradeDetailFragment extends Fragment {
         super(R.layout.fragment_grade_detail);
     }
 
+    private ImageView ivResult;
+    private ActionBar ab;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true); // bật menu edit
+        // cho phép fragment inflate nút Edit lên toolbar chính
+        setHasOptionsMenu(true);
     }
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu,
                                     @NonNull MenuInflater inflater) {
+        menu.clear();
         inflater.inflate(R.menu.menu_grade_detail, menu);
         super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            requireActivity().onBackPressed();
+            return true;
+        }
         if (item.getItemId() == R.id.action_edit) {
             long gradeId = getArguments().getLong("gradeId", -1L);
             Bundle args = new Bundle();
@@ -57,41 +67,40 @@ public class GradeDetailFragment extends Fragment {
                               @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // 1) Toolbar của fragment
-        MaterialToolbar toolbar = view.findViewById(R.id.toolbar_grade_detail);
+        ivResult = view.findViewById(R.id.ivResult);
+
+        // Lấy ActionBar từ Activity
         AppCompatActivity act = (AppCompatActivity) requireActivity();
-        act.setSupportActionBar(toolbar);
-        toolbar.setNavigationOnClickListener(v ->
-                act.onBackPressed()
-        );
-        // thu nhỏ font title nếu muốn
-        toolbar.setTitleTextAppearance(
-                requireContext(),
-                R.style.TextAppearance_Toolbar_Title_Small
-        );
+        ab = act.getSupportActionBar();
+        if (ab != null) {
+            ab.setDisplayHomeAsUpEnabled(true);
+            // nếu muốn custom icon back:
+            // ab.setHomeAsUpIndicator(R.drawable.ic_arrow_back_white);
+        }
 
-        // 2) ImageView cho ảnh chi tiết
-        ImageView ivResult = view.findViewById(R.id.ivResult);
-
-        // 3) ViewModel và observe kết quả chấm
+        // Lấy ViewModel
         long gradeId = getArguments().getLong("gradeId", -1L);
         GradeDetailViewModel vm = new ViewModelProvider(
                 this,
-                new GradeDetailViewModel.Factory(
-                        act.getApplication(), gradeId
-                )
+                new GradeDetailViewModel.Factory(act.getApplication(), gradeId)
         ).get(GradeDetailViewModel.class);
 
         vm.getGradeResult().observe(getViewLifecycleOwner(), gr -> {
             if (gr == null) return;
 
-            // a) Hiển thị title: "Mã đề X – Đúng a/b = c"
-            toolbar.setTitle(String.format(
-                    "Mã đề %s – Đúng %d/%d = %.2f",
-                    gr.maDe, gr.correctCount, gr.totalQuestions, gr.score
-            ));
+            // Đẩy mã đề + số đúng/tổng = điểm lên title/subtitle
+            if (ab != null) {
+                ab.setTitle("Mã đề " + gr.maDe);
+                ab.setSubtitle(String.format(
+                        Locale.getDefault(),
+                        "Đúng %d/%d = %.2f",
+                        gr.correctCount,
+                        gr.totalQuestions,
+                        gr.score
+                ));
+            }
 
-            // b) Hiển thị ảnh chi tiết
+            // Load ảnh chấm
             if (gr.imagePath != null) {
                 ivResult.setImageURI(Uri.parse(gr.imagePath));
             }

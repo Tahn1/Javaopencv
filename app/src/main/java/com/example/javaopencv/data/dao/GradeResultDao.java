@@ -45,4 +45,16 @@ public interface GradeResultDao {
      */
     @Delete
     void deleteResult(GradeResult gradeResult);
+
+    /**
+     * Xóa tất cả kết quả của một đề thi (examId).
+     */
+    @Query("DELETE FROM GradeResult WHERE examId = :examId")
+    void deleteAllByExamId(int examId);
+
+    /**
+     * Lấy danh sách kết quả của một đề (examId) đồng bộ (để xuất file).
+     */
+    @Query("SELECT * FROM GradeResult WHERE examId = :examId ORDER BY timestamp DESC")
+    List<GradeResult> getResultsListSync(int examId);
 }

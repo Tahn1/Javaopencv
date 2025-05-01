@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -14,7 +15,6 @@ import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
-import androidx.navigation.NavDestination;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
@@ -47,19 +47,18 @@ public class MainActivity extends AppCompatActivity {
             );
         }
 
-        // 2) Thiết lập Toolbar (hiển thị title)
+        // 2) Thiết lập Toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        // Đảm bảo hiển thị tiêu đề do NavController điều khiển
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayShowTitleEnabled(true);
         }
 
-        // 3) DrawerLayout và NavigationView
+        // 3) DrawerLayout & NavigationView
         drawerLayout = findViewById(R.id.drawer_layout);
         NavigationView navView = findViewById(R.id.nav_view);
 
-        // 4) Lấy NavController từ NavHostFragment
+        // 4) NavController từ NavHostFragment
         NavHostFragment host = (NavHostFragment)
                 getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
         if (host == null) {
@@ -83,14 +82,23 @@ public class MainActivity extends AppCompatActivity {
         // 7) Kết nối NavigationView với NavController
         NavigationUI.setupWithNavController(navView, navController);
 
-        // 8) Lắng nghe thay đổi destination để update title tự động
-        navController.addOnDestinationChangedListener(
-                (controller, destination, arguments) -> {
-                    if (getSupportActionBar() != null) {
-                        CharSequence label = destination.getLabel();
-                        getSupportActionBar().setTitle(label != null ? label : "");
-                    }
-                });
+        // 8) Lắng nghe thay đổi destination để update title/subtitle
+        navController.addOnDestinationChangedListener((controller, destination, args) -> {
+            ActionBar ab = getSupportActionBar();
+            if (ab == null) return;
+
+            int destId = destination.getId();
+            if (destId == R.id.gradeDetailFragment) {
+                // Về GradeDetailFragment: ngay lập tức clear title & subtitle
+                ab.setTitle("");
+                ab.setSubtitle("");
+            } else {
+                // Các màn khác: clear subtitle, set title theo label
+                ab.setSubtitle("");
+                CharSequence label = destination.getLabel();
+                ab.setTitle(label != null ? label : "");
+            }
+        });
     }
 
     /** Cho phép Fragment gọi để mở Drawer */
