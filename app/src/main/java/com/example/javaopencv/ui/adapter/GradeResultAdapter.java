@@ -18,28 +18,37 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.javaopencv.R;
 import com.example.javaopencv.data.entity.GradeResult;
+import com.example.javaopencv.data.entity.Student;
 
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 public class GradeResultAdapter
         extends ListAdapter<GradeResult, GradeResultAdapter.VH> {
 
-    /** 1) Interface để lắng nghe click */
     public interface OnItemClickListener {
         void onItemClick(GradeResult item);
     }
     private OnItemClickListener clickListener;
-    public void setOnItemClickListener(OnItemClickListener listener) {
-        this.clickListener = listener;
+    public void setOnItemClickListener(OnItemClickListener l) {
+        this.clickListener = l;
     }
 
-    /** 2) Interface để lắng nghe long‑click (xóa) */
     public interface OnItemLongClickListener {
         void onItemLongClick(GradeResult item);
     }
     private OnItemLongClickListener longClickListener;
-    public void setOnItemLongClickListener(OnItemLongClickListener listener) {
-        this.longClickListener = listener;
+    public void setOnItemLongClickListener(OnItemLongClickListener l) {
+        this.longClickListener = l;
+    }
+
+    // Map studentNumber -> Student
+    private Map<String, Student> studentMap = new HashMap<>();
+    /** Phải được gọi sau khi load xong danh sách Student của lớp */
+    public void setStudentMap(Map<String, Student> map) {
+        this.studentMap = (map != null ? map : new HashMap<>());
+        notifyDataSetChanged();
     }
 
     public GradeResultAdapter() {
@@ -64,60 +73,56 @@ public class GradeResultAdapter
     public void onBindViewHolder(@NonNull VH h, int pos) {
         GradeResult r = getItem(pos);
 
-        // 1) Load ảnh debug đã chấm (hoặc placeholder màu xám nếu null)
+        // reset lại trạng thái
+        h.ivResult.setVisibility(View.VISIBLE);
+        h.tvStudentNamePreview.setVisibility(View.GONE);
+
+        // 1) Load ảnh debug hoặc placeholder
         if (r.imagePath != null && !r.imagePath.isEmpty()) {
-            h.ivPreview.setImageURI(Uri.parse(r.imagePath));
+            h.ivResult.setImageURI(Uri.parse(r.imagePath));
         } else {
-            h.ivPreview.setImageDrawable(new ColorDrawable(Color.LTGRAY));
+            h.ivResult.setImageDrawable(new ColorDrawable(Color.LTGRAY));
         }
 
-        // 2) Thiết lập crop/zoom vùng focus
-        final float focusX = r.focusX;
-        final float focusY = r.focusY;
-        h.ivPreview.setScaleType(ImageView.ScaleType.MATRIX);
-        h.ivPreview.post(() -> {
-            Drawable d = h.ivPreview.getDrawable();
+        // 2) Crop/zoom vùng focus
+        final float fx = r.focusX, fy = r.focusY;
+        h.ivResult.setScaleType(ImageView.ScaleType.MATRIX);
+        h.ivResult.post(() -> {
+            Drawable d = h.ivResult.getDrawable();
             if (d == null) return;
-
-            int dw = d.getIntrinsicWidth();
-            int dh = d.getIntrinsicHeight();
-            int vw = h.ivPreview.getWidth();
-            int vh = h.ivPreview.getHeight();
-
-            float baseScale = Math.max(vw / (float) dw, vh / (float) dh);
-            float zoomFactor = 2.69f;
-            float scale = baseScale * zoomFactor;
-
-            float cropW = vw / scale;
-            float cropH = vh / scale;
-
-            float centerX = dw * focusX;
-            float centerY = dh * focusY;
-
-            float left = centerX - cropW / 1.75f;
-            float top  = centerY - cropH / 0.15f;
-
-            left = Math.max(0f, Math.min(left, dw - cropW));
-            top  = Math.max(0f, Math.min(top, dh - cropH));
-
+            int dw = d.getIntrinsicWidth(), dh = d.getIntrinsicHeight();
+            int vw = h.ivResult.getWidth(), vh = h.ivResult.getHeight();
+            float base = Math.max(vw/(float)dw, vh/(float)dh);
+            float scale = base * 2.69f;
+            float cropW = vw/scale, cropH = vh/scale;
+            float cx = dw * fx, cy = dh * fy;
+            float left = Math.max(0f, Math.min(cx - cropW/1.75f, dw - cropW));
+            float top  = Math.max(0f, Math.min(cy - cropH/0.15f, dh - cropH));
             Matrix m = new Matrix();
             m.setScale(scale, scale);
             m.postTranslate(-left * scale, -top * scale);
-            h.ivPreview.setImageMatrix(m);
+            h.ivResult.setImageMatrix(m);
         });
 
-        // 3) Hiển thị số báo danh và điểm
+        // 3) Số báo danh & điểm
         h.tvSbd.setText(r.sbd);
         h.tvScore.setText(String.format(Locale.getDefault(), "%.2f", r.score));
 
-        // 4) Thiết lập click lên toàn item
-        h.itemView.setOnClickListener(v -> {
-            if (clickListener != null) {
-                clickListener.onItemClick(r);
-            }
-        });
+        // 4) Hiển thị mã đề ngay dưới điểm
+        h.tvMaDe.setText("Mã đề: " + r.maDe);
 
-        // 5) Thiết lập long‑click để xóa
+        // 5) Lookup tên HS từ map (nếu có) – thay ảnh bằng tên
+        Student stu = studentMap.get(r.sbd != null ? r.sbd.trim() : "");
+        if (stu != null) {
+            h.ivResult.setVisibility(View.INVISIBLE);
+            h.tvStudentNamePreview.setVisibility(View.VISIBLE);
+            h.tvStudentNamePreview.setText(stu.getName());
+        }
+
+        // 6) Click / Long-click
+        h.itemView.setOnClickListener(v -> {
+            if (clickListener != null) clickListener.onItemClick(r);
+        });
         h.itemView.setOnLongClickListener(v -> {
             if (longClickListener != null) {
                 longClickListener.onItemLongClick(r);
@@ -128,14 +133,16 @@ public class GradeResultAdapter
     }
 
     static class VH extends RecyclerView.ViewHolder {
-        ImageView ivPreview;
-        TextView  tvSbd, tvScore;
+        final ImageView ivResult;
+        final TextView tvStudentNamePreview, tvSbd, tvScore, tvMaDe;
 
         VH(@NonNull View itemView) {
             super(itemView);
-            ivPreview = itemView.findViewById(R.id.ivPreview);
-            tvSbd     = itemView.findViewById(R.id.tvSbd);
-            tvScore   = itemView.findViewById(R.id.tvScore);
+            ivResult             = itemView.findViewById(R.id.ivResult);
+            tvStudentNamePreview = itemView.findViewById(R.id.tvStudentNamePreview);
+            tvSbd                = itemView.findViewById(R.id.tvSbd);
+            tvScore              = itemView.findViewById(R.id.tvScore);
+            tvMaDe               = itemView.findViewById(R.id.tvMaDe);    // mới
         }
     }
 }

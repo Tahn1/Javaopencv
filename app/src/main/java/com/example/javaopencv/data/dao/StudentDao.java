@@ -16,12 +16,21 @@ public interface StudentDao {
     @Query("SELECT * FROM student WHERE class_id = :classId ORDER BY name")
     LiveData<List<Student>> getStudentsForClass(int classId);
 
-    @Insert
-    long insert(Student student);
+    @Query("SELECT * FROM student WHERE student_number = :studentNumber LIMIT 1")
+    Student getStudentByNumber(String studentNumber);
 
-    @Update
-    void update(Student student);
+    @Insert long insert(Student student);
+    @Update void update(Student student);
+    @Delete void delete(Student student);
 
-    @Delete
-    void delete(Student student);
+    // ★ join với GradeResult (bảng mặc định tên GradeResult)
+    @Query(
+            "SELECT s.* " +
+                    "  FROM student AS s " +
+                    "  JOIN GradeResult AS g " +
+                    "    ON s.student_number = g.sbd " +
+                    " WHERE g.examId = :examId " +
+                    " GROUP BY s.student_number"
+    )
+    LiveData<List<Student>> getStudentsForExam(int examId);
 }

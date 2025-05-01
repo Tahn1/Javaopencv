@@ -1,3 +1,4 @@
+// Student.java
 package com.example.javaopencv.data.entity;
 
 import androidx.annotation.Nullable;
@@ -8,6 +9,7 @@ import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
+
 @Entity(
         tableName = "student",
         foreignKeys = @ForeignKey(
@@ -16,7 +18,10 @@ import androidx.room.PrimaryKey;
                 childColumns = "class_id",
                 onDelete = ForeignKey.SET_NULL
         ),
-        indices = @Index("class_id")
+        indices = {
+                @Index("class_id"),
+                @Index(value = "student_number", unique = true)  // thêm index duy nhất trên số báo danh
+        }
 )
 public class Student {
     @PrimaryKey(autoGenerate = true)
@@ -35,9 +40,6 @@ public class Student {
     @ColumnInfo(name = "date_created")
     private String dateCreated;
 
-    /**
-     * Constructor cho insert mới (Room bỏ qua constructor này vì có @Ignore)
-     */
     @Ignore
     public Student(String name,
                    String studentNumber,
@@ -49,9 +51,6 @@ public class Student {
         this.dateCreated = dateCreated;
     }
 
-    /**
-     * Constructor Room sử dụng để khôi phục từ database
-     */
     public Student(int id,
                    String name,
                    String studentNumber,
@@ -64,7 +63,6 @@ public class Student {
         this.dateCreated = dateCreated;
     }
 
-    // Getters & Setters
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 

@@ -1,9 +1,8 @@
+// XemLaiFragment.java
 package com.example.javaopencv.ui;
 
-import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,11 +14,14 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.javaopencv.R;
 import com.example.javaopencv.data.entity.GradeResult;
+import com.example.javaopencv.data.entity.Student;
 import com.example.javaopencv.ui.adapter.GradeResultAdapter;
 import com.example.javaopencv.viewmodel.XemLaiViewModel;
-import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class XemLaiFragment extends Fragment {
 
@@ -28,19 +30,34 @@ public class XemLaiFragment extends Fragment {
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view,
+                              @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-        // 2) RecyclerView + Adapter
+        // 1) Khởi tạo RecyclerView và Adapter
         RecyclerView rv = view.findViewById(R.id.rvGradeResults);
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         GradeResultAdapter adapter = new GradeResultAdapter();
         rv.setAdapter(adapter);
 
-        // 3) ViewModel và examId
-        XemLaiViewModel vm = new ViewModelProvider(this).get(XemLaiViewModel.class);
+        // 2) Lấy ViewModel và examId từ arguments
+        XemLaiViewModel vm = new ViewModelProvider(this)
+                .get(XemLaiViewModel.class);
         int examId = requireArguments().getInt("examId", -1);
 
-        // 4) Click thông thường: xem chi tiết
+        // 3) Quan sát LiveData danh sách học sinh đã chấm → tạo studentMap
+        vm.getStudentsForExam(examId).observe(getViewLifecycleOwner(), students -> {
+            Map<String, Student> map = new HashMap<>();
+            for (Student s : students) {
+                map.put(s.getStudentNumber().trim(), s);
+            }
+            adapter.setStudentMap(map);
+        });
+        vm.getResultsForExam(examId).observe(getViewLifecycleOwner(), results -> {
+            adapter.submitList(results);
+        });
+
+        // 5) Thiết lập sự kiện click để chuyển sang trang chi tiết kết quả
         adapter.setOnItemClickListener(item -> {
             Bundle args = new Bundle();
             args.putLong("gradeId", item.id);
@@ -48,24 +65,16 @@ public class XemLaiFragment extends Fragment {
                     .navigate(R.id.action_xemLaiFragment_to_gradeDetailFragment, args);
         });
 
-        // 5) Long‑press: xác nhận xóa
+        // 6) Thiết lập sự kiện long click để xóa kết quả chấm
         adapter.setOnItemLongClickListener(item -> {
-            new AlertDialog.Builder(requireContext())
+            new MaterialAlertDialogBuilder(requireContext())
                     .setTitle("Xóa kết quả chấm")
                     .setMessage("Bạn có chắc muốn xóa kết quả này không?")
-                    .setPositiveButton("Xóa", (dialog, which) -> {
-                        vm.deleteResult(item);
-                        Toast.makeText(requireContext(),
-                                "Đã xóa kết quả", Toast.LENGTH_SHORT).show();
-                    })
                     .setNegativeButton("Hủy", null)
+                    .setPositiveButton("Xóa", (d, w) -> {
+                        vm.deleteResult(item);
+                    })
                     .show();
         });
-
-        // 6) Quan sát LiveData và đổ dữ liệu
-        vm.getResultsForExam(examId)
-                .observe(getViewLifecycleOwner(), list -> {
-                    adapter.submitList(list);
-                });
     }
 }
