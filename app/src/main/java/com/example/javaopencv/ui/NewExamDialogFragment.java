@@ -107,7 +107,7 @@ public class NewExamDialogFragment extends DialogFragment {
 
         ClassViewModel classVm = new ViewModelProvider(
                 requireActivity(),
-                new ClassViewModel.Factory(requireActivity().getApplication(), 0)
+                new ClassViewModel.Factory(requireActivity().getApplication())
         ).get(ClassViewModel.class);
         classVm.getAllClasses().observe(this, list -> {
             classNames.clear();

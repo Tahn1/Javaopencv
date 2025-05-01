@@ -47,7 +47,7 @@ public class ClassDetailFragment extends Fragment {
         // Khởi tạo ViewModel với Factory (subjectId không dùng ở đây)
         viewModel = new ViewModelProvider(
                 this,
-                new ClassViewModel.Factory(requireActivity().getApplication(), 0)
+                new ClassViewModel.Factory(requireActivity().getApplication())
         ).get(ClassViewModel.class);
 
         // Quan sát tên lớp và đặt làm title

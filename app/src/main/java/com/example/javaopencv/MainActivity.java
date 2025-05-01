@@ -67,11 +67,10 @@ public class MainActivity extends AppCompatActivity {
         }
         navController = host.getNavController();
 
-        // 5) Cấu hình top-level destinations
+        // 5) Cấu hình top-level destinations (đã loại bỏ subjectFragment)
         appBarConfig = new AppBarConfiguration.Builder(
                 R.id.kiemTraFragment,
                 R.id.giayThiFragment,
-                R.id.subjectFragment,
                 R.id.classFragment
         )
                 .setOpenableLayout(drawerLayout)

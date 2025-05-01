@@ -1,6 +1,7 @@
 package com.example.javaopencv.repository;
 
 import android.app.Application;
+
 import androidx.lifecycle.LiveData;
 
 import com.example.javaopencv.data.AppDatabase;
@@ -9,9 +10,12 @@ import com.example.javaopencv.data.entity.ClassWithCount;
 import com.example.javaopencv.data.entity.SchoolClass;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ClassRepository {
     private final ClassDao classDao;
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     public ClassRepository(Application app) {
         classDao = AppDatabase.getInstance(app).classDao();
@@ -19,36 +23,31 @@ public class ClassRepository {
 
     /** Lấy tất cả lớp, không kèm số học sinh */
     public LiveData<List<SchoolClass>> getAllClasses() {
-        return classDao.getAll();
+        return classDao.getAllClasses();
     }
 
-    /** Lấy lớp theo subjectId, không kèm số học sinh */
-    public LiveData<List<SchoolClass>> getClassesForSubject(int subjectId) {
-        return classDao.getClassesForSubject(subjectId);
-    }
-
-    /** Lấy lớp kèm số học sinh, với subjectId = 0 để lấy tất cả */
-    public LiveData<List<ClassWithCount>> getClassesWithCount(int subjectId) {
-        return classDao.getClassesWithCount(subjectId);
-    }
-
-    /** Lấy thông tin một lớp theo ID */
+    /** Lấy lớp theo ID */
     public LiveData<SchoolClass> getClassById(int classId) {
         return classDao.getClassById(classId);
     }
 
-    /** Insert */
+    /** Lấy danh sách lớp kèm số học sinh trong mỗi lớp */
+    public LiveData<List<ClassWithCount>> getClassesWithCount() {
+        return classDao.getClassesWithCount();
+    }
+
+    /** Thêm lớp mới */
     public void insertClass(SchoolClass sc) {
-        new Thread(() -> classDao.insert(sc)).start();
+        executor.execute(() -> classDao.insert(sc));
     }
 
-    /** Update */
+    /** Cập nhật thông tin lớp */
     public void updateClass(SchoolClass sc) {
-        new Thread(() -> classDao.update(sc)).start();
+        executor.execute(() -> classDao.update(sc));
     }
 
-    /** Delete */
+    /** Xóa lớp */
     public void deleteClass(SchoolClass sc) {
-        new Thread(() -> classDao.delete(sc)).start();
+        executor.execute(() -> classDao.delete(sc));
     }
 }

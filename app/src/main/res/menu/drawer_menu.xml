@@ -7,9 +7,6 @@
             android:id="@+id/giayThiFragment"
             android:title="Giấy thi"/>
         <item
-            android:id="@+id/subjectFragment"
-            android:title="Quản lý Môn học"/>
-        <item
             android:id="@+id/classFragment"
             android:title="Quản lý Lớp học"/>
     </group>

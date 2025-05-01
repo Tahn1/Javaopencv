@@ -13,18 +13,15 @@ import com.example.javaopencv.data.dao.ExamDao;
 import com.example.javaopencv.data.dao.ExamStatsDao;
 import com.example.javaopencv.data.dao.GradeResultDao;
 import com.example.javaopencv.data.dao.StudentDao;
-import com.example.javaopencv.data.dao.SubjectDao;
 import com.example.javaopencv.data.entity.Answer;
 import com.example.javaopencv.data.entity.Exam;
 import com.example.javaopencv.data.entity.ExamStats;
 import com.example.javaopencv.data.entity.GradeResult;
 import com.example.javaopencv.data.entity.SchoolClass;
 import com.example.javaopencv.data.entity.Student;
-import com.example.javaopencv.data.entity.Subject;
 
 @Database(
         entities = {
-                Subject.class,
                 SchoolClass.class,
                 Student.class,
                 Exam.class,
@@ -32,14 +29,14 @@ import com.example.javaopencv.data.entity.Subject;
                 GradeResult.class,
                 ExamStats.class
         },
-        version = 25,
+        version = 26,
         exportSchema = false
 )
 public abstract class AppDatabase extends RoomDatabase {
     private static volatile AppDatabase instance;
     private static final String DB_NAME = "exams.db";
 
-    public abstract SubjectDao subjectDao();
+    // --- Các DAO đã giữ lại ---
     public abstract ClassDao classDao();
     public abstract StudentDao studentDao();
     public abstract ExamDao examDao();
@@ -56,11 +53,11 @@ public abstract class AppDatabase extends RoomDatabase {
                     )
                     // Khôi phục destructive khi schema thay đổi
                     .fallbackToDestructiveMigration()
+                    // Callback để tắt kiểm tra foreign key (nếu cần)
                     .addCallback(new RoomDatabase.Callback() {
                         @Override
                         public void onOpen(@NonNull SupportSQLiteDatabase db) {
                             super.onOpen(db);
-                            // Tắt kiểm tra khóa ngoại để tránh crash khi migration đơn giản
                             db.execSQL("PRAGMA foreign_keys = OFF");
                         }
                     })

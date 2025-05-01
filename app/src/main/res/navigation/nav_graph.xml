@@ -5,21 +5,6 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/kiemTraFragment">
 
-    <!-- SubjectFragment: Quản lý Môn học -->
-    <fragment
-        android:id="@+id/subjectFragment"
-        android:name="com.example.javaopencv.ui.SubjectFragment"
-        android:label="Quản lý Môn học">
-        <argument
-            android:name="subjectId"
-            app:argType="integer"
-            android:defaultValue="0" />
-        <!-- Action từ SubjectFragment đến ClassFragment -->
-        <action
-            android:id="@+id/action_subject_to_class"
-            app:destination="@id/classFragment" />
-    </fragment>
-
     <!-- ClassFragment: Quản lý Lớp học -->
     <fragment
         android:id="@+id/classFragment"
@@ -32,7 +17,6 @@
         <action
             android:id="@+id/action_classFragment_to_classDetailFragment"
             app:destination="@id/classDetailFragment" />
-
     </fragment>
 
     <!-- ClassDetailFragment: Chi tiết Lớp học -->
@@ -50,11 +34,9 @@
         android:id="@+id/kiemTraFragment"
         android:name="com.example.javaopencv.ui.KiemTraFragment"
         android:label="Kiểm Tra" >
+        <!-- Đã xóa action tới subjectFragment -->
         <action
-            android:id="@+id/action_kiemTra_to_subject"
-            app:destination="@id/subjectFragment" />
-        <action
-            android:id="@+id/action_kiemTra_to_class"
+            android:id="@+id/action_kiemTraFragment_to_class"
             app:destination="@id/classFragment" />
         <action
             android:id="@+id/action_kiemTraFragment_to_examDetailFragment"

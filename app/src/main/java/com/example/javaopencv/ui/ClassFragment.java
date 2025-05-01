@@ -24,7 +24,10 @@ import com.example.javaopencv.viewmodel.ClassViewModel;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
+import java.util.Locale;
 
 public class ClassFragment extends Fragment {
     private RecyclerView rvClasses;
@@ -47,6 +50,8 @@ public class ClassFragment extends Fragment {
         // 1) Lấy subjectId từ args (0 = tất cả môn)
         if (getArguments() != null) {
             subjectId = getArguments().getInt("subjectId", 0);
+        } else {
+            subjectId = 0;
         }
 
         // 2) Ánh xạ RecyclerView & FAB
@@ -54,28 +59,27 @@ public class ClassFragment extends Fragment {
         fabAdd    = view.findViewById(R.id.fab_add_class);
         rvClasses.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        // 3) Adapter với ClassWithCount
+        // 3) Adapter cho ClassWithCount
         adapter = new ClassAdapter(
-                // onClick: mở danh sách sinh viên của lớp
+                // onClick: mở chi tiết lớp (nhận SchoolClass)
                 sc -> {
                     Bundle args = new Bundle();
                     args.putInt("classId", sc.getId());
                     Navigation.findNavController(view)
                             .navigate(R.id.action_classFragment_to_classDetailFragment, args);
                 },
-                // onLongClick: chọn Chỉnh sửa / Xóa
+                // onLongClick: sửa/xóa (nhận ClassWithCount)
                 cc -> {
-                    String[] opts = {"Chỉnh sửa", "Xóa"};
+                    SchoolClass sc = cc.getKlass();
                     new MaterialAlertDialogBuilder(requireContext())
                             .setTitle("Chọn hành động")
-                            .setItems(opts, (dlg, which) -> {
-                                SchoolClass old = cc.getKlass();
+                            .setItems(new String[]{"Chỉnh sửa", "Xóa"}, (dlg, which) -> {
                                 if (which == 0) {
-                                    // CHỈNH SỬA TÊN LỚP
+                                    // Sửa tên lớp
                                     View dlgView = LayoutInflater.from(requireContext())
                                             .inflate(R.layout.dialog_add_class, null);
                                     EditText etName = dlgView.findViewById(R.id.etClassName);
-                                    etName.setText(old.getName());
+                                    etName.setText(sc.getName());
                                     new MaterialAlertDialogBuilder(requireContext())
                                             .setView(dlgView)
                                             .setNegativeButton("Hủy", null)
@@ -87,19 +91,19 @@ public class ClassFragment extends Fragment {
                                                             Toast.LENGTH_SHORT).show();
                                                     return;
                                                 }
-                                                // Cập nhật giữ nguyên id, subjectId, dateCreated
+                                                // Giữ nguyên dateCreated
+                                                String dateCreated = sc.getDateCreated();
                                                 SchoolClass updated = new SchoolClass(
-                                                        old.getId(),
-                                                        old.getSubjectId(),
+                                                        sc.getId(),
                                                         newName,
-                                                        old.getDateCreated()
+                                                        dateCreated
                                                 );
                                                 viewModel.updateClass(updated);
                                             })
                                             .show();
                                 } else {
-                                    // XÓA lớp
-                                    viewModel.deleteClass(old);
+                                    // Xóa lớp
+                                    viewModel.deleteClass(sc);
                                 }
                             })
                             .show();
@@ -107,18 +111,19 @@ public class ClassFragment extends Fragment {
         );
         rvClasses.setAdapter(adapter);
 
-        // 4) ViewModel (truyền subjectId để lọc theo môn nếu cần)
+        // 4) Khởi tạo ViewModel với subjectId
         viewModel = new ViewModelProvider(
                 this,
-                new ClassViewModel.Factory(requireActivity().getApplication(), subjectId)
+                new ClassViewModel.Factory(requireActivity().getApplication())
         ).get(ClassViewModel.class);
 
         // 5) Quan sát LiveData<ClassWithCount>
         viewModel.getClassesWithCount()
-                .observe(getViewLifecycleOwner(),
-                        list -> adapter.submitList(
-                                list != null ? list : Collections.emptyList()
-                        ));
+                .observe(getViewLifecycleOwner(), list ->
+                        adapter.submitList(list != null
+                                ? list
+                                : Collections.emptyList())
+                );
 
         // 6) FAB thêm lớp mới
         fabAdd.setOnClickListener(v -> {
@@ -128,8 +133,8 @@ public class ClassFragment extends Fragment {
 
             new MaterialAlertDialogBuilder(requireContext())
                     .setView(dlgView)
-                    .setNegativeButton("Hủy", (d, w) -> d.dismiss())
-                    .setPositiveButton("Tạo", (d, w) -> {
+                    .setNegativeButton("Hủy", null)
+                    .setPositiveButton("Tạo", (d, i) -> {
                         String name = etName.getText().toString().trim();
                         if (TextUtils.isEmpty(name)) {
                             Toast.makeText(requireContext(),
@@ -137,11 +142,12 @@ public class ClassFragment extends Fragment {
                                     Toast.LENGTH_SHORT).show();
                             return;
                         }
-                        SchoolClass sc = new SchoolClass(
-                                subjectId == 0 ? null : subjectId,
-                                name
-                        );
-                        viewModel.insertClass(sc);
+                        // Sinh ngày tạo
+                        String dateCreated = new SimpleDateFormat("d/M/yyyy", Locale.getDefault())
+                                .format(new Date());
+                        // ID = 0 để Room tự generate
+                        SchoolClass newClass = new SchoolClass(0, name, dateCreated);
+                        viewModel.insertClass(newClass);
                     })
                     .show();
         });

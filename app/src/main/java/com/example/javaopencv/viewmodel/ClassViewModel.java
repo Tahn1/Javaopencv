@@ -15,101 +15,65 @@ import com.example.javaopencv.repository.ClassRepository;
 import java.util.List;
 
 /**
- * ViewModel quản lý danh sách lớp học (có thể theo môn) và hỗ trợ đưa vào spinner
+ * ViewModel quản lý danh sách lớp học và số học sinh.
  */
 public class ClassViewModel extends AndroidViewModel {
     private final ClassRepository repository;
-    private final int subjectId;
     private final LiveData<List<SchoolClass>> classes;
     private final LiveData<List<ClassWithCount>> classesWithCount;
 
-    /**
-     * @param application application context
-     * @param subjectId   0 để lấy tất cả lớp, khác 0 để lấy theo môn
-     */
-    public ClassViewModel(@NonNull Application application, int subjectId) {
+    public ClassViewModel(@NonNull Application application) {
         super(application);
-        this.subjectId = subjectId;
         repository = new ClassRepository(application);
-
-        // LiveData chỉ chứa SchoolClass
-        if (subjectId == 0) {
-            classes = repository.getAllClasses();
-        } else {
-            classes = repository.getClassesForSubject(subjectId);
-        }
-
-        // LiveData kèm số lượng học sinh
-        classesWithCount = repository.getClassesWithCount(subjectId);
+        // Luôn lấy toàn bộ lớp
+        classes = repository.getAllClasses();
+        // Luôn lấy toàn bộ lớp kèm số học sinh
+        classesWithCount = repository.getClassesWithCount();
     }
 
-    /**
-     * Trả về LiveData danh sách SchoolClass (đã lọc theo subjectId)
-     */
-    public LiveData<List<SchoolClass>> getClasses() {
+    /** Trả về LiveData danh sách SchoolClass */
+    public LiveData<List<SchoolClass>> getAllClasses() {
         return classes;
     }
 
-    /**
-     * Trả về LiveData danh sách ClassWithCount (có kèm số học sinh)
-     */
+    /** Trả về LiveData danh sách ClassWithCount (có kèm số học sinh) */
     public LiveData<List<ClassWithCount>> getClassesWithCount() {
         return classesWithCount;
     }
 
-    /**
-     * Nếu cần lấy tất cả lớp (ignore subjectId)
-     */
-    public LiveData<List<SchoolClass>> getAllClasses() {
-        return repository.getAllClasses();
-    }
-
-    /**
-     * Lấy thông tin một lớp theo id
-     */
+    /** Lấy chi tiết một lớp theo ID */
     public LiveData<SchoolClass> getClassById(int classId) {
         return repository.getClassById(classId);
     }
 
-    /**
-     * Thêm lớp mới
-     */
+    /** Thêm lớp mới */
     public void insertClass(SchoolClass sc) {
         repository.insertClass(sc);
     }
 
-    /**
-     * Cập nhật lớp
-     */
+    /** Cập nhật lớp */
     public void updateClass(SchoolClass sc) {
         repository.updateClass(sc);
     }
 
-    /**
-     * Xóa lớp
-     */
+    /** Xóa lớp */
     public void deleteClass(SchoolClass sc) {
         repository.deleteClass(sc);
     }
 
-    /**
-     * Factory để truyền subjectId vào ViewModel
-     */
+    /** Factory chỉ nhận Application */
     public static class Factory implements ViewModelProvider.Factory {
         private final Application app;
-        private final int subjectId;
 
-        public Factory(Application app, int subjectId) {
+        public Factory(Application app) {
             this.app = app;
-            this.subjectId = subjectId;
         }
 
-        @NonNull
-        @Override
+        @NonNull @Override
         @SuppressWarnings("unchecked")
         public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
             if (modelClass.isAssignableFrom(ClassViewModel.class)) {
-                return (T) new ClassViewModel(app, subjectId);
+                return (T) new ClassViewModel(app);
             }
             throw new IllegalArgumentException("Unknown ViewModel class: " + modelClass.getName());
         }
