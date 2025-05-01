@@ -3,8 +3,14 @@
 
     <!-- Theme gốc của bạn phải không có ActionBar -->
     <style name="Base.Theme.Javaopencv" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- màu chủ đạo của app -->
         <item name="colorPrimary">#9C27B0</item>
-
+        <!-- cho phép vẽ background cho status bar -->
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <!-- đặt màu status bar cho cùng tông với toolbar -->
+        <item name="android:statusBarColor">?attr/colorPrimary</item>
+        <!-- false = icon trắng (dùng trên nền đậm) -->
+        <item name="android:windowLightStatusBar">false</item>
     </style>
 
     <!-- Ứng dụng sử dụng theme này -->
@@ -21,10 +27,18 @@
 
 
     <!-- res/values/styles.xml -->
+    <!-- AppTheme gốc của bạn -->
     <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar.Bridge">
-        <!-- Cho phép vẽ status bar backgrounds -->
+        <!-- bắt buộc để vẽ được status bar background -->
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-        <item name="android:statusBarColor">@color/my_statusbar_color</item>
+        <!-- đặt màu status bar (nên tối tương ứng toolbar) -->
+        <item name="android:statusBarColor">@color/purple_500</item>
+        <!-- false = icon trắng, true = icon đen -->
+        <item name="android:windowLightStatusBar">false</item>
+
+        <!-- giữ nguyên màu primary cho toolbar -->
+        <item name="colorPrimary">@color/purple_500</item>
+        <item name="colorOnPrimary">@color/white</item>
     </style>
 
 

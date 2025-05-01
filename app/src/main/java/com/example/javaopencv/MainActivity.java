@@ -33,9 +33,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // 1) Cấp quyền Storage nếu cần
-        if (ContextCompat.checkSelfPermission(
-                this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        // 1) Xin quyền READ + WRITE external storage
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(
                     this,
@@ -82,18 +83,16 @@ public class MainActivity extends AppCompatActivity {
         // 7) Kết nối NavigationView với NavController
         NavigationUI.setupWithNavController(navView, navController);
 
-        // 8) Lắng nghe thay đổi destination để update title/subtitle
+        // 8) Đổi title/subtitle khi chuyển màn
         navController.addOnDestinationChangedListener((controller, destination, args) -> {
             ActionBar ab = getSupportActionBar();
             if (ab == null) return;
 
             int destId = destination.getId();
             if (destId == R.id.gradeDetailFragment) {
-                // Về GradeDetailFragment: ngay lập tức clear title & subtitle
                 ab.setTitle("");
                 ab.setSubtitle("");
             } else {
-                // Các màn khác: clear subtitle, set title theo label
                 ab.setSubtitle("");
                 CharSequence label = destination.getLabel();
                 ab.setTitle(label != null ? label : "");
@@ -124,6 +123,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // Xử lý kết quả user cho quyền Storage
     @Override
     public void onRequestPermissionsResult(
             int requestCode,
@@ -131,19 +131,27 @@ public class MainActivity extends AppCompatActivity {
             @NonNull int[] grantResults
     ) {
         if (requestCode == STORAGE_PERMISSION_CODE) {
-            if (grantResults.length > 0
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            boolean grantedAll = true;
+            if (grantResults.length > 0) {
+                for (int r : grantResults) {
+                    if (r != PackageManager.PERMISSION_GRANTED) {
+                        grantedAll = false;
+                        break;
+                    }
+                }
+            } else grantedAll = false;
+
+            if (grantedAll) {
                 Toast.makeText(this,
                         "Đã cấp quyền Storage",
                         Toast.LENGTH_SHORT
                 ).show();
             } else if (ActivityCompat.shouldShowRequestPermissionRationale(
                     this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                // Nếu user từ chối nhưng chưa chọn "Không hỏi lại"
                 new AlertDialog.Builder(this)
                         .setTitle("Cần quyền Storage")
-                        .setMessage(
-                                "Ứng dụng cần quyền Storage để lưu và đọc ảnh chấm bài."
-                        )
+                        .setMessage("Ứng dụng cần quyền Storage để lưu và đọc ảnh chấm bài.")
                         .setPositiveButton("Cho phép", (dlg, which) ->
                                 ActivityCompat.requestPermissions(
                                         this,
@@ -157,6 +165,7 @@ public class MainActivity extends AppCompatActivity {
                         .setNegativeButton("Hủy", null)
                         .show();
             } else {
+                // User chọn "Không hỏi lại" hoặc từ chối
                 Toast.makeText(this,
                         "Không thể lưu ảnh nếu không có quyền Storage",
                         Toast.LENGTH_LONG
