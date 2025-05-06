@@ -15,8 +15,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.javaopencv.R;
-import com.example.javaopencv.data.entity.Exam;
-import com.example.javaopencv.ui.NewExamDialogFragment;
 import com.example.javaopencv.ui.adapter.ExamAdapter;
 import com.example.javaopencv.viewmodel.ExamViewModel;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;

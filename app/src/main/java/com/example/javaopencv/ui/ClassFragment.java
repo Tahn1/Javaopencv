@@ -5,7 +5,6 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -14,142 +13,130 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.javaopencv.R;
 import com.example.javaopencv.data.entity.ClassWithCount;
 import com.example.javaopencv.data.entity.SchoolClass;
+import com.example.javaopencv.databinding.DialogAddClassBinding;
+import com.example.javaopencv.databinding.FragmentClassBinding;
 import com.example.javaopencv.ui.adapter.ClassAdapter;
 import com.example.javaopencv.viewmodel.ClassViewModel;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.text.SimpleDateFormat;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
 
 public class ClassFragment extends Fragment {
-    private RecyclerView rvClasses;
-    private FloatingActionButton fabAdd;
+    private FragmentClassBinding binding;
     private ClassAdapter adapter;
     private ClassViewModel viewModel;
-    private int subjectId;
 
-    @Nullable @Override
+    @Nullable
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_class, container, false);
+        binding = FragmentClassBinding.inflate(inflater, container, false);
+        return binding.getRoot();
     }
 
-    @Override public void onViewCreated(@NonNull View view,
-                                        @Nullable Bundle savedInstanceState) {
+    @Override
+    public void onViewCreated(@NonNull View view,
+                              @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // 1) Lấy subjectId từ args (0 = tất cả môn)
-        if (getArguments() != null) {
-            subjectId = getArguments().getInt("subjectId", 0);
-        } else {
-            subjectId = 0;
-        }
-
-        // 2) Ánh xạ RecyclerView & FAB
-        rvClasses = view.findViewById(R.id.rvClasses);
-        fabAdd    = view.findViewById(R.id.fab_add_class);
-        rvClasses.setLayoutManager(new LinearLayoutManager(requireContext()));
-
-        // 3) Adapter cho ClassWithCount
+        // 1) Thiết lập RecyclerView + Adapter
         adapter = new ClassAdapter(
-                // onClick: mở chi tiết lớp (nhận SchoolClass)
+                // onClick: mở chi tiết lớp
                 sc -> {
                     Bundle args = new Bundle();
                     args.putInt("classId", sc.getId());
                     Navigation.findNavController(view)
                             .navigate(R.id.action_classFragment_to_classDetailFragment, args);
                 },
-                // onLongClick: sửa/xóa (nhận ClassWithCount)
+                // onLongClick: sửa hoặc xóa
                 cc -> {
                     SchoolClass sc = cc.getKlass();
                     new MaterialAlertDialogBuilder(requireContext())
                             .setTitle("Chọn hành động")
                             .setItems(new String[]{"Chỉnh sửa", "Xóa"}, (dlg, which) -> {
                                 if (which == 0) {
-                                    // Sửa tên lớp
-                                    View dlgView = LayoutInflater.from(requireContext())
-                                            .inflate(R.layout.dialog_add_class, null);
-                                    EditText etName = dlgView.findViewById(R.id.etClassName);
-                                    etName.setText(sc.getName());
-                                    new MaterialAlertDialogBuilder(requireContext())
-                                            .setView(dlgView)
-                                            .setNegativeButton("Hủy", null)
-                                            .setPositiveButton("Lưu", (d, i) -> {
-                                                String newName = etName.getText().toString().trim();
-                                                if (TextUtils.isEmpty(newName)) {
-                                                    Toast.makeText(requireContext(),
-                                                            "Tên lớp không được để trống",
-                                                            Toast.LENGTH_SHORT).show();
-                                                    return;
-                                                }
-                                                // Giữ nguyên dateCreated
-                                                String dateCreated = sc.getDateCreated();
-                                                SchoolClass updated = new SchoolClass(
-                                                        sc.getId(),
-                                                        newName,
-                                                        dateCreated
-                                                );
-                                                viewModel.updateClass(updated);
-                                            })
-                                            .show();
+                                    showEditDialog(sc);
                                 } else {
-                                    // Xóa lớp
                                     viewModel.deleteClass(sc);
                                 }
                             })
                             .show();
                 }
         );
-        rvClasses.setAdapter(adapter);
+        binding.rvClasses.setLayoutManager(new LinearLayoutManager(requireContext()));
+        binding.rvClasses.setAdapter(adapter);
 
-        // 4) Khởi tạo ViewModel với subjectId
+        // 2) Khởi tạo ViewModel
         viewModel = new ViewModelProvider(
                 this,
                 new ClassViewModel.Factory(requireActivity().getApplication())
         ).get(ClassViewModel.class);
 
-        // 5) Quan sát LiveData<ClassWithCount>
+        // 3) Quan sát dữ liệu và submitList
         viewModel.getClassesWithCount()
-                .observe(getViewLifecycleOwner(), list ->
-                        adapter.submitList(list != null
-                                ? list
-                                : Collections.emptyList())
-                );
+                .observe(getViewLifecycleOwner(), adapter::submitList);
 
-        // 6) FAB thêm lớp mới
-        fabAdd.setOnClickListener(v -> {
-            View dlgView = LayoutInflater.from(requireContext())
-                    .inflate(R.layout.dialog_add_class, null);
-            EditText etName = dlgView.findViewById(R.id.etClassName);
+        // 4) FAB thêm lớp mới
+        binding.fabAddClass.setOnClickListener(v -> showAddDialog());
+    }
 
-            new MaterialAlertDialogBuilder(requireContext())
-                    .setView(dlgView)
-                    .setNegativeButton("Hủy", null)
-                    .setPositiveButton("Tạo", (d, i) -> {
-                        String name = etName.getText().toString().trim();
-                        if (TextUtils.isEmpty(name)) {
-                            Toast.makeText(requireContext(),
-                                    "Vui lòng nhập tên lớp",
-                                    Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-                        // Sinh ngày tạo
-                        String dateCreated = new SimpleDateFormat("d/M/yyyy", Locale.getDefault())
-                                .format(new Date());
-                        // ID = 0 để Room tự generate
-                        SchoolClass newClass = new SchoolClass(0, name, dateCreated);
-                        viewModel.insertClass(newClass);
-                    })
-                    .show();
-        });
+    private void showAddDialog() {
+        DialogAddClassBinding dlg = DialogAddClassBinding.inflate(getLayoutInflater());
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Tạo lớp mới")
+                .setView(dlg.getRoot())
+                .setNegativeButton("Hủy", null)
+                .setPositiveButton("Tạo", (d, which) -> {
+                    String name = dlg.etClassName.getText().toString().trim();
+                    if (TextUtils.isEmpty(name)) {
+                        Toast.makeText(requireContext(),
+                                "Vui lòng nhập tên lớp",
+                                Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    String dateCreated = new SimpleDateFormat("d/M/yyyy", Locale.getDefault())
+                            .format(new Date());
+                    SchoolClass sc = new SchoolClass(0, name, dateCreated);
+                    viewModel.insertClass(sc);
+                })
+                .show();
+    }
+
+    private void showEditDialog(SchoolClass sc) {
+        DialogAddClassBinding dlg = DialogAddClassBinding.inflate(getLayoutInflater());
+        dlg.etClassName.setText(sc.getName());
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Chỉnh sửa tên lớp")
+                .setView(dlg.getRoot())
+                .setNegativeButton("Hủy", null)
+                .setPositiveButton("Lưu", (d, which) -> {
+                    String newName = dlg.etClassName.getText().toString().trim();
+                    if (TextUtils.isEmpty(newName)) {
+                        Toast.makeText(requireContext(),
+                                "Tên lớp không được để trống",
+                                Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    SchoolClass updated = new SchoolClass(
+                            sc.getId(),
+                            newName,
+                            sc.getDateCreated()
+                    );
+                    viewModel.updateClass(updated);
+                })
+                .show();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 }

@@ -10,12 +10,13 @@ import com.example.javaopencv.data.entity.ClassWithCount;
 import com.example.javaopencv.data.entity.SchoolClass;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class ClassRepository {
     private final ClassDao classDao;
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    // 1 Executor chạy tuần tự trên background
+    private final Executor executor = Executors.newSingleThreadExecutor();
 
     public ClassRepository(Application app) {
         classDao = AppDatabase.getInstance(app).classDao();
@@ -31,22 +32,22 @@ public class ClassRepository {
         return classDao.getClassById(classId);
     }
 
-    /** Lấy danh sách lớp kèm số học sinh trong mỗi lớp */
+    /** Lấy danh sách lớp kèm số học sinh */
     public LiveData<List<ClassWithCount>> getClassesWithCount() {
         return classDao.getClassesWithCount();
     }
 
-    /** Thêm lớp mới */
+    /** Thêm lớp mới (chạy trên background) */
     public void insertClass(SchoolClass sc) {
         executor.execute(() -> classDao.insert(sc));
     }
 
-    /** Cập nhật thông tin lớp */
+    /** Cập nhật lớp (chạy trên background) */
     public void updateClass(SchoolClass sc) {
         executor.execute(() -> classDao.update(sc));
     }
 
-    /** Xóa lớp */
+    /** Xóa lớp (chạy trên background) */
     public void deleteClass(SchoolClass sc) {
         executor.execute(() -> classDao.delete(sc));
     }
