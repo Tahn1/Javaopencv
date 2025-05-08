@@ -39,6 +39,7 @@ android {
 
 
 dependencies {
+    implementation ("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     implementation (libs.gridlayout)
     implementation (libs.material)
     implementation (libs.recyclerview)
