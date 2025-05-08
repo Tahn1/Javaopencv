@@ -1,5 +1,5 @@
 {
-  "installationFolder": "D:\\code\\Javaopencv\\openCVLibrary\\build\\intermediates\\prefab_package\\debug\\prefab",
+  "installationFolder": "C:\\opencv\\Javaopencv\\openCVLibrary\\build\\intermediates\\prefab_package\\debug\\prefab",
   "gradlePath": ":openCVLibrary",
   "packageInfo": {
     "packageName": "openCVLibrary",
@@ -8,7 +8,7 @@
     "modules": [
       {
         "moduleName": "opencv_jni_shared",
-        "moduleHeaders": "D:\\code\\Javaopencv\\openCVLibrary\\native\\jni\\include",
+        "moduleHeaders": "C:\\opencv\\Javaopencv\\openCVLibrary\\native\\jni\\include",
         "moduleExportLibraries": [],
         "abis": []
       }
