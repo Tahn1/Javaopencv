@@ -5,12 +5,11 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.GridLayout;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.gridlayout.widget.GridLayout;
 
 import com.example.javaopencv.R;
 
@@ -38,12 +37,18 @@ public class EditMaDeTabFragment extends Fragment {
         gridCol3 = v.findViewById(R.id.grid_col3);
         gridCol4 = v.findViewById(R.id.grid_col4);
 
+        // Grid layout 10 hàng, 1 cột
+        gridCol1.setRowCount(10); gridCol1.setColumnCount(1);
+        gridCol2.setRowCount(10); gridCol2.setColumnCount(1);
+        gridCol3.setRowCount(10); gridCol3.setColumnCount(1);
+        gridCol4.setRowCount(10); gridCol4.setColumnCount(1);
+
         setupStaticGrid(gridCol1);
         setupSelectableGrid(gridCol2, 2);
         setupSelectableGrid(gridCol3, 3);
         setupSelectableGrid(gridCol4, 4);
 
-        // Khôi phục nếu có mã đề cũ
+        // Khôi phục chọn sẵn nếu có maDe truyền vào
         if (getArguments() != null) {
             String maDe = getArguments().getString("maDe");
             setSelectedMaDe(maDe);
@@ -53,7 +58,7 @@ public class EditMaDeTabFragment extends Fragment {
 
     private void setupStaticGrid(GridLayout g) {
         for (int i = 0; i <= 9; i++) {
-            TextView tv = createCell(String.valueOf(i));
+            TextView tv = createCell(String.valueOf(i), i, 0);
             tv.setBackgroundResource(R.drawable.bg_digit_static);
             g.addView(tv);
         }
@@ -62,48 +67,54 @@ public class EditMaDeTabFragment extends Fragment {
     private void setupSelectableGrid(GridLayout g, final int col) {
         for (int i = 0; i <= 9; i++) {
             final int num = i;
-            TextView tv = createCell(String.valueOf(i));
+            TextView tv = createCell(String.valueOf(i), i, 0);
             tv.setBackgroundResource(R.drawable.bg_digit_unselected);
             tv.setOnClickListener(x -> onDigitClicked(col, num, tv));
             g.addView(tv);
         }
     }
 
-    private TextView createCell(String text) {
+    /**
+     * Tạo một TextView và gán LayoutParams với row=i, col=j
+     */
+    private TextView createCell(String text, int row, int col) {
         TextView tv = new TextView(requireContext());
         tv.setText(text);
         tv.setTextSize(18);
         tv.setGravity(Gravity.CENTER);
         int p = dp(12);
         tv.setPadding(p, p, p, p);
-        GridLayout.LayoutParams lp = new GridLayout.LayoutParams();
-        lp.width = GridLayout.LayoutParams.WRAP_CONTENT;
-        lp.height= GridLayout.LayoutParams.WRAP_CONTENT;
+
+        GridLayout.LayoutParams lp = new GridLayout.LayoutParams(
+                GridLayout.spec(row, GridLayout.FILL),    // đặt tại hàng `row`
+                GridLayout.spec(col, GridLayout.FILL)     // tại cột `col`
+        );
+        lp.width  = GridLayout.LayoutParams.WRAP_CONTENT;
+        lp.height = GridLayout.LayoutParams.WRAP_CONTENT;
         lp.setMargins(dp(4), dp(4), dp(4), dp(4));
         tv.setLayoutParams(lp);
+
         return tv;
     }
 
     private void onDigitClicked(int column, int digit, TextView tv) {
         clearSelections(column);
         tv.setBackgroundResource(R.drawable.bg_digit_selected);
-        if (column == 2) selectedCol2 = digit;
+        if (column == 2)      selectedCol2 = digit;
         else if (column == 3) selectedCol3 = digit;
         else if (column == 4) selectedCol4 = digit;
     }
 
     private void clearSelections(int column) {
         GridLayout grid = null;
-        if (column == 2) {
-            grid = gridCol2;
-        } else if (column == 3) {
-            grid = gridCol3;
-        } else if (column == 4) {
-            grid = gridCol4;
-        }
+        if (column == 2)      grid = gridCol2;
+        else if (column == 3) grid = gridCol3;
+        else if (column == 4) grid = gridCol4;
+
         if (grid != null) {
             for (int i = 0; i < grid.getChildCount(); i++) {
-                grid.getChildAt(i).setBackgroundResource(R.drawable.bg_digit_unselected);
+                grid.getChildAt(i)
+                        .setBackgroundResource(R.drawable.bg_digit_unselected);
             }
         }
     }
@@ -111,6 +122,7 @@ public class EditMaDeTabFragment extends Fragment {
     public String getMaDe() {
         if (selectedCol2 < 0 || selectedCol3 < 0 || selectedCol4 < 0)
             return null;
+        // Kết hợp 3 chữ số lại thành chuỗi
         return "" + selectedCol2 + selectedCol3 + selectedCol4;
     }
 
@@ -120,6 +132,7 @@ public class EditMaDeTabFragment extends Fragment {
         selectedCol3 = Character.getNumericValue(maDe.charAt(1));
         selectedCol4 = Character.getNumericValue(maDe.charAt(2));
 
+        // Khôi phục giao diện theo giá trị đã chọn
         restoreSelection(gridCol2, selectedCol2);
         restoreSelection(gridCol3, selectedCol3);
         restoreSelection(gridCol4, selectedCol4);
@@ -130,11 +143,10 @@ public class EditMaDeTabFragment extends Fragment {
         for (int i = 0; i < grid.getChildCount(); i++) {
             TextView tv = (TextView) grid.getChildAt(i);
             int v = Integer.parseInt(tv.getText().toString());
-            if (v == sel) {
-                tv.setBackgroundResource(R.drawable.bg_digit_selected);
-            } else {
-                tv.setBackgroundResource(R.drawable.bg_digit_unselected);
-            }
+            tv.setBackgroundResource(
+                    v == sel ? R.drawable.bg_digit_selected
+                            : R.drawable.bg_digit_unselected
+            );
         }
     }
 

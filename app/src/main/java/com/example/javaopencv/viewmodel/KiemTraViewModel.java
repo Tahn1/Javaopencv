@@ -1,44 +1,42 @@
 package com.example.javaopencv.viewmodel;
 
 import android.app.Application;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
-import androidx.room.Room;
-import com.example.javaopencv.data.AppDatabase;
+
 import com.example.javaopencv.data.entity.Exam;
 import com.example.javaopencv.repository.ExamRepository;
+
 import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 public class KiemTraViewModel extends AndroidViewModel {
-
-    private ExamRepository repository;
-    private LiveData<List<Exam>> exams;
-    private Executor executor = Executors.newSingleThreadExecutor();
+    private final ExamRepository repository;
+    private final LiveData<List<Exam>> exams;
 
     public KiemTraViewModel(@NonNull Application application) {
         super(application);
-        AppDatabase db = Room.databaseBuilder(application, AppDatabase.class, "exams.db")
-                .fallbackToDestructiveMigration() // Nếu không có migration, dùng phương pháp này
-                .build();
-        repository = new ExamRepository(db);
+        repository = new ExamRepository(application);
         exams = repository.getAllExams();
     }
 
+    /** LiveData để fragment quan sát */
     public LiveData<List<Exam>> getExams() {
         return exams;
     }
 
-    public void addExam(Exam exam) {
+    /** Thêm bài kiểm tra mới */
+    public void insertExam(Exam exam) {
         repository.insertExam(exam);
     }
 
+    /** Cập nhật bài kiểm tra */
     public void updateExam(Exam exam) {
         repository.updateExam(exam);
     }
 
+    /** Xóa bài kiểm tra */
     public void deleteExam(Exam exam) {
         repository.deleteExam(exam);
     }

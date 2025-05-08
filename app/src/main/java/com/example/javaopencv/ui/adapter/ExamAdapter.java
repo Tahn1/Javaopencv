@@ -1,5 +1,6 @@
 package com.example.javaopencv.ui.adapter;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,27 +25,23 @@ public class ExamAdapter extends RecyclerView.Adapter<ExamAdapter.ExamViewHolder
     private OnExamItemClickListener clickListener;
     private OnExamItemLongClickListener longClickListener;
 
-    /** Chỉ có 1 phương thức click */
     public interface OnExamItemClickListener {
         void onExamItemClick(Exam exam);
     }
-
     public interface OnExamItemLongClickListener {
         void onExamItemLongClick(Exam exam);
     }
 
-    /** Đổi tên cho rõ ràng */
     public void setOnExamItemClickListener(OnExamItemClickListener listener) {
         this.clickListener = listener;
     }
-
     public void setOnExamItemLongClickListener(OnExamItemLongClickListener listener) {
         this.longClickListener = listener;
     }
 
-    public void setExamList(List<Exam> examList) {
-        this.examList = examList;
-        this.examListFull = new ArrayList<>(examList);
+    public void setExamList(List<Exam> list) {
+        this.examList = list != null ? list : new ArrayList<>();
+        this.examListFull = new ArrayList<>(this.examList);
         notifyDataSetChanged();
     }
 
@@ -52,10 +49,10 @@ public class ExamAdapter extends RecyclerView.Adapter<ExamAdapter.ExamViewHolder
         if (query == null || query.trim().isEmpty()) {
             examList = new ArrayList<>(examListFull);
         } else {
-            List<Exam> filtered = new ArrayList<>();
             String q = query.toLowerCase();
+            List<Exam> filtered = new ArrayList<>();
             for (Exam e : examListFull) {
-                if (e.title.toLowerCase().contains(q)) {
+                if (e.getTitle().toLowerCase().contains(q)) {
                     filtered.add(e);
                 }
             }
@@ -68,16 +65,16 @@ public class ExamAdapter extends RecyclerView.Adapter<ExamAdapter.ExamViewHolder
         Comparator<Exam> cmp;
         switch (option) {
             case "name_asc":
-                cmp = (a, b) -> a.title.compareToIgnoreCase(b.title);
+                cmp = (a, b) -> a.getTitle().compareToIgnoreCase(b.getTitle());
                 break;
             case "name_desc":
-                cmp = (a, b) -> b.title.compareToIgnoreCase(a.title);
+                cmp = (a, b) -> b.getTitle().compareToIgnoreCase(a.getTitle());
                 break;
             case "date_asc":
-                cmp = (a, b) -> a.date.compareTo(b.date);
+                cmp = (a, b) -> a.getDate().compareTo(b.getDate());
                 break;
             case "date_desc":
-                cmp = (a, b) -> b.date.compareTo(a.date);
+                cmp = (a, b) -> b.getDate().compareTo(a.getDate());
                 break;
             default:
                 return;
@@ -98,10 +95,14 @@ public class ExamAdapter extends RecyclerView.Adapter<ExamAdapter.ExamViewHolder
     @Override
     public void onBindViewHolder(@NonNull ExamViewHolder holder, int position) {
         Exam exam = examList.get(position);
-        holder.tvExamTitle.setText(exam.title);
-        holder.tvExamPhieu.setText(exam.phieu);
-        holder.tvExamDate.setText(exam.date);
-        holder.tvExamSocau.setText("Số câu: " + exam.soCau);
+        Log.d("ExamAdapter", "Binding pos=" + position + " title=" + exam.getTitle());
+
+        holder.tvTitle.setText(exam.getTitle());
+        holder.tvClass.setText(exam.getClassName() != null ? exam.getClassName() : "");
+        holder.tvSocau.setText("Số câu");
+        holder.tvPhieu.setText(exam.getPhieu());
+        holder.tvDate.setText(exam.getDate());
+        holder.tvCount.setText(String.valueOf(exam.getSoCau()));
     }
 
     @Override
@@ -112,14 +113,21 @@ public class ExamAdapter extends RecyclerView.Adapter<ExamAdapter.ExamViewHolder
     class ExamViewHolder extends RecyclerView.ViewHolder
             implements View.OnClickListener, View.OnLongClickListener {
 
-        TextView tvExamTitle, tvExamPhieu, tvExamDate, tvExamSocau;
+        final TextView tvTitle;
+        final TextView tvClass;
+        final TextView tvSocau;
+        final TextView tvPhieu;
+        final TextView tvDate;
+        final TextView tvCount;
 
-        public ExamViewHolder(@NonNull View itemView) {
+        ExamViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvExamTitle = itemView.findViewById(R.id.tv_exam_title);
-            tvExamPhieu = itemView.findViewById(R.id.tv_exam_phieu);
-            tvExamDate  = itemView.findViewById(R.id.tv_exam_date);
-            tvExamSocau = itemView.findViewById(R.id.tv_exam_socau);
+            tvTitle = itemView.findViewById(R.id.tv_exam_title);
+            tvClass = itemView.findViewById(R.id.tv_exam_class);
+            tvSocau = itemView.findViewById(R.id.tv_exam_socau);
+            tvPhieu = itemView.findViewById(R.id.tv_exam_phieu);
+            tvDate  = itemView.findViewById(R.id.tv_exam_date);
+            tvCount = itemView.findViewById(R.id.tv_exam_count_value);
 
             itemView.setOnClickListener(this);
             itemView.setOnLongClickListener(this);
@@ -127,27 +135,25 @@ public class ExamAdapter extends RecyclerView.Adapter<ExamAdapter.ExamViewHolder
 
         @Override
         public void onClick(View v) {
-            if (clickListener != null) {
+            if (clickListener != null && getAdapterPosition() != RecyclerView.NO_POSITION) {
                 clickListener.onExamItemClick(examList.get(getAdapterPosition()));
             }
         }
 
         @Override
         public boolean onLongClick(View v) {
-            if (longClickListener != null) {
+            if (longClickListener != null && getAdapterPosition() != RecyclerView.NO_POSITION) {
                 longClickListener.onExamItemLongClick(examList.get(getAdapterPosition()));
                 return true;
             }
             return false;
         }
     }
-
-    // Alias để tương thích với Fragment gọi setListener(...) và setLongClickListener(...)
+    // alias để tương thích với tên cũ
     public void setListener(OnExamItemClickListener listener) {
-        this.clickListener = listener;
+        setOnExamItemClickListener(listener);
     }
-
     public void setLongClickListener(OnExamItemLongClickListener listener) {
-        this.longClickListener = listener;
+        setOnExamItemLongClickListener(listener);
     }
 }
