@@ -90,7 +90,6 @@ public class ClassFragment extends Fragment {
     private void showAddDialog() {
         DialogAddClassBinding dlg = DialogAddClassBinding.inflate(getLayoutInflater());
         new MaterialAlertDialogBuilder(requireContext())
-                .setTitle("Tạo lớp mới")
                 .setView(dlg.getRoot())
                 .setNegativeButton("Hủy", null)
                 .setPositiveButton("Tạo", (d, which) -> {
