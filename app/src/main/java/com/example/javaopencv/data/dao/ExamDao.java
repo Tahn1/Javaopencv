@@ -5,6 +5,7 @@ import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
+import androidx.room.RewriteQueriesToDropUnusedColumns;
 import androidx.room.Update;
 
 import com.example.javaopencv.data.entity.Exam;
@@ -12,16 +13,19 @@ import com.example.javaopencv.data.entity.Exam;
 import java.util.List;
 
 @Dao
+@RewriteQueriesToDropUnusedColumns
 public interface ExamDao {
+
+    @SuppressWarnings("unused")
 
     @Query("SELECT * FROM exams WHERE id = :id")
     LiveData<Exam> getExamById(int id);
 
-    /** Lấy exam đồng bộ theo id */
+
     @Query("SELECT * FROM exams WHERE id = :examId")
     Exam getExamSync(int examId);
 
-    /** Lấy tất cả exams kèm tên lớp (className) */
+
     @Query(
             "SELECT " +
                     " e.id, " +
@@ -30,6 +34,7 @@ public interface ExamDao {
                     " e.phieu, " +
                     " e.so_cau AS so_cau, " +
                     " e.date, " +
+                    " e.subject_name AS subject_name, " +
                     " c.name AS className " +
                     "FROM exams e " +
                     "LEFT JOIN classes c ON e.classId = c.id " +
@@ -37,7 +42,9 @@ public interface ExamDao {
     )
     LiveData<List<Exam>> getAllExamsWithClass();
 
-    /** Lấy exams cho 1 lớp, kèm tên lớp */
+    /**
+     * Lấy Exam của một lớp, kèm tên lớp và tên môn học
+     */
     @Query(
             "SELECT " +
                     " e.id, " +
@@ -46,6 +53,7 @@ public interface ExamDao {
                     " e.phieu, " +
                     " e.so_cau AS so_cau, " +
                     " e.date, " +
+                    " e.subject_name AS subject_name, " +
                     " c.name AS className " +
                     "FROM exams e " +
                     "LEFT JOIN classes c ON e.classId = c.id " +
@@ -54,16 +62,15 @@ public interface ExamDao {
     )
     LiveData<List<Exam>> getExamsForClassWithClassName(int classId);
 
-    @Insert
-    long insert(Exam exam);
 
     @Insert
     void insertExam(Exam exam);
 
+
     @Update
     void updateExam(Exam exam);
 
+
     @Delete
     void deleteExam(Exam exam);
-
 }

@@ -24,7 +24,6 @@ public class StudentRepository {
                 : app;
         AppDatabase db = AppDatabase.getInstance(app);
         studentDao = db.studentDao();
-
         mainHandler = new Handler(Looper.getMainLooper());
     }
 
@@ -41,7 +40,6 @@ public class StudentRepository {
         new Thread(() -> {
             long newId = studentDao.insert(student);
             if (newId == -1L) {
-                // Duplicate trong cùng lớp
                 mainHandler.post(() ->
                         Toast.makeText(
                                 app,
@@ -50,7 +48,6 @@ public class StudentRepository {
                         ).show()
                 );
             } else {
-                // Insert thành công (nếu muốn bạn có thể show Toast success)
                 mainHandler.post(() ->
                         Toast.makeText(
                                 app,
@@ -67,8 +64,22 @@ public class StudentRepository {
         new Thread(() -> studentDao.update(student)).start();
     }
 
-    /** Xóa sinh viên */
+    /** Xóa một sinh viên */
     public void deleteStudent(Student student) {
         new Thread(() -> studentDao.delete(student)).start();
+    }
+
+    /** Xóa tất cả sinh viên trong một lớp */
+    public void deleteAllForClass(int classId) {
+        new Thread(() -> {
+            studentDao.deleteByClassId(classId);
+            mainHandler.post(() ->
+                    Toast.makeText(
+                            app,
+                            "Đã xóa tất cả học sinh của lớp",
+                            Toast.LENGTH_SHORT
+                    ).show()
+            );
+        }).start();
     }
 }

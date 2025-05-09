@@ -38,6 +38,21 @@
     <string name="label_sbd">SBD</string>
     <string name="label_full_name">Họ và tên</string>
     <string name="label_student_sbd">Số báo danh</string>
+    <string name="dialog_title_create_exam">Tạo bài mới</string>
+    <string name="label_exam_title">TÊN BÀI</string>
+    <string name="hint_exam_title">Nhập tiêu đề</string>
+    <string name="label_exam_sheet">PHIẾU CHẤM</string>
+    <string name="label_class">LỚP HỌC</string>
+    <string name="label_question_count">SỐ CÂU</string>
+    <string name="hint_question_count">Ví dụ: 20</string>
+    <string name="action_cancel">HỦY</string>
+    <string name="action_create">TẠO</string>
+    <string name="label_subject">TÊN MÔN HỌC</string>
+    <string name="hint_subject">Nhập tên môn học</string>
+    <string name="dialog_title_edit_exam">Chỉnh sửa bài thi</string>
+    <string name="msg_fill_all_fields">Vui lòng nhập tiêu đề và số câu</string>
+    <string name="msg_invalid_number">Số câu không hợp lệ</string>
+    <string name="action_save">Lưu</string>
 
 
 
@@ -85,4 +100,11 @@
     <string name="preview_image">ảnh</string>
     <string name="add_student">thêm học sinh</string>
     <string name="label_date_added">ngày tạo</string>
+    <string name="label_none">None</string>
+    <string name="label_so_cau">SỐ CÂU</string>
+    <string name="action_filter">a</string>
+    <string name="action_search">a</string>
+    <string name="action_more">more</string>
+    <string name="action_export">xuất file</string>
+    <string name="action_import">nhập file</string>
 </resources>

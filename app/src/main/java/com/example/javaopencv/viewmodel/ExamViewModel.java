@@ -12,42 +12,48 @@ import com.example.javaopencv.repository.ExamRepository;
 import java.util.List;
 
 /**
- * ViewModel quản lý dữ liệu Exam cho từng Class
+ * ViewModel quản lý các thao tác với Exam repository
  */
 public class ExamViewModel extends AndroidViewModel {
     private final ExamRepository repo;
 
     public ExamViewModel(@NonNull Application application) {
         super(application);
-        // Khởi tạo repository với context app
+        // Khởi tạo repository
         repo = new ExamRepository(application);
     }
 
     /**
-     * Lấy danh sách Exam của classId (LiveData tự động cập nhật khi DB thay đổi)
-     * @param classId ID của Class
-     * @return LiveData chứa List<Exam>
+     * Lấy danh sách Exam của một lớp
      */
     public LiveData<List<Exam>> getExamsForClass(int classId) {
         return repo.getExamsForClass(classId);
     }
 
     /**
-     * Chèn một Exam mới vào database
-     * @param exam Exam cần tạo
+     * Tạo mới Exam
      */
     public void insertExam(Exam exam) {
         repo.insertExam(exam);
     }
 
+    /**
+     * Cập nhật Exam
+     */
     public void updateExam(Exam exam) {
         repo.updateExam(exam);
     }
 
-    /** Xóa Exam */
+    /**
+     * Xóa Exam
+     */
     public void deleteExam(Exam exam) {
         repo.deleteExam(exam);
     }
+
+    /**
+     * Lấy chi tiết Exam theo id
+     */
     public LiveData<Exam> getExamById(int id) {
         return repo.getExamById(id);
     }

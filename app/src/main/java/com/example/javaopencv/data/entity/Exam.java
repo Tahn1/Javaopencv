@@ -7,6 +7,11 @@ import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
+/**
+ * Entity Exam với fields id, classId, title, phieu, soCau, date, className, subjectName.
+ * SuppressWarnings vì các setter/getter được Room sử dụng, IDE có thể báo unused.
+ */
+@SuppressWarnings("unused")
 @Entity(
         tableName = "exams",
         indices = @Index("classId")
@@ -36,51 +41,67 @@ public class Exam {
     @ColumnInfo(name = "className")
     private String className;
 
-    /** Constructor chính Room sẽ dùng (7 tham số) */
+    /** Tên môn học */
+    @ColumnInfo(name = "subject_name", defaultValue = "")
+    private String subjectName;
+
+    /**
+     * Constructor chính Room sẽ dùng (8 tham số: gồm className và subjectName)
+     */
     public Exam(int id,
                 @Nullable Integer classId,
                 String title,
                 String phieu,
                 int soCau,
                 String date,
-                @Nullable String className) {
-        this.id        = id;
-        this.classId   = classId;
-        this.title     = title;
-        this.phieu     = phieu;
-        this.soCau     = soCau;
-        this.date      = date;
+                @Nullable String className,
+                String subjectName) {
+        this.id = id;
+        this.classId = classId;
+        this.title = title;
+        this.phieu = phieu;
+        this.soCau = soCau;
+        this.date = date;
         this.className = className;
+        this.subjectName = subjectName;
     }
 
-    /** Constructor để insert mới (5 tham số) */
+    /**
+     * Constructor để insert mới (6 tham số: classId, title, phieu, soCau, date, subjectName)
+     */
     @Ignore
     public Exam(@Nullable Integer classId,
                 String title,
                 String phieu,
                 int soCau,
-                String date) {
+                String date,
+                String subjectName) {
         this.classId = classId;
-        this.title   = title;
-        this.phieu   = phieu;
-        this.soCau   = soCau;
-        this.date    = date;
+        this.title = title;
+        this.phieu = phieu;
+        this.soCau = soCau;
+        this.date = date;
+        this.subjectName = subjectName;
     }
 
-    /** Constructor để update/chỉnh sửa tên (6 tham số) */
+    /**
+     * Constructor để update/chỉnh sửa (7 tham số: id, classId, title, phieu, soCau, date, subjectName)
+     */
     @Ignore
     public Exam(int id,
                 @Nullable Integer classId,
                 String title,
                 String phieu,
                 int soCau,
-                String date) {
-        this.id       = id;
-        this.classId  = classId;
-        this.title    = title;
-        this.phieu    = phieu;
-        this.soCau    = soCau;
-        this.date     = date;
+                String date,
+                String subjectName) {
+        this.id = id;
+        this.classId = classId;
+        this.title = title;
+        this.phieu = phieu;
+        this.soCau = soCau;
+        this.date = date;
+        this.subjectName = subjectName;
     }
 
     // --- getters & setters ---
@@ -136,5 +157,10 @@ public class Exam {
         this.className = className;
     }
 
-
+    public String getSubjectName() {
+        return subjectName;
+    }
+    public void setSubjectName(String subjectName) {
+        this.subjectName = subjectName;
+    }
 }

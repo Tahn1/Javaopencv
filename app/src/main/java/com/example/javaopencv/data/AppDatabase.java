@@ -29,7 +29,7 @@ import com.example.javaopencv.data.entity.Student;
                 GradeResult.class,
                 ExamStats.class
         },
-        version = 26,
+        version = 27,
         exportSchema = false
 )
 public abstract class AppDatabase extends RoomDatabase {

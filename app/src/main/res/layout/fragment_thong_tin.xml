@@ -30,6 +30,38 @@
                 android:text="N/A"
                 android:layout_marginBottom="8dp"/>
 
+            <!-- Lớp học (ẩn mặc định) -->
+            <TextView
+                android:id="@+id/tv_exam_class_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Lớp học:"
+                android:textStyle="bold"
+                android:visibility="gone"/>
+            <TextView
+                android:id="@+id/tv_exam_class"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="None"
+                android:layout_marginBottom="8dp"
+                android:visibility="gone"/>
+
+            <!-- Môn học (ẩn mặc định) -->
+            <TextView
+                android:id="@+id/tv_exam_subject_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Môn học:"
+                android:textStyle="bold"
+                android:visibility="gone"/>
+            <TextView
+                android:id="@+id/tv_exam_subject"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="N/A"
+                android:layout_marginBottom="8dp"
+                android:visibility="gone"/>
+
             <!-- Phiếu chấm -->
             <TextView
                 android:text="Phiếu chấm:"

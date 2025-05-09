@@ -1,11 +1,14 @@
 package com.example.javaopencv.viewmodel;
 
 import android.app.Application;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+
 import com.example.javaopencv.data.entity.Student;
 import com.example.javaopencv.repository.StudentRepository;
+
 import java.util.List;
 
 public class StudentViewModel extends AndroidViewModel {
@@ -38,9 +41,16 @@ public class StudentViewModel extends AndroidViewModel {
     }
 
     /**
-     * Xóa sinh viên
+     * Xóa một sinh viên
      */
     public void deleteStudent(Student student) {
         repo.deleteStudent(student);
+    }
+
+    /**
+     * Xóa tất cả sinh viên của lớp này
+     */
+    public void deleteAllForClass(int classId) {
+        repo.deleteAllForClass(classId);
     }
 }
