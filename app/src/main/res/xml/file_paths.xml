@@ -4,4 +4,9 @@
     <external-cache-path
         name="external_cache"
         path="." />
+
+    <!-- Cho phép chia sẻ file trong external files/exports -->
+    <external-files-path
+        name="exports"
+        path="exports/" />
 </paths>
