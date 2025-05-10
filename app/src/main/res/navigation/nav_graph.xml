@@ -34,7 +34,6 @@
         android:id="@+id/kiemTraFragment"
         android:name="com.example.javaopencv.ui.KiemTraFragment"
         android:label="Kiểm Tra" >
-        <!-- Đã xóa action tới subjectFragment -->
         <action
             android:id="@+id/action_kiemTraFragment_to_class"
             app:destination="@id/classFragment" />
@@ -51,7 +50,10 @@
         android:id="@+id/examDetailFragment"
         android:name="com.example.javaopencv.ui.ExamDetailFragment"
         android:label="Chi tiết bài thi" >
-        <argument android:name="examId" app:argType="integer" />
+        <argument
+            android:name="examId"
+            app:argType="integer" />
+
         <action
             android:id="@+id/action_examDetailFragment_to_dapAnFragment"
             app:destination="@id/dapAnFragment" />
@@ -67,6 +69,22 @@
         <action
             android:id="@+id/action_examDetailFragment_to_thongTinFragment"
             app:destination="@id/thongTinFragment" />
+
+        <!-- Mở màn hình Danh sách học sinh -->
+        <action
+            android:id="@+id/action_examDetailFragment_to_studentListFragment"
+            app:destination="@id/studentListFragment" />
+    </fragment>
+
+    <!-- StudentListFragment: Danh sách học sinh của lớp/exam -->
+    <fragment
+        android:id="@+id/studentListFragment"
+        android:name="com.example.javaopencv.ui.StudentListFragment"
+        android:label="Danh sách học sinh" >
+        <!-- Đồng nhất examId dưới dạng integer -->
+        <argument
+            android:name="examId"
+            app:argType="integer" />
     </fragment>
 
     <!-- DapAnFragment: Đáp án -->

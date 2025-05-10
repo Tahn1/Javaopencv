@@ -117,7 +117,6 @@ public class GradeResultAdapter
             h.ivResult.setVisibility(View.INVISIBLE);
             h.tvStudentNamePreview.setVisibility(View.VISIBLE);
             h.tvStudentNamePreview.setText(stu.getName());
-            // Đảm bảo overlay lên trên ảnh
             h.tvStudentNamePreview.bringToFront();
         }
 
@@ -144,7 +143,7 @@ public class GradeResultAdapter
             tvStudentNamePreview = itemView.findViewById(R.id.tvStudentNamePreview);
             tvSbd                = itemView.findViewById(R.id.tvSbd);
             tvScore              = itemView.findViewById(R.id.tvScore);
-            tvMaDe               = itemView.findViewById(R.id.tvMaDe);    // mới
+            tvMaDe               = itemView.findViewById(R.id.tvMaDe);
         }
     }
 }

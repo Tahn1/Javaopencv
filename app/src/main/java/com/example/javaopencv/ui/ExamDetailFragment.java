@@ -31,7 +31,6 @@ public class ExamDetailFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        // Chỉ inflate layout chứa RecyclerView (đã remove header)
         return inflater.inflate(R.layout.fragment_exam_detail, container, false);
     }
 
@@ -76,6 +75,10 @@ public class ExamDetailFragment extends Fragment {
                     NavHostFragment.findNavController(this)
                             .navigate(R.id.action_examDetailFragment_to_thongKeFragment, bundle);
                     break;
+                case "Danh sách học sinh":  // xử lý mục mới
+                    NavHostFragment.findNavController(this)
+                            .navigate(R.id.action_examDetailFragment_to_studentListFragment, bundle);
+                    break;
                 case "Thông tin":
                     NavHostFragment.findNavController(this)
                             .navigate(R.id.action_examDetailFragment_to_thongTinFragment, bundle);
@@ -90,11 +93,12 @@ public class ExamDetailFragment extends Fragment {
 
     private void initializeMenuItems() {
         menuItems = new ArrayList<>();
-        menuItems.add(new MenuItem("1", "Đáp án", "DapAn", "ic_key"));
-        menuItems.add(new MenuItem("2", "Chấm bài", "ChamBai", "ic_camera"));
-        menuItems.add(new MenuItem("3", "Xem lại", "XemLai", "ic_chatbox"));
-        menuItems.add(new MenuItem("4", "Thống kê", "ThongKe", "ic_bar_chart"));
-        menuItems.add(new MenuItem("5", "Thông tin", "ThongTin", "ic_information"));
+        menuItems.add(new MenuItem("1", "Đáp án",      "DapAn",            "ic_key"));
+        menuItems.add(new MenuItem("2", "Chấm bài",    "ChamBai",          "ic_camera"));
+        menuItems.add(new MenuItem("3", "Xem lại",      "XemLai",           "ic_chatbox"));
+        menuItems.add(new MenuItem("4", "Thống kê",     "ThongKe",          "ic_bar_chart"));
+        menuItems.add(new MenuItem("5", "Danh sách học sinh", "StudentList", "ic_students"));  // thêm ở đây
+        menuItems.add(new MenuItem("6", "Thông tin",    "ThongTin",         "ic_information"));
     }
 
     public static class MenuItem {
@@ -148,9 +152,9 @@ public class ExamDetailFragment extends Fragment {
             android.widget.TextView tvLabel;
             MenuViewHolder(@NonNull View itemView) {
                 super(itemView);
-                ivIcon   = itemView.findViewById(R.id.iv_menu_icon);
-                ivChevron= itemView.findViewById(R.id.iv_chevron);
-                tvLabel  = itemView.findViewById(R.id.tv_menu_label);
+                ivIcon    = itemView.findViewById(R.id.iv_menu_icon);
+                ivChevron = itemView.findViewById(R.id.iv_chevron);
+                tvLabel   = itemView.findViewById(R.id.tv_menu_label);
             }
         }
     }

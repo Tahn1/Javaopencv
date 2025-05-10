@@ -107,4 +107,5 @@
     <string name="action_more">more</string>
     <string name="action_export">xuất file</string>
     <string name="action_import">nhập file</string>
+    <string name="edit">chỉnh sửa\n</string>
 </resources>

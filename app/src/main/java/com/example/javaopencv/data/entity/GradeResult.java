@@ -21,11 +21,10 @@ public class GradeResult {
     @ColumnInfo public float focusX;
     @ColumnInfo public float focusY;
     @ColumnInfo public long timestamp;
+    // Thêm trường note
+    @ColumnInfo public String note;
 
-    /**
-     * Constructor để tạo mới trước khi insert vào DB.
-     * Room sẽ bỏ qua constructor này nhờ @Ignore.
-     */
+    /** Room sẽ bỏ qua constructor này. */
     @Ignore
     public GradeResult(int examId,
                        String maDe,
@@ -48,11 +47,10 @@ public class GradeResult {
         this.focusX         = focusX;
         this.focusY         = focusY;
         this.timestamp      = System.currentTimeMillis();
+        this.note           = "";  // mặc định rỗng
     }
 
-    /**
-     * Constructor đầy đủ (12 tham số) Room sẽ sử dụng để load và update.
-     */
+    /** Room sẽ sử dụng constructor đầy đủ này. */
     public GradeResult(long id,
                        int examId,
                        String maDe,
@@ -64,7 +62,8 @@ public class GradeResult {
                        String imagePath,
                        float focusX,
                        float focusY,
-                       long timestamp) {
+                       long timestamp,
+                       String note) {
         this.id             = id;
         this.examId         = examId;
         this.maDe           = maDe;
@@ -77,11 +76,38 @@ public class GradeResult {
         this.focusX         = focusX;
         this.focusY         = focusY;
         this.timestamp      = timestamp;
+        this.note           = note;
     }
 
-    public int getTotalQuestions() {
-        return totalQuestions;
-    }
+    // --- Getters ---
+    public long getId()               { return id; }
+    public int getExamId()            { return examId; }
+    public String getMaDe()           { return maDe; }
+    public String getSbd()            { return sbd; }
+    public String getAnswersCsv()     { return answersCsv; }
+    public int getCorrectCount()      { return correctCount; }
+    public int getTotalQuestions()    { return totalQuestions; }
+    public double getScore()          { return score; }
+    public String getImagePath()      { return imagePath; }
+    public float getFocusX()          { return focusX; }
+    public float getFocusY()          { return focusY; }
+    public long getTimestamp()        { return timestamp; }
+    public String getNote()           { return note; }
+
+    // --- Setters ---
+    public void setId(long id)         { this.id = id; }
+    public void setExamId(int examId)  { this.examId = examId; }
+    public void setMaDe(String maDe)   { this.maDe = maDe; }
+    public void setSbd(String sbd)     { this.sbd = sbd; }
+    public void setAnswersCsv(String answersCsv) { this.answersCsv = answersCsv; }
+    public void setCorrectCount(int correctCount) { this.correctCount = correctCount; }
+    public void setTotalQuestions(int totalQuestions) { this.totalQuestions = totalQuestions; }
+    public void setScore(double score) { this.score = score; }
+    public void setImagePath(String imagePath) { this.imagePath = imagePath; }
+    public void setFocusX(float focusX) { this.focusX = focusX; }
+    public void setFocusY(float focusY) { this.focusY = focusY; }
+    public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
+    public void setNote(String note)  { this.note = note; }
 
     @Override
     public boolean equals(Object o) {
@@ -99,7 +125,8 @@ public class GradeResult {
                 && maDe.equals(g.maDe)
                 && sbd.equals(g.sbd)
                 && (answersCsv != null ? answersCsv.equals(g.answersCsv) : g.answersCsv == null)
-                && imagePath.equals(g.imagePath);
+                && imagePath.equals(g.imagePath)
+                && (note != null ? note.equals(g.note) : g.note == null);
     }
 
     @Override
@@ -117,6 +144,7 @@ public class GradeResult {
         result = 31 * result + Float.floatToIntBits(focusX);
         result = 31 * result + Float.floatToIntBits(focusY);
         result = 31 * result + (int) (timestamp ^ (timestamp >>> 32));
+        result = 31 * result + (note != null ? note.hashCode() : 0);
         return result;
     }
 }

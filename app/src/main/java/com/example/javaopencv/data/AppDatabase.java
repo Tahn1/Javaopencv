@@ -29,14 +29,13 @@ import com.example.javaopencv.data.entity.Student;
                 GradeResult.class,
                 ExamStats.class
         },
-        version = 27,
+        version = 29,
         exportSchema = false
 )
 public abstract class AppDatabase extends RoomDatabase {
     private static volatile AppDatabase instance;
     private static final String DB_NAME = "exams.db";
 
-    // --- Các DAO đã giữ lại ---
     public abstract ClassDao classDao();
     public abstract StudentDao studentDao();
     public abstract ExamDao examDao();
@@ -51,9 +50,8 @@ public abstract class AppDatabase extends RoomDatabase {
                             AppDatabase.class,
                             DB_NAME
                     )
-                    // Khôi phục destructive khi schema thay đổi
+                    // Khi version thay đổi mà không có migration thì destructive migration
                     .fallbackToDestructiveMigration()
-                    // Callback để tắt kiểm tra foreign key (nếu cần)
                     .addCallback(new RoomDatabase.Callback() {
                         @Override
                         public void onOpen(@NonNull SupportSQLiteDatabase db) {

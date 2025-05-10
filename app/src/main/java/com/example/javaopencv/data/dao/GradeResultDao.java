@@ -16,45 +16,61 @@ import java.util.List;
 public interface GradeResultDao {
 
     /**
-     * Chèn mới hoặc cập nhật (REPLACE) nếu đã tồn tại cùng khóa.
-     * Trả về id của bản ghi (dạng long).
+     * Chèn mới hoặc thay thế GradeResult (REPLACE) nếu đã tồn tại.
+     * Trả về id của bản ghi.
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     long insert(GradeResult gradeResult);
 
     /**
-     * Lấy danh sách kết quả chấm của một đề (examId), sắp xếp theo timestamp giảm dần.
+     * Lấy LiveData danh sách GradeResult cho một đề thi (examId).
      */
     @Query("SELECT * FROM GradeResult WHERE examId = :examId ORDER BY timestamp DESC")
     LiveData<List<GradeResult>> getResultsForExam(int examId);
 
     /**
-     * Lấy một GradeResult theo id để hiển thị chi tiết / sửa.
+     * Cập nhật score và note cho học sinh (sbd) trong exam.
+     */
+    @Query("UPDATE GradeResult " +
+            "SET score = :score, note = :note " +
+            "WHERE examId = :examId AND sbd = :sbd")
+    void updateScoreAndNote(int examId, String sbd, double score, String note);
+
+    /**
+     * Lấy LiveData một GradeResult theo id để hiển thị hoặc sửa chi tiết.
      */
     @Query("SELECT * FROM GradeResult WHERE id = :gradeId")
     LiveData<GradeResult> getGradeResultById(long gradeId);
 
     /**
-     * Cập nhật các trường của GradeResult (maDe, sbd, answersCsv, score, …).
+     * Cập nhật toàn bộ đối tượng GradeResult.
      */
     @Update
     void updateResult(GradeResult gradeResult);
 
     /**
-     * Xóa một bản ghi GradeResult.
+     * Xóa một GradeResult.
      */
     @Delete
     void deleteResult(GradeResult gradeResult);
 
     /**
-     * Xóa tất cả kết quả của một đề thi (examId).
+     * Xóa tất cả GradeResult của đề thi (examId).
      */
     @Query("DELETE FROM GradeResult WHERE examId = :examId")
     void deleteAllByExamId(int examId);
 
     /**
-     * Lấy danh sách kết quả của một đề (examId) đồng bộ (để xuất file).
+     * Lấy danh sách GradeResult đồng bộ (không LiveData), dùng khi xuất file.
      */
     @Query("SELECT * FROM GradeResult WHERE examId = :examId ORDER BY timestamp DESC")
     List<GradeResult> getResultsListSync(int examId);
+
+    /**
+     * Đếm số bản ghi cùng examId và cùng sbd, loại trừ bản ghi đang sửa (currentId).
+     * Dùng để kiểm tra trùng mã sinh viên trước khi cập nhật.
+     */
+    @Query("SELECT COUNT(*) FROM GradeResult " +
+            "WHERE examId = :examId AND sbd = :sbd AND id != :currentId")
+    int countByExamAndStudent(int examId, String sbd, long currentId);
 }
