@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -59,32 +58,39 @@ public class ThongKeFragment extends Fragment {
                               @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-
-        barChart = view.findViewById(R.id.barChart);
-        pieChart = view.findViewById(R.id.pieChart);
-
+        // 1) Lấy examId từ arguments
         if (getArguments() != null) {
             examId = getArguments().getInt(ARG_EXAM_ID, -1);
         }
 
-        viewModel = new ViewModelProvider(this).get(XemLaiViewModel.class);
-        viewModel.getResultsForExam(examId)
-                .observe(getViewLifecycleOwner(), this::updateCharts);
+        // 2) Khởi tạo UI
+        barChart = view.findViewById(R.id.barChart);
+        pieChart = view.findViewById(R.id.pieChart);
+
+        // 3) Khởi tạo ViewModel với Factory, truyền examId
+        viewModel = new ViewModelProvider(
+                this,
+                new XemLaiViewModel.Factory(requireActivity().getApplication(), examId)
+        ).get(XemLaiViewModel.class);
+
+        // 4) Quan sát dữ liệu và cập nhật chart
+        viewModel.getResultsForExam().observe(getViewLifecycleOwner(), this::updateCharts);
     }
 
     private void updateCharts(List<GradeResult> results) {
         if (results == null || results.isEmpty()) return;
 
+        // Thống kê theo điểm nguyên 0–10
         int[] countPerScore = new int[11];
+        // Thống kê theo nhóm yếu/trung bình/khá/giỏi
         int cntYeu = 0, cntTB = 0, cntKha = 0, cntGioi = 0;
 
         for (GradeResult gr : results) {
-            double score = gr.score;
+            double score = gr.getScore();
             int rounded = (int) Math.round(score);
             if (rounded >= 0 && rounded <= 10) {
                 countPerScore[rounded]++;
             }
-
             if (score < 5)        cntYeu++;
             else if (score < 7)   cntTB++;
             else if (score < 8.5) cntKha++;
@@ -97,7 +103,6 @@ public class ThongKeFragment extends Fragment {
 
     private void setupBarChart(int[] countPerScore) {
         List<BarEntry> entries = new ArrayList<>();
-
         for (int i = 0; i <= 10; i++) {
             if (countPerScore[i] > 0) {
                 entries.add(new BarEntry(i, countPerScore[i]));
@@ -108,8 +113,7 @@ public class ThongKeFragment extends Fragment {
         set.setColor(Color.parseColor("#FF5722"));
         set.setValueTextSize(12f);
         set.setValueFormatter(new ValueFormatter() {
-            @Override
-            public String getFormattedValue(float value) {
+            @Override public String getFormattedValue(float value) {
                 return String.format("%.0f", value);
             }
         });
@@ -126,17 +130,15 @@ public class ThongKeFragment extends Fragment {
         xAxis.setGranularity(1f);
         xAxis.setLabelCount(11, false);
         xAxis.setValueFormatter(new ValueFormatter() {
-            @Override
-            public String getFormattedValue(float value) {
-                int intVal = (int) value;
-                if (intVal >= 0 && intVal <= 10 && countPerScore[intVal] > 0) {
-                    return String.valueOf(intVal);
-                }
-                return "";
+            @Override public String getFormattedValue(float value) {
+                int idx = (int) value;
+                return (idx >= 0 && idx <= 10 && countPerScore[idx] > 0)
+                        ? String.valueOf(idx)
+                        : "";
             }
         });
 
-        // Ẩn description
+        // Ẩn mô tả
         Description desc = new Description();
         desc.setText("");
         barChart.setDescription(desc);
@@ -148,10 +150,10 @@ public class ThongKeFragment extends Fragment {
 
     private void setupPieChart(int yeu, int tb, int kha, int gioi) {
         List<PieEntry> entries = new ArrayList<>();
-        if (yeu > 0) entries.add(new PieEntry(yeu, "Yếu"));
-        if (tb > 0)  entries.add(new PieEntry(tb, "Trung Bình"));
-        if (kha > 0) entries.add(new PieEntry(kha, "Khá"));
-        if (gioi > 0)entries.add(new PieEntry(gioi, "Giỏi"));
+        if (yeu > 0)  entries.add(new PieEntry(yeu,  "Yếu"));
+        if (tb > 0)   entries.add(new PieEntry(tb,   "Trung Bình"));
+        if (kha > 0)  entries.add(new PieEntry(kha,  "Khá"));
+        if (gioi > 0) entries.add(new PieEntry(gioi, "Giỏi"));
 
         PieDataSet set = new PieDataSet(entries, "");
         set.setSliceSpace(2f);

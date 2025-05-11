@@ -29,6 +29,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.javaopencv.R;
+import com.example.javaopencv.data.AppDatabase;
+import com.example.javaopencv.data.dao.AnswerDao;
+import com.example.javaopencv.data.entity.Answer;
 import com.example.javaopencv.data.entity.Exam;
 import com.example.javaopencv.data.entity.GradeResult;
 import com.example.javaopencv.data.entity.Student;
@@ -71,28 +74,25 @@ public class XemLaiFragment extends Fragment {
         if (getArguments() != null) {
             examId = getArguments().getInt("examId", -1);
         }
-        classId = null;
         requireActivity().getOnBackPressedDispatcher()
                 .addCallback(this, new OnBackPressedCallback(true) {
-                    @Override
-                    public void handleOnBackPressed() {
+                    @Override public void handleOnBackPressed() {
                         navigateUp();
                     }
                 });
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view,
+                              @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Thiết lập toolbar menu
+        // 1) Toolbar menu
         MenuHost host = requireActivity();
         host.addMenuProvider(new MenuProvider() {
-            @Override
-            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+            @Override public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
                 inflater.inflate(R.menu.menu_xem_lai, menu);
             }
-
             @Override
             public boolean onMenuItemSelected(@NonNull MenuItem item) {
                 int id = item.getItemId();
@@ -106,6 +106,8 @@ public class XemLaiFragment extends Fragment {
                     exportCsvAndShare();
                 } else if (id == R.id.action_export_pdf) {
                     exportSinglePdfAndShare();
+                } else if (id == R.id.action_export_answers) {
+                    exportAnswerKeyCsvAndShare();
                 } else {
                     return false;
                 }
@@ -113,24 +115,31 @@ public class XemLaiFragment extends Fragment {
             }
         }, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
 
-        // Swipe to refresh
+        // 2) Swipe refresh
         swipeRefresh = view.findViewById(R.id.swipe_refresh);
         swipeRefresh.setOnRefreshListener(this::refreshData);
 
-        // RecyclerView
+        // 3) RecyclerView
         RecyclerView rv = view.findViewById(R.id.rvGradeResults);
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         adapter = new GradeResultAdapter();
         rv.setAdapter(adapter);
 
-        // ViewModel
-        vm = new ViewModelProvider(this).get(XemLaiViewModel.class);
-        vm.getResultsForExam(examId).observe(getViewLifecycleOwner(), results -> {
+        // 4) ViewModel với Factory
+        vm = new ViewModelProvider(
+                this,
+                new XemLaiViewModel.Factory(requireActivity().getApplication(), examId)
+        ).get(XemLaiViewModel.class);
+
+        // 5) Observe kết quả chấm
+        vm.getResultsForExam().observe(getViewLifecycleOwner(), results -> {
             swipeRefresh.setRefreshing(false);
             fullResults = results != null ? results : new ArrayList<>();
             applySort();
         });
-        vm.getClassIdForExam(examId).observe(getViewLifecycleOwner(), cid -> {
+
+        // 6) Observe classId → load sinh viên
+        vm.getClassIdForExam().observe(getViewLifecycleOwner(), cid -> {
             classId = cid;
             if (cid != null) {
                 vm.getStudentsForClass(cid).observe(getViewLifecycleOwner(), list -> {
@@ -145,6 +154,7 @@ public class XemLaiFragment extends Fragment {
             }
         });
 
+        // 7) Item click / long-click
         adapter.setOnItemClickListener(item -> {
             Bundle args = new Bundle();
             args.putLong("gradeId", item.id);
@@ -153,6 +163,7 @@ public class XemLaiFragment extends Fragment {
         });
         adapter.setOnItemLongClickListener(this::confirmDelete);
 
+        // 8) Lần đầu nào
         swipeRefresh.setRefreshing(true);
     }
 
@@ -165,7 +176,8 @@ public class XemLaiFragment extends Fragment {
 
     private void refreshData() {
         new Thread(() -> {
-            List<GradeResult> results = vm.getResultsListSync(examId);
+            // *** Bỏ tham số vào đây ***
+            List<GradeResult> results = vm.getResultsListSync();
             requireActivity().runOnUiThread(() -> {
                 swipeRefresh.setRefreshing(false);
                 fullResults = results != null ? results : new ArrayList<>();
@@ -189,7 +201,7 @@ public class XemLaiFragment extends Fragment {
                 .setTitle("Xóa kết quả chấm")
                 .setMessage("Bạn có chắc muốn xóa kết quả này không?")
                 .setNegativeButton("Hủy", null)
-                .setPositiveButton("Xóa", (d, w) -> vm.deleteResult(item))
+                .setPositiveButton("Xóa", (d,w) -> vm.deleteResult(item))
                 .show();
     }
 
@@ -198,62 +210,59 @@ public class XemLaiFragment extends Fragment {
                 .setTitle("Xóa tất cả bài thi")
                 .setMessage("Bạn có chắc muốn xóa toàn bộ kết quả?")
                 .setNegativeButton("Hủy", null)
-                .setPositiveButton("Xóa", (d, w) -> vm.deleteAllResultsForExam(examId))
+                // deleteAllResultsForExam vẫn giữ tham số examId
+                .setPositiveButton("Xóa", (d,w) -> vm.deleteAllResultsForExam())
                 .show();
     }
 
     private void showSortDialog() {
-        String[] options = {"Sắp theo SBD ↑", "Sắp theo Mã Đề ↑"};
+        String[] options = {"Sắp theo SBD ↑", "Sắp theo Mã đề ↑"};
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Chọn cách sắp xếp")
                 .setSingleChoiceItems(options, sortMode - 1, (dlg, which) -> sortMode = which + 1)
-                .setPositiveButton("OK", (d, w) -> applySort())
+                .setPositiveButton("OK", (d,w) -> applySort())
                 .setNegativeButton("Hủy", null)
                 .show();
     }
 
     private void exportCsvAndShare() {
         new Thread(() -> {
-            Exam exam = vm.getExamSync(examId);
-            String testName = exam != null ? exam.getTitle() : "";
-            String subject  = exam != null ? exam.getSubjectName() : "";
-            String date     = exam != null ? exam.getDate() : ""; // dd/MM/yyyy
-// An toàn tên file
-            String safeTestName = testName.trim().replaceAll("\\s+", "_");
-            String safeSubject  = subject.trim().replaceAll("\\s+", "_");
-            String safeDate     = date.replace("/", "-");
-            String fileName = String.format(Locale.getDefault(),
-                    "Bai cham_%s_%s_%s.csv",
-                    safeTestName, safeSubject, safeDate
-            );
+            // *** Bỏ examId khi gọi getExamSync() ***
+            Exam exam = vm.getExamSync();
+            String test    = exam != null ? exam.getTitle()       : "";
+            String subject = exam != null ? exam.getSubjectName() : "";
+            String date    = exam != null ? exam.getDate()        : "";
+            String safeT   = test.trim().replaceAll("\\s+","_");
+            String safeS   = subject.trim().replaceAll("\\s+","_");
+            String safeD   = date.replace("/","-");
+            String meta    = "BaiCham_"+safeT+"_"+safeS+"_"+safeD;
 
-// Lưu vào external files/exports để dễ chia sẻ
             File dir = requireContext().getExternalFilesDir("exports");
-            if (dir != null && !dir.exists()) dir.mkdirs();
-            File csv = new File(dir, fileName);
+            if (dir!=null && !dir.exists()) dir.mkdirs();
+            File csv = new File(dir, meta + ".csv");
 
             try (FileOutputStream fos = new FileOutputStream(csv);
                  OutputStreamWriter osw = new OutputStreamWriter(fos, StandardCharsets.UTF_8);
                  BufferedWriter bw = new BufferedWriter(osw)) {
-                // BOM + header
                 fos.write(0xEF); fos.write(0xBB); fos.write(0xBF);
-                bw.write("Tên bài,Họ Và Tên,Số Báo Danh,Mã Đề,Điểm\n");
-
-                for (GradeResult r : vm.getResultsListSync(examId)) {
+                bw.write(meta + "\n");
+                bw.write("Tên bài,Họ và tên,Số báo danh,Mã đề,Điểm\n");
+                for (GradeResult r : vm.getResultsListSync()) {
                     Student s = studentMap.get(r.sbd != null ? r.sbd.trim() : "");
                     bw.write(String.format(
                             "=\"%s\",=\"%s\",=\"%s\",=\"%s\",=\"%.2f\"\n",
-                            testName,
+                            test,
                             s != null ? s.getName() : "",
                             r.sbd != null ? r.sbd : "",
                             r.maDe != null ? r.maDe : "",
                             r.score
-                    ));}
+                    ));
+                }
                 bw.flush();
             } catch (IOException e) {
                 e.printStackTrace();
                 requireActivity().runOnUiThread(() ->
-                        Toast.makeText(requireContext(), "Lỗi khi xuất CSV", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "Lỗi xuất CSV", Toast.LENGTH_SHORT).show()
                 );
                 return;
             }
@@ -270,137 +279,103 @@ public class XemLaiFragment extends Fragment {
         }).start();
     }
 
-    private void exportSinglePdfAndShare() {
-        Toast.makeText(requireContext(), "Đang tạo PDF…", Toast.LENGTH_SHORT).show();
-        new Thread(() -> {
-            try {
-                List<GradeResult> list = new ArrayList<>(vm.getResultsListSync(examId));
-                if (list == null || list.isEmpty()) {
+    /**
+     * Xuất PDF chi tiết bài chấm với metadata header trên tiêu đề trang đầu
+     */
+    private void exportSinglePdfAndShare(){
+        Toast.makeText(requireContext(),"Đang tạo PDF…",Toast.LENGTH_SHORT).show();
+        new Thread(()->{
+            try{
+                List<GradeResult> list = new ArrayList<>(vm.getResultsListSync());
+                if (list.isEmpty()) {
                     requireActivity().runOnUiThread(() ->
-                            Toast.makeText(requireContext(), "Không có dữ liệu để xuất", Toast.LENGTH_SHORT).show()
-                    );
+                            Toast.makeText(requireContext(), "Không có dữ liệu", Toast.LENGTH_SHORT).show());
                     return;
                 }
-                // Sort theo SBD (id) tăng dần
-                list.sort(Comparator.comparingInt(r -> {
-                    try {
-                        return Integer.parseInt(r.sbd != null ? r.sbd.trim() : "0");
-                    } catch (NumberFormatException e) {
-                        return 0;
-                    }
-                }));
+                list.sort(Comparator.comparing(r->r.sbd!=null?r.sbd.trim():""));
+                Exam exam=vm.getExamSync();
+                String test=exam!=null?exam.getTitle():"";
+                String subj=exam!=null?exam.getSubjectName():"";
+                String dt=exam!=null?exam.getDate().replace("/","-"):"";
+                String meta="BaiCham_"+test.replaceAll("\\s+","_")+"_"+subj.replaceAll("\\s+","_")+"_"+dt;
 
-                PdfDocument pdf = new PdfDocument();
-                Paint titlePaint = new Paint();
-                titlePaint.setTextSize(18);
-                titlePaint.setFakeBoldText(true);
-                Paint separatorPaint = new Paint();
-                separatorPaint.setStrokeWidth(1);
-                Paint infoPaint = new Paint();
-                infoPaint.setTextSize(14);
-
-                PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(595, 842, 1).create();
-                PdfDocument.Page page = pdf.startPage(pageInfo);
-                Canvas c = page.getCanvas();
-                float margin = 40;
-                float y = margin;
-
-                for (GradeResult r : list) {
-                    if (y > pageInfo.getPageHeight() - 200) {
-                        pdf.finishPage(page);
-                        page = pdf.startPage(pageInfo);
-                        c = page.getCanvas();
-                        y = margin;
-                    }
-                    // Lấy tên học sinh nếu có
-                    // Lấy tên học sinh nếu có
-                    String key = r.sbd != null ? r.sbd.trim() : "";
-                    String name = "";
-                    if (studentMap.containsKey(key)) {
-                        name = studentMap.get(key).getName();
-                    }
-                    // Vẽ thông tin
-                    c.drawText("ID NUMBER: " + (r.sbd != null ? r.sbd : ""), margin, y, titlePaint);
-                    y += 28;
-                    if (!name.isEmpty()) {
-                        c.drawText("NAME: " + name, margin, y, infoPaint);
-                        y += 24;
-                    }
-                    c.drawText("KEY CODE: " + (r.maDe != null ? r.maDe : ""), margin, y, titlePaint);
-                    y += 28;
-                    c.drawText(String.format("SCORE: %.2f", r.score), margin, y, titlePaint);
-                    y += 36;
-                    // Vẽ ảnh chấm chi tiết
-                    if (r.imagePath != null) {
-                        Bitmap bmp = BitmapFactory.decodeFile(r.imagePath);
-                        if (bmp != null) {
-                            float maxW = pageInfo.getPageWidth() - 2 * margin;
-                            float scale = Math.min(1f, maxW / bmp.getWidth());
-                            float iw = bmp.getWidth() * scale;
-                            float ih = bmp.getHeight() * scale;
-                            c.drawBitmap(Bitmap.createScaledBitmap(bmp, (int) iw, (int) ih, false), margin, y, null);
-                            bmp.recycle();
-                            y += ih + 20;
-                        }
-                    }
-                    // Phân cách
-                    c.drawLine(margin, y, pageInfo.getPageWidth() - margin, y, separatorPaint);
-                    y += 24;
+                PdfDocument pdf=new PdfDocument();
+                Paint titleP=new Paint();titleP.setTextSize(18);titleP.setFakeBoldText(true);
+                Paint infoP =new Paint();infoP.setTextSize(14);
+                Paint sepP  =new Paint();sepP.setStrokeWidth(1);
+                PdfDocument.PageInfo pi=new PdfDocument.PageInfo.Builder(595,842,1).create();
+                PdfDocument.Page page=pdf.startPage(pi);
+                Canvas c=page.getCanvas();float y=40;
+                // draw metadata title
+                c.drawText(meta,40,y,titleP);y+=30;
+                for(GradeResult r:list){
+                    if(y>pi.getPageHeight()-200){pdf.finishPage(page);page=pdf.startPage(pi);c=page.getCanvas();y=40;}
+                    String name= r.sbd!=null && studentMap.containsKey(r.sbd.trim())?studentMap.get(r.sbd.trim()).getName():"";
+                    c.drawText("SBD: "+r.sbd+(name.isEmpty()?"":" - "+name),40,y,infoP);y+=20;
+                    c.drawText("Mã đề: "+r.maDe+String.format(" - %.2f",r.score),40,y,titleP);y+=24;
+                    if(r.imagePath!=null){Bitmap bm=BitmapFactory.decodeFile(r.imagePath);
+                        if(bm!=null){float maxW=pi.getPageWidth()-80;float scale=maxW/bm.getWidth();
+                            c.drawBitmap(Bitmap.createScaledBitmap(bm,(int)(bm.getWidth()*scale),(int)(bm.getHeight()*scale),false),40,y,null);
+                            y+=bm.getHeight()*scale+20;bm.recycle();}}
+                    c.drawLine(40,y,pi.getPageWidth()-40,y,sepP);y+=24;
                 }
                 pdf.finishPage(page);
-                File dir = requireContext().getExternalFilesDir("exports");
-                if (dir != null && !dir.exists()) dir.mkdirs();
-                // Đặt tên file theo định dạng: Bai cham_<TestName>_<SubjectName>_<dd-MM-yyyy>.pdf
-                Exam examInfo = vm.getExamSync(examId);
-                String testName = examInfo != null ? examInfo.getTitle() : "";
-                String subject = examInfo != null ? examInfo.getSubjectName() : "";
-                String date = examInfo != null ? examInfo.getDate() : ""; // dd/MM/yyyy
-// An toàn tên file
-                String safeTestName = testName.trim().replaceAll("\\s+", "_");
-                String safeSubject = subject.trim().replaceAll("\\s+", "_");
-                String safeDate = date.replace("/", "-");
-                String fileName = String.format(Locale.getDefault(),
-                        "Bai_cham_%s_%s_%s.pdf", safeTestName, safeSubject, safeDate
-                );
-                File outFile = new File(dir, fileName);
-                try (FileOutputStream out = new FileOutputStream(outFile)) {
-                    pdf.writeTo(out);
-                }
-                pdf.close();
-                Uri uri = FileProvider.getUriForFile(requireContext(),
-                        requireContext().getPackageName() + ".fileprovider", outFile);
-                Intent share = new Intent(Intent.ACTION_SEND)
-                        .setType("application/pdf")
-                        .putExtra(Intent.EXTRA_STREAM, uri)
-                        .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                requireActivity().runOnUiThread(() ->
-                        startActivity(Intent.createChooser(share, "Chia sẻ PDF"))
-                );
-            } catch (Exception e) {
-                e.printStackTrace();
-                requireActivity().runOnUiThread(() ->
-                        Toast.makeText(requireContext(), "Lỗi tạo PDF: " + e.getMessage(), Toast.LENGTH_LONG).show()
-                );
-            }
+                File dir=requireContext().getExternalFilesDir("exports");if(dir!=null&&!dir.exists())dir.mkdirs();
+                String fname=meta+".pdf";
+                File out=new File(dir,fname);
+                try(FileOutputStream fos=new FileOutputStream(out)){pdf.writeTo(fos);}pdf.close();
+                Uri uri=FileProvider.getUriForFile(requireContext(),requireContext().getPackageName()+".fileprovider",out);
+                Intent share=new Intent(Intent.ACTION_SEND).setType("application/pdf").putExtra(Intent.EXTRA_STREAM,uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                requireActivity().runOnUiThread(()->startActivity(Intent.createChooser(share,"Chia sẻ PDF")));
+            }catch(Exception e){e.printStackTrace();requireActivity().runOnUiThread(()->
+                    Toast.makeText(requireContext(),"Lỗi PDF: "+e.getMessage(),Toast.LENGTH_LONG).show());}
         }).start();
     }
 
-    private void createPdfForResult(GradeResult r, File outFile) throws IOException {
-        PdfDocument pdf = new PdfDocument();
-        PdfDocument.PageInfo info = new PdfDocument.PageInfo.Builder(595, 842, 1).create();
-        PdfDocument.Page page = pdf.startPage(info);
-        Canvas c = page.getCanvas();
-        Paint p = new Paint();
-        p.setTextSize(14);
-        c.drawText("Mã đề: " + r.maDe, 40, 50, p);
-        c.drawText("SBD: " + r.sbd, 40, 70, p);
-        c.drawText(String.format(Locale.getDefault(), "Điểm: %.2f", r.score), 40, 90, p);
-        pdf.finishPage(page);
-
-        try (FileOutputStream out = new FileOutputStream(outFile)) {
-            pdf.writeTo(out);
-        }
-        pdf.close();
+    /**
+     * Xuất đáp án (answer key) CSV với tên file DapAn_<Test>_<Subject>_<dd-MM-yyyy>
+     */
+    private void exportAnswerKeyCsvAndShare() {
+        new Thread(() -> {
+            AnswerDao dao = AppDatabase.getInstance(requireContext()).answerDao();
+            List<Answer> list = dao.getAnswersByExamSync(examId);
+            if (list == null || list.isEmpty()) {
+                requireActivity().runOnUiThread(() ->
+                        Toast.makeText(requireContext(), "Không có đáp án để xuất", Toast.LENGTH_SHORT).show());
+                return;
+            }
+            Exam exam = vm.getExamSync();
+            String test = exam != null ? exam.getTitle() : "";
+            String subj = exam != null ? exam.getSubjectName() : "";
+            String dt = exam != null ? exam.getDate().replace("/","-") : "";
+            String safeT = test.trim().replaceAll("\\s+","_");
+            String safeS = subj.trim().replaceAll("\\s+","_");
+            String meta = "DapAn_"+safeT+"_"+safeS+"_"+dt;
+            StringBuilder sb = new StringBuilder();
+            sb.append(meta).append('\n');
+            sb.append("Mã đề,Câu số,Đáp án\n");
+            for (Answer a : list) {
+                sb.append("=\"").append(a.code).append("\"")
+                        .append(',').append(a.cauSo).append(',').append(a.dapAn).append('\n');
+            }
+            String fileName = meta + ".csv";
+            try {
+                File dir = requireContext().getExternalFilesDir("exports"); if(dir!=null&&!dir.exists())dir.mkdirs();
+                File csv = new File(dir, fileName);
+                try (FileOutputStream fos = new FileOutputStream(csv);
+                     OutputStreamWriter osw = new OutputStreamWriter(fos, StandardCharsets.UTF_8);
+                     BufferedWriter bw = new BufferedWriter(osw)) {
+                    fos.write(0xEF);fos.write(0xBB);fos.write(0xBF);
+                    bw.write(sb.toString());bw.flush();
+                }
+                Uri uri = FileProvider.getUriForFile(requireContext(),requireContext().getPackageName()+".fileprovider",csv);
+                Intent share = new Intent(Intent.ACTION_SEND).setType("text/csv").putExtra(Intent.EXTRA_STREAM,uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                requireActivity().runOnUiThread(()->startActivity(Intent.createChooser(share,"Chia sẻ đáp án")));
+            } catch (IOException e) {
+                e.printStackTrace(); requireActivity().runOnUiThread(()->
+                        Toast.makeText(requireContext(),"Lỗi xuất đáp án",Toast.LENGTH_SHORT).show());
+            }
+        }).start();
     }
 
     private void navigateUp() {

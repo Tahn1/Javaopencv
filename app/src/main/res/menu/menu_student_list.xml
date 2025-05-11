@@ -8,4 +8,11 @@
         android:icon="@drawable/ic_search_white"
         app:showAsAction="ifRoom|collapseActionView"
         app:actionViewClass="androidx.appcompat.widget.SearchView" />
+
+    <!-- Nút Xuất Excel -->
+    <item
+        android:id="@+id/action_export_excel"
+        android:title="Xuất Excel"
+        android:icon="@drawable/ic_file_export_white"
+        app:showAsAction="never" />
 </menu>

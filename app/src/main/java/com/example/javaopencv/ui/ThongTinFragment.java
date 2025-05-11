@@ -55,7 +55,7 @@ public class ThongTinFragment extends Fragment {
                                         @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // 1) Ánh xạ tất cả các TextView
+        // 1) Ánh xạ tất cả TextView
         tvExamTitle         = view.findViewById(R.id.tv_exam_title);
         tvExamClassLabel    = view.findViewById(R.id.tv_exam_class_label);
         tvExamClass         = view.findViewById(R.id.tv_exam_class);
@@ -76,10 +76,10 @@ public class ThongTinFragment extends Fragment {
             soCau  = args.getInt("questionCount", 20);
         }
 
-        // 3) Load thông tin cơ bản
+        // 3) Load thông tin cơ bản từ Exam
         loadExamInfo();
 
-        // 4) Quan sát số mã đề (số đáp án)
+        // 4) Quan sát số mã đề
         dapAnViewModel = new ViewModelProvider(requireActivity())
                 .get(DapAnViewModel.class);
         dapAnViewModel.getMaDeList().observe(getViewLifecycleOwner(), maDeItems -> {
@@ -87,10 +87,13 @@ public class ThongTinFragment extends Fragment {
             tvExamSoDapAn.setText(String.valueOf(soDapAn));
         });
 
-        // 5) Quan sát kết quả đã chấm
-        xemLaiViewModel = new ViewModelProvider(requireActivity())
-                .get(XemLaiViewModel.class);
-        xemLaiViewModel.getResultsForExam(examId)
+        // 5) Khởi tạo và quan sát XemLaiViewModel với Factory truyền examId
+        xemLaiViewModel = new ViewModelProvider(
+                this,
+                new XemLaiViewModel.Factory(requireActivity().getApplication(), examId)
+        ).get(XemLaiViewModel.class);
+
+        xemLaiViewModel.getResultsForExam()
                 .observe(getViewLifecycleOwner(), results -> {
                     int soBaiCham = (results != null) ? results.size() : 0;
                     tvExamSoBaiCham.setText(String.valueOf(soBaiCham));
@@ -98,7 +101,7 @@ public class ThongTinFragment extends Fragment {
                     if (results != null && !results.isEmpty()) {
                         double sum = 0, min = Double.MAX_VALUE, max = Double.MIN_VALUE;
                         for (GradeResult gr : results) {
-                            double sc = gr.score;
+                            double sc = gr.getScore();
                             sum += sc;
                             if (sc < min) min = sc;
                             if (sc > max) max = sc;
@@ -124,12 +127,10 @@ public class ThongTinFragment extends Fragment {
             if (getActivity() != null) {
                 getActivity().runOnUiThread(() -> {
                     if (exam != null) {
-                        // Tiêu đề, phiếu, số câu
                         tvExamTitle.setText(exam.getTitle());
                         tvExamPhieu.setText(exam.getPhieu());
                         tvExamSoCau.setText(String.valueOf(exam.getSoCau()));
 
-                        // Lớp học
                         if (exam.getClassName() != null && !exam.getClassName().isEmpty()) {
                             tvExamClassLabel.setVisibility(View.VISIBLE);
                             tvExamClass.setVisibility(View.VISIBLE);
@@ -139,7 +140,6 @@ public class ThongTinFragment extends Fragment {
                             tvExamClass.setVisibility(View.GONE);
                         }
 
-                        // Môn học
                         if (exam.getSubjectName() != null && !exam.getSubjectName().isEmpty()) {
                             tvExamSubjectLabel.setVisibility(View.VISIBLE);
                             tvExamSubject.setVisibility(View.VISIBLE);
@@ -149,7 +149,8 @@ public class ThongTinFragment extends Fragment {
                             tvExamSubject.setVisibility(View.GONE);
                         }
                     } else {
-                        Toast.makeText(requireContext(), "Không tìm thấy bài thi!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(),
+                                "Không tìm thấy bài thi!", Toast.LENGTH_SHORT).show();
                     }
                 });
             }

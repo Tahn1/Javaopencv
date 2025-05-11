@@ -16,19 +16,27 @@
         android:title="Thêm"
         app:showAsAction="always">
 
-        <!-- Sub-menu gồm 2 lựa chọn -->
+        <!-- Sub-menu gồm các lựa chọn -->
         <menu>
             <item
                 android:id="@+id/action_delete_all"
                 android:title="Xóa tất cả bài thi"
                 app:showAsAction="never" />
+
             <item
                 android:id="@+id/action_export"
-                android:title="Xuất file excel "
+                android:title="Xuất file excel"
                 app:showAsAction="never" />
+
             <item
                 android:id="@+id/action_export_pdf"
-                android:title="Xuất PDF"
+                android:title="Xuất file PDF"
+                app:showAsAction="never" />
+
+            <!-- Mục mới: Xuất đáp án -->
+            <item
+                android:id="@+id/action_export_answers"
+                android:title="Xuất đáp án"
                 app:showAsAction="never" />
         </menu>
     </item>
