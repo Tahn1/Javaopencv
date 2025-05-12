@@ -21,6 +21,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.example.javaopencv.viewmodel.GradeResultViewModel;
 
 import com.example.javaopencv.R;
 import com.example.javaopencv.data.entity.StudentResult;

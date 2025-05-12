@@ -1,12 +1,12 @@
 package com.example.javaopencv.ui;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.LayoutInflater;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -77,25 +77,33 @@ public class KiemTraFragment extends Fragment
             examAdapter.setExamList(exams);
         });
 
-        // FAB
+        // FAB: tạo mới exam
         FloatingActionButton fab = view.findViewById(R.id.fab_add);
-        fab.setOnClickListener(v ->
-                NewExamDialogFragment.newInstanceForCreate(/*classId*/0)
-                        .show(getParentFragmentManager(), "NewExam")
-        );
+        fab.setOnClickListener(v -> {
+            // Nếu cần classId mặc định, truyền -1
+            NewExamDialogFragment.newInstanceForCreate(-1)
+                    .show(getParentFragmentManager(), "NewExam");
+        });
     }
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu,
                                     @NonNull MenuInflater inflater) {
         inflater.inflate(R.menu.menu_kiem_tra, menu);
-        MenuItem item = menu.findItem(R.id.action_search);
+        MenuItem searchItem = menu.findItem(R.id.action_search);
         androidx.appcompat.widget.SearchView sv =
-                (androidx.appcompat.widget.SearchView) item.getActionView();
+                (androidx.appcompat.widget.SearchView) searchItem.getActionView();
         sv.setQueryHint("Tìm bài thi…");
         sv.setOnQueryTextListener(new androidx.appcompat.widget.SearchView.OnQueryTextListener() {
-            @Override public boolean onQueryTextSubmit(String q) { return false; }
-            @Override public boolean onQueryTextChange(String t) { examAdapter.filter(t); return true; }
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                examAdapter.filter(newText);
+                return true;
+            }
         });
         super.onCreateOptionsMenu(menu, inflater);
     }
@@ -103,50 +111,63 @@ public class KiemTraFragment extends Fragment
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.action_filter) {
-            showSortDialog(); return true;
+            showSortDialog();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
     private void showSortDialog() {
-        String[] opts = {"Tên (A-Z)","Tên (Z-A)","Ngày (Tăng dần)","Ngày (Giảm dần)"};
+        String[] opts  = {"Tên (A-Z)","Tên (Z-A)","Ngày (Tăng dần)","Ngày (Giảm dần)"};
         String[] codes = {"name_asc","name_desc","date_asc","date_desc"};
         new AlertDialog.Builder(requireContext())
                 .setTitle("Sắp xếp bài thi")
-                .setItems(opts,(d,i)->examAdapter.sortByOption(codes[i]))
-                .setNegativeButton("HỦY",null)
+                .setItems(opts, (dialog, which) -> examAdapter.sortByOption(codes[which]))
+                .setNegativeButton("HỦY", null)
                 .show();
     }
 
     @Override
     public void onExamItemClick(Exam exam) {
         Bundle args = new Bundle();
-        args.putInt("examId", exam.getId());
+        args.putInt("examId",        exam.getId());
         args.putInt("questionCount", exam.getSoCau());
+        // Safe unboxing classId (tránh NPE)
+        Integer rawClassId = exam.getClassId();
+        int classId = rawClassId != null ? rawClassId : -1;
+        args.putInt("classId", classId);
+
         NavHostFragment.findNavController(this)
-                .navigate(R.id.action_kiemTraFragment_to_examDetailFragment, args);
+                .navigate(
+                        R.id.action_kiemTraFragment_to_examDetailFragment,
+                        args
+                );
     }
 
     @Override
     public void onExamItemLongClick(Exam exam) {
-        String[] items={"Chỉnh sửa bài thi","Xóa bài thi"};
+        String[] items = {"Chỉnh sửa bài thi","Xóa bài thi"};
         new AlertDialog.Builder(requireContext())
                 .setTitle("Chọn hành động")
-                .setItems(items,(d,i)->{
-                    if(i==0) NewExamDialogFragment
-                            .newInstanceForEdit(exam)
-                            .show(getParentFragmentManager(),"EditExam");
-                    else {
+                .setItems(items, (dialog, which) -> {
+                    if (which == 0) {
+                        NewExamDialogFragment
+                                .newInstanceForEdit(exam)
+                                .show(getParentFragmentManager(), "EditExam");
+                    } else {
                         new AlertDialog.Builder(requireContext())
                                 .setTitle("Xóa bài thi")
                                 .setMessage("Bạn có chắc muốn xóa?")
                                 .setNegativeButton("Hủy",null)
-                                .setPositiveButton("Xóa",(d2,w2)->{
+                                .setPositiveButton("Xóa",(d2,w2) -> {
                                     viewModel.deleteExam(exam);
-                                    Toast.makeText(requireContext(),"Đã xóa bài thi",Toast.LENGTH_SHORT).show();
-                                }).show();
+                                    Toast.makeText(requireContext(),
+                                                    "Đã xóa bài thi", Toast.LENGTH_SHORT)
+                                            .show();
+                                })
+                                .show();
                     }
-                }).show();
+                })
+                .show();
     }
-
 }

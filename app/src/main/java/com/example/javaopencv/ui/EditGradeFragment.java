@@ -106,11 +106,11 @@ public class EditGradeFragment extends Fragment implements OnAnswerChangeListene
         long gradeId = requireArguments().getLong("gradeId", -1L);
         viewModel = new ViewModelProvider(
                 this,
-                new GradeResultViewModel.Factory(requireActivity().getApplication(), gradeId)
+                new GradeResultViewModel.Factory(requireActivity().getApplication())
         ).get(GradeResultViewModel.class);
-
-        viewModel.getGradeResultById().observe(getViewLifecycleOwner(), gr -> {
-            if (gr == null) return;
+        viewModel.getGradeResultById(gradeId)
+                .observe(getViewLifecycleOwner(), gr -> {
+                    if (gr == null) return;
             current = gr;
             if (ab != null) {
                 ab.setSubtitle(String.format(Locale.getDefault(),

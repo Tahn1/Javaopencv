@@ -83,7 +83,8 @@ public interface AnswerDao {
     @Query("SELECT * FROM answers WHERE examId = :examId ORDER BY code, cauSo")
     List<Answer> getAnswersForExamSync(int examId);
 
-
-
+    @Query("SELECT DISTINCT code FROM answers WHERE examId = :examId")
+    List<String> getAllMaDeByExamId(int examId);
 }
+
 

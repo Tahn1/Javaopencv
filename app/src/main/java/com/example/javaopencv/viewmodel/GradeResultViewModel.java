@@ -7,63 +7,53 @@ import android.os.Looper;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.javaopencv.data.AppDatabase;
+import com.example.javaopencv.data.dao.AnswerDao;
 import com.example.javaopencv.data.entity.GradeResult;
 import com.example.javaopencv.repository.GradeResultRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+/**
+ * ViewModel cho GradeResult, hỗ trợ lấy kết quả, cập nhật,
+ * và lọc các bài sai mã đề trên background thread để tránh khóa UI.
+ */
 public class GradeResultViewModel extends AndroidViewModel {
     private final GradeResultRepository repo;
     private final Executor executor = Executors.newSingleThreadExecutor();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
-    private final long gradeId;
+    private final AnswerDao answerDao;
 
-    public GradeResultViewModel(@NonNull Application application, long gradeId) {
+    public GradeResultViewModel(@NonNull Application application) {
         super(application);
         this.repo = new GradeResultRepository(application);
-        this.gradeId = gradeId;
+        this.answerDao = AppDatabase.getInstance(application).answerDao();
     }
 
     /**
-     * Overloaded constructor để hỗ trợ khởi tạo không cần gradeId.
-     */
-    public GradeResultViewModel(@NonNull Application application) {
-        this(application, -1L);
-    }
-
-    /**
-     * Factory để khởi tạo ViewModel với gradeId
+     * Factory để khởi tạo ViewModel
      */
     public static class Factory implements ViewModelProvider.Factory {
         private final Application application;
-        private final long gradeId;
-
-        public Factory(Application application, long gradeId) {
+        public Factory(Application application) {
             this.application = application;
-            this.gradeId = gradeId;
         }
-
         @NonNull
         @Override
         @SuppressWarnings("unchecked")
         public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
             if (modelClass.isAssignableFrom(GradeResultViewModel.class)) {
-                return (T) new GradeResultViewModel(application, gradeId);
+                return (T) new GradeResultViewModel(application);
             }
             throw new IllegalArgumentException("Unknown ViewModel class");
         }
-    }
-
-    /**
-     * Lấy LiveData GradeResult theo ID
-     */
-    public LiveData<GradeResult> getGradeResultById() {
-        return repo.getGradeResultById(gradeId);
     }
 
     /**
@@ -74,10 +64,44 @@ public class GradeResultViewModel extends AndroidViewModel {
     }
 
     /**
+     * LiveData chỉ bao gồm những kết quả có mã đề sai:
+     * - null hoặc không đủ 3 ký tự
+     * - hoặc không nằm trong danh sách mã đề hợp lệ
+     */
+    public LiveData<List<GradeResult>> getWrongMaDeResults(int examId) {
+        MediatorLiveData<List<GradeResult>> resultLive = new MediatorLiveData<>();
+        LiveData<List<GradeResult>> source = repo.getResultsForExam(examId);
+        resultLive.addSource(source, allResults -> {
+            executor.execute(() -> {
+                List<String> validCodes = answerDao.getDistinctCodesSync(examId);
+                List<GradeResult> wrongList = new ArrayList<>();
+                for (GradeResult r : allResults) {
+                    String code = r.getMaDe();
+                    // Điều kiện sai mã đề:
+                    // 1) code null hoặc không đủ 3 ký tự
+                    // 2) hoặc code không nằm trong validCodes
+                    if (code == null || code.length() != 3 || !validCodes.contains(code)) {
+                        wrongList.add(r);
+                    }
+                }
+                mainHandler.post(() -> resultLive.setValue(wrongList));
+            });
+        });
+        return resultLive;
+    }
+
+    /**
      * Cập nhật toàn bộ đối tượng GradeResult
      */
     public void updateGradeResult(GradeResult gr) {
         executor.execute(() -> repo.updateResult(gr));
+    }
+
+    /**
+     * Lấy LiveData GradeResult theo ID
+     */
+    public LiveData<GradeResult> getGradeResultById(long gradeId) {
+        return repo.getGradeResultById(gradeId);
     }
 
     /**
