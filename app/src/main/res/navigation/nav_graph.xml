@@ -135,23 +135,38 @@
         android:id="@+id/danhSachToSaiMaDeFragment"
         android:name="com.example.javaopencv.ui.DanhSachToSaiMaDeFragment"
         android:label="Danh sách tô sai mã đề">
+
+        <!-- Nhận examId từ bundle -->
         <argument
             android:name="examId"
             app:argType="integer" />
+
+        <!-- Action khi click vào 1 item sẽ mở GradeDetailFragment -->
+        <action
+            android:id="@+id/action_danhSachToSaiMaDeFragment_to_gradeDetailFragment"
+            app:destination="@id/gradeDetailFragment">
+            <argument
+                android:name="gradeId"
+                app:argType="long" />
+        </action>
     </fragment>
 
-    <!-- DanhSachToSaiMaSVFragment -->
     <fragment
         android:id="@+id/danhSachToSaiMaSVFragment"
         android:name="com.example.javaopencv.ui.DanhSachToSaiMaSVFragment"
         android:label="Danh sách tô sai mã sinh viên">
-        <argument
-            android:name="examId"
-            app:argType="integer" />
-        <argument
-            android:name="classId"
-            app:argType="integer" />
+
+        <argument android:name="examId"  app:argType="integer" />
+        <argument android:name="classId" app:argType="integer" />
+        <action
+            android:id="@+id/action_danhSachToSaiMaSVFragment_to_gradeDetailFragment"
+            app:destination="@id/gradeDetailFragment">
+            <argument
+                android:name="gradeId"
+                app:argType="long" />
+        </action>
     </fragment>
+
 
     <!-- ThongTinFragment -->
     <fragment

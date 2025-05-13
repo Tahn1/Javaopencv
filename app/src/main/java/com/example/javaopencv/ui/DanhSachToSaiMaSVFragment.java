@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -53,20 +54,20 @@ public class DanhSachToSaiMaSVFragment extends Fragment {
         int examId  = requireArguments().getInt("examId",  -1);
         int classId = requireArguments().getInt("classId", -1);
 
-        // 1) Khởi tạo ViewModel (không cần custom Factory nếu constructor chỉ có Application)
-        viewModel  = new ViewModelProvider(
+        // Khởi tạo ViewModel
+        viewModel = new ViewModelProvider(
                 this,
                 ViewModelProvider.AndroidViewModelFactory
                         .getInstance(requireActivity().getApplication())
         ).get(GradeResultViewModel.class);
 
-        studentVm  = new ViewModelProvider(
+        studentVm = new ViewModelProvider(
                 this,
                 ViewModelProvider.AndroidViewModelFactory
                         .getInstance(requireActivity().getApplication())
         ).get(StudentViewModel.class);
 
-        // 2) Lấy danh sách SBD hợp lệ
+        // 2) Lấy danh sách SBD hợp lệ của class
         studentVm.getStudentsForClass(classId)
                 .observe(getViewLifecycleOwner(), students -> {
                     Set<String> validSbd = new HashSet<>();
@@ -89,8 +90,22 @@ public class DanhSachToSaiMaSVFragment extends Fragment {
                                         }
                                     }
                                 }
-                                // 4) Dùng adapter mới để hiển thị CardView
-                                WrongSbdAdapter adapter = new WrongSbdAdapter(wrongList);
+
+                                // 4) Dùng adapter mới để hiển thị CardView và xử lý click
+                                WrongSbdAdapter adapter = new WrongSbdAdapter(
+                                        wrongList,
+                                        gr -> {
+                                            // Khi click---đổi thành truyền Fragment 'this'
+                                            Bundle args = new Bundle();
+                                            args.putLong("gradeId", gr.getId());
+                                            NavHostFragment.findNavController(
+                                                    DanhSachToSaiMaSVFragment.this
+                                            ).navigate(
+                                                    R.id.action_danhSachToSaiMaSVFragment_to_gradeDetailFragment,
+                                                    args
+                                            );
+                                        }
+                                );
                                 recyclerView.setAdapter(adapter);
                             });
                 });

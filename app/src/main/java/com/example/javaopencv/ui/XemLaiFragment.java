@@ -8,6 +8,8 @@ import android.graphics.Paint;
 import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -48,21 +50,33 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class XemLaiFragment extends Fragment {
-    private XemLaiViewModel vm;
+    private XemLaiViewModel    vm;
     private GradeResultAdapter adapter;
-    private int examId;
-    private Integer classId;
-    private final Map<String, Student> studentMap = new HashMap<>();
-
-    private List<GradeResult> fullResults = new ArrayList<>();
-    private int sortMode = 0; // 0 = default, 1 = SBD, 2 = Mã đề
-
+    private RecyclerView       rv;
     private SwipeRefreshLayout swipeRefresh;
+
+    private int    examId;
+    private Integer classId;
+
+    private final Map<String, Student> studentMap = new HashMap<>();
+    private final List<GradeResult>    fullResults = new ArrayList<>();
+
+    private int sortMode = 0; // 0=default,1=SBD,2=MaDe
+
+    // Dùng để filter mã đề; load 1 lần khi viewCreated
+    private final Set<String> validCodes = new HashSet<>();
+
+    // Executor + Handler để gọi Room off main thread
+    private final Executor executor = Executors.newSingleThreadExecutor();
+    private final Handler  mainHandler = new Handler(Looper.getMainLooper());
 
     public XemLaiFragment() {
         super(R.layout.fragment_xem_lai);
@@ -77,7 +91,7 @@ public class XemLaiFragment extends Fragment {
         requireActivity().getOnBackPressedDispatcher()
                 .addCallback(this, new OnBackPressedCallback(true) {
                     @Override public void handleOnBackPressed() {
-                        navigateUp();
+                        NavHostFragment.findNavController(XemLaiFragment.this).navigateUp();
                     }
                 });
     }
@@ -87,7 +101,7 @@ public class XemLaiFragment extends Fragment {
                               @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // 1) Toolbar menu
+        // --- 1) Menu trên toolbar ---
         MenuHost host = requireActivity();
         host.addMenuProvider(new MenuProvider() {
             @Override public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
@@ -98,73 +112,93 @@ public class XemLaiFragment extends Fragment {
                 int id = item.getItemId();
                 if (id == android.R.id.home) {
                     navigateUp();
+                    return true;
                 } else if (id == R.id.action_delete_all) {
                     confirmDeleteAll();
+                    return true;
                 } else if (id == R.id.action_sort) {
                     showSortDialog();
+                    return true;
                 } else if (id == R.id.action_export) {
                     exportCsvAndShare();
+                    return true;
                 } else if (id == R.id.action_export_pdf) {
                     exportSinglePdfAndShare();
+                    return true;
                 } else if (id == R.id.action_export_answers) {
                     exportAnswerKeyCsvAndShare();
-                } else {
-                    return false;
+                    return true;
                 }
-                return true;
+                return false;
             }
         }, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
 
-        // 2) Swipe refresh
+        // --- 2) Swipe to refresh ---
         swipeRefresh = view.findViewById(R.id.swipe_refresh);
         swipeRefresh.setOnRefreshListener(this::refreshData);
 
-        // 3) RecyclerView
-        RecyclerView rv = view.findViewById(R.id.rvGradeResults);
+        // --- 3) RecyclerView + Adapter ---
+        rv = view.findViewById(R.id.rvGradeResults);
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         adapter = new GradeResultAdapter();
         rv.setAdapter(adapter);
 
-        // 4) ViewModel với Factory
+        // --- 4) ViewModel ---
         vm = new ViewModelProvider(
                 this,
                 new XemLaiViewModel.Factory(requireActivity().getApplication(), examId)
         ).get(XemLaiViewModel.class);
 
-        // 5) Observe kết quả chấm
+        // --- 5) Load danh sách mã đề (validCodes) off main thread ---
+        executor.execute(() -> {
+            AnswerDao dao = AppDatabase.getInstance(requireContext()).answerDao();
+            List<String> list = dao.getDistinctCodesSync(examId);
+            mainHandler.post(() -> {
+                validCodes.clear();
+                validCodes.addAll(list);
+                applySort();
+            });
+        });
+
+        // --- 6) Observe kết quả chấm ---
         vm.getResultsForExam().observe(getViewLifecycleOwner(), results -> {
             swipeRefresh.setRefreshing(false);
-            fullResults = results != null ? results : new ArrayList<>();
+            fullResults.clear();
+            if (results != null) fullResults.addAll(results);
             applySort();
         });
 
-        // 6) Observe classId → load sinh viên
+        // --- 7) Observe classId rồi students ---
         vm.getClassIdForExam().observe(getViewLifecycleOwner(), cid -> {
             classId = cid;
             if (cid != null) {
                 vm.getStudentsForClass(cid).observe(getViewLifecycleOwner(), list -> {
                     studentMap.clear();
-                    for (Student s : list) {
-                        if (s.getStudentNumber() != null) {
-                            studentMap.put(s.getStudentNumber().trim(), s);
+                    if (list != null) {
+                        for (Student s : list) {
+                            String no = s.getStudentNumber();
+                            if (no != null) studentMap.put(no.trim(), s);
                         }
                     }
                     adapter.setStudentMap(studentMap);
+                    applySort();
                 });
             }
         });
 
-        // 7) Item click / long-click
+        // --- 8) Item click / long-click ---
         adapter.setOnItemClickListener(item -> {
             Bundle args = new Bundle();
             args.putLong("gradeId", item.id);
             if (classId != null) args.putInt("classId", classId);
-            navigateToDetail(args);
+            NavHostFragment.findNavController(this)
+                    .navigate(R.id.action_xemLaiFragment_to_gradeDetailFragment, args);
         });
         adapter.setOnItemLongClickListener(this::confirmDelete);
 
-        // 8) Lần đầu nào
+        // --- 9) Kick off first load ---
         swipeRefresh.setRefreshing(true);
+        refreshData();
     }
 
     @Override
@@ -174,26 +208,44 @@ public class XemLaiFragment extends Fragment {
         refreshData();
     }
 
+    /** Reload dữ liệu sync và cập nhật fullResults */
     private void refreshData() {
         new Thread(() -> {
-            // *** Bỏ tham số vào đây ***
-            List<GradeResult> results = vm.getResultsListSync();
-            requireActivity().runOnUiThread(() -> {
+            List<GradeResult> list = vm.getResultsListSync();
+            mainHandler.post(() -> {
                 swipeRefresh.setRefreshing(false);
-                fullResults = results != null ? results : new ArrayList<>();
+                fullResults.clear();
+                if (list != null) fullResults.addAll(list);
                 applySort();
             });
         }).start();
     }
 
+    /** Lọc theo validCodes + studentMap, rồi sắp xếp và submitList */
     private void applySort() {
-        List<GradeResult> sorted = new ArrayList<>(fullResults);
-        if (sortMode == 1) {
-            sorted.sort(Comparator.comparing(r -> r.sbd != null ? r.sbd.trim() : ""));
-        } else if (sortMode == 2) {
-            sorted.sort(Comparator.comparing(r -> r.maDe != null ? r.maDe.trim() : ""));
+        List<GradeResult> filtered = new ArrayList<>();
+        boolean hasClass = (classId != null && classId >= 0);
+        for (GradeResult gr : fullResults) {
+            if (hasClass) {
+                String sbd  = gr.sbd  != null ? gr.sbd.trim()  : null;
+                String code = gr.maDe != null ? gr.maDe.trim() : null;
+                boolean okSbd  = sbd  != null && sbd.length() == 6 && studentMap.containsKey(sbd);
+                boolean okCode = code != null && code.length() == 3 && validCodes.contains(code);
+                if (okSbd && okCode) {
+                    filtered.add(gr);
+                }
+            } else {
+                // không có classId → không lọc
+                filtered.add(gr);
+            }
         }
-        adapter.submitList(sorted);
+        // sắp xếp
+        if (sortMode == 1) {
+            filtered.sort(Comparator.comparing(r -> r.sbd != null ? r.sbd.trim() : ""));
+        } else if (sortMode == 2) {
+            filtered.sort(Comparator.comparing(r -> r.maDe != null ? r.maDe.trim() : ""));
+        }
+        adapter.submitList(filtered);
     }
 
     private void confirmDelete(GradeResult item) {
@@ -210,18 +262,17 @@ public class XemLaiFragment extends Fragment {
                 .setTitle("Xóa tất cả bài thi")
                 .setMessage("Bạn có chắc muốn xóa toàn bộ kết quả?")
                 .setNegativeButton("Hủy", null)
-                // deleteAllResultsForExam vẫn giữ tham số examId
                 .setPositiveButton("Xóa", (d,w) -> vm.deleteAllResultsForExam())
                 .show();
     }
 
     private void showSortDialog() {
-        String[] options = {"Sắp theo SBD ↑", "Sắp theo Mã đề ↑"};
+        String[] opts  = {"Sắp theo SBD ↑","Sắp theo Mã đề ↑"};
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Chọn cách sắp xếp")
-                .setSingleChoiceItems(options, sortMode - 1, (dlg, which) -> sortMode = which + 1)
-                .setPositiveButton("OK", (d,w) -> applySort())
-                .setNegativeButton("Hủy", null)
+                .setSingleChoiceItems(opts, sortMode-1, (dlg,i)-> sortMode = i+1)
+                .setPositiveButton("OK",(d,w)-> applySort())
+                .setNegativeButton("Hủy",null)
                 .show();
     }
 

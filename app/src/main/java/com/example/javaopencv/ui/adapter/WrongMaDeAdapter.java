@@ -16,8 +16,8 @@ import com.example.javaopencv.data.entity.GradeResult;
 
 import java.util.List;
 
-public class WrongSbdAdapter
-        extends RecyclerView.Adapter<WrongSbdAdapter.ViewHolder> {
+public class WrongMaDeAdapter
+        extends RecyclerView.Adapter<WrongMaDeAdapter.ViewHolder> {
 
     public interface OnItemClickListener {
         void onItemClick(GradeResult gr);
@@ -26,9 +26,8 @@ public class WrongSbdAdapter
     private final List<GradeResult> items;
     private final OnItemClickListener listener;
 
-    // Thêm listener vào constructor
-    public WrongSbdAdapter(List<GradeResult> items,
-                           OnItemClickListener listener) {
+    public WrongMaDeAdapter(List<GradeResult> items,
+                            OnItemClickListener listener) {
         this.items = items;
         this.listener = listener;
     }
@@ -37,7 +36,7 @@ public class WrongSbdAdapter
     public ViewHolder onCreateViewHolder(
             @NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_wrong_sbd, parent, false);
+                .inflate(R.layout.item_wrong_made, parent, false);
         return new ViewHolder(v);
     }
 
@@ -50,7 +49,7 @@ public class WrongSbdAdapter
         holder.tvScore.setText("Điểm: " + gr.getScore());
         holder.tvMaDe.setText("Mã đề: " + (gr.getMaDe() != null ? gr.getMaDe() : ""));
 
-        // Bind ảnh nếu có
+        // Bind ảnh preview nếu có
         String path = gr.getImagePath();
         if (path != null && !path.isEmpty()) {
             Bitmap bmp = BitmapFactory.decodeFile(path);
@@ -60,19 +59,15 @@ public class WrongSbdAdapter
             holder.ivResult.setImageResource(R.drawable.ic_placeholder);
         }
 
-        // Đăng ký click
+        // Click listener
         holder.itemView.setOnClickListener(v -> listener.onItemClick(gr));
     }
 
-    @Override
-    public int getItemCount() {
-        return items.size();
-    }
+    @Override public int getItemCount() { return items.size(); }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView ivResult;
         TextView tvSbd, tvScore, tvMaDe;
-
         ViewHolder(@NonNull View itemView) {
             super(itemView);
             ivResult = itemView.findViewById(R.id.ivResult);
