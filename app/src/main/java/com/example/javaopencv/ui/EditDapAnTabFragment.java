@@ -5,8 +5,8 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import androidx.gridlayout.widget.GridLayout;
 import android.view.ViewGroup;
-import android.widget.GridLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -26,7 +26,6 @@ public class EditDapAnTabFragment extends Fragment {
 
     private GridLayout gridCol1, gridCol2, gridCol3, gridCol4, gridCol5;
 
-    /** Interface để callback khi user thay đổi đáp án */
     public interface OnAnswerChangeListener {
         void onAnswersChanged(int[] selectedAnswers);
     }
@@ -54,21 +53,18 @@ public class EditDapAnTabFragment extends Fragment {
     @Override public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // 1) bind 5 GridLayout
         gridCol1 = view.findViewById(R.id.grid_da_col1);
         gridCol2 = view.findViewById(R.id.grid_da_col2);
         gridCol3 = view.findViewById(R.id.grid_da_col3);
         gridCol4 = view.findViewById(R.id.grid_da_col4);
         gridCol5 = view.findViewById(R.id.grid_da_col5);
 
-        // 2) clear cũ
         gridCol1.removeAllViews();
         gridCol2.removeAllViews();
         gridCol3.removeAllViews();
         gridCol4.removeAllViews();
         gridCol5.removeAllViews();
 
-        // 3) đọc tham số
         Bundle args = getArguments();
         totalQuestions = args != null ? args.getInt(ARG_TOTAL, 0) : 0;
         String csv      = args != null ? args.getString(ARG_CSV, "") : "";
@@ -78,61 +74,49 @@ public class EditDapAnTabFragment extends Fragment {
         Log.d(TAG, "Received CSV = \"" + csv + "\"");
         Log.d(TAG, "initialAnswers = " + java.util.Arrays.toString(initialAnswers));
 
-        // 4) setRowCount
         gridCol1.setRowCount(totalQuestions);
         gridCol2.setRowCount(totalQuestions);
         gridCol3.setRowCount(totalQuestions);
         gridCol4.setRowCount(totalQuestions);
         gridCol5.setRowCount(totalQuestions);
 
-        // 5) build từng hàng
         for (int row = 0; row < totalQuestions; row++) {
-            // cột 1: STT
+            // Cột 1: số thứ tự
             TextView tvHeader = createCell(String.valueOf(row + 1));
             tvHeader.setBackgroundResource(R.drawable.bg_digit_static);
             gridCol1.addView(tvHeader);
 
-            // khôi phục
+            // Xác định giá trị ban đầu
             int init = 0;
             if (row < initialAnswers.length) {
                 String ans = initialAnswers[row].trim().toUpperCase();
-                switch (ans) {
-                    case "A": init = 1; break;
-                    case "B": init = 2; break;
-                    case "C": init = 3; break;
-                    case "D": init = 4; break;
-                    default:
-                        try {
-                            int v = Integer.parseInt(ans);
-                            if (v >= 1 && v <= 4) init = v;
-                        } catch (NumberFormatException ignored) {}
-                }
+                if ("A".equals(ans)) init = 1;
+                else if ("B".equals(ans)) init = 2;
+                else if ("C".equals(ans)) init = 3;
+                else if ("D".equals(ans)) init = 4;
             }
             selectedAnswers[row] = init;
-            Log.d(TAG, "row=" + row + " init=" + init);
 
-            // cột 2..5: A–D
+            // Cột A–D
             for (int col = 2; col <= 5; col++) {
                 final int r = row;
-                final int value = col - 1;
+                final int val = col - 1; // 1=A,2=B,3=C,4=D
                 String label;
-                switch (value) {
-                    case 1: label = "A"; break;
-                    case 2: label = "B"; break;
-                    case 3: label = "C"; break;
-                    default: label = "D"; break;
-                }
+                if (val == 1)      label = "A";
+                else if (val == 2) label = "B";
+                else if (val == 3) label = "C";
+                else               label = "D";
+
                 TextView tv = createCell(label);
                 tv.setBackgroundResource(
-                        selectedAnswers[row] == value
+                        selectedAnswers[row] == val
                                 ? R.drawable.bg_digit_selected
                                 : R.drawable.bg_digit_unselected
                 );
                 tv.setOnClickListener(v -> {
                     clearRowSelection(r);
                     tv.setBackgroundResource(R.drawable.bg_digit_selected);
-                    selectedAnswers[r] = value;
-                    // gọi callback khi value thay đổi
+                    selectedAnswers[r] = val;
                     if (listener != null) {
                         listener.onAnswersChanged(selectedAnswers);
                     }
@@ -154,27 +138,29 @@ public class EditDapAnTabFragment extends Fragment {
     }
 
     private GridLayout getGridForCol(int col) {
-        switch (col) {
-            case 1: return gridCol1;
-            case 2: return gridCol2;
-            case 3: return gridCol3;
-            case 4: return gridCol4;
-            default: return gridCol5;
-        }
+        if (col == 2) return gridCol2;
+        else if (col == 3) return gridCol3;
+        else if (col == 4) return gridCol4;
+        else             return gridCol5;
     }
 
+    /**
+     * Tạo ô vuông cố định 28dp×28dp với margin 4dp, text size 16sp, gravity CENTER.
+     * Khi kết hợp với drawable bg_digit_*, sẽ ra hình tròn.
+     */
     private TextView createCell(String text) {
         TextView tv = new TextView(requireContext());
         tv.setText(text);
-        tv.setGravity(Gravity.CENTER);
         tv.setTextSize(16);
-        int p = dp(12);
-        tv.setPadding(p, p, p, p);
+        tv.setGravity(Gravity.CENTER);
+
+        int size = dp(54);
         GridLayout.LayoutParams lp = new GridLayout.LayoutParams();
-        lp.width  = GridLayout.LayoutParams.WRAP_CONTENT;
-        lp.height = GridLayout.LayoutParams.WRAP_CONTENT;
+        lp.width  = size;
+        lp.height = size;
         int m = dp(4);
         lp.setMargins(m, m, m, m);
+
         tv.setLayoutParams(lp);
         return tv;
     }

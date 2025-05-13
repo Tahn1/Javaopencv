@@ -2,20 +2,24 @@ package com.example.javaopencv.ui;
 
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.javaopencv.R;
-import com.example.javaopencv.data.entity.GradeResult;
 import com.example.javaopencv.viewmodel.GradeDetailViewModel;
-import com.google.android.material.appbar.MaterialToolbar;
+
+import java.util.Locale;
 
 public class GradeDetailFragment extends Fragment {
 
@@ -23,45 +27,80 @@ public class GradeDetailFragment extends Fragment {
         super(R.layout.fragment_grade_detail);
     }
 
+    private ImageView ivResult;
+    private ActionBar ab;
+
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        MaterialToolbar toolbar = view.findViewById(R.id.toolbar_grade_detail);
-        ImageView ivResult     = view.findViewById(R.id.ivResult);
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // cho phép fragment inflate nút Edit lên toolbar chính
+        setHasOptionsMenu(true);
+    }
 
-        // Back arrow
-        toolbar.setNavigationOnClickListener(v ->
-                requireActivity().onBackPressed()
-        );
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu,
+                                    @NonNull MenuInflater inflater) {
+        menu.clear();
+        inflater.inflate(R.menu.menu_grade_detail, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
 
-        // Edit button
-        toolbar.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.action_edit) {
-                long gradeId = getArguments().getLong("gradeId", -1L);
-                Bundle args = new Bundle();
-                args.putLong("gradeId", gradeId);
-                // điều hướng sang màn edit (EditGradeFragment)
-                NavHostFragment.findNavController(this)
-                        .navigate(R.id.action_gradeDetailFragment_to_editGradeFragment, args);
-                return true;
-            }
-            return false;
-        });
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            requireActivity().onBackPressed();
+            return true;
+        }
+        if (item.getItemId() == R.id.action_edit) {
+            long gradeId = getArguments().getLong("gradeId", -1L);
+            Bundle args = new Bundle();
+            args.putLong("gradeId", gradeId);
+            NavHostFragment.findNavController(this)
+                    .navigate(R.id.action_gradeDetailFragment_to_editGradeFragment, args);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
-        // Lấy gradeId từ arguments
+    @Override
+    public void onViewCreated(@NonNull View view,
+                              @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        ivResult = view.findViewById(R.id.ivResult);
+
+        // Lấy ActionBar từ Activity
+        AppCompatActivity act = (AppCompatActivity) requireActivity();
+        ab = act.getSupportActionBar();
+        if (ab != null) {
+            ab.setDisplayHomeAsUpEnabled(true);
+            // nếu muốn custom icon back:
+            // ab.setHomeAsUpIndicator(R.drawable.ic_arrow_back_white);
+        }
+
+        // Lấy ViewModel
         long gradeId = getArguments().getLong("gradeId", -1L);
-        GradeDetailViewModel vm =
-                new ViewModelProvider(this, new GradeDetailViewModel.Factory(requireActivity().getApplication(), gradeId))
-                        .get(GradeDetailViewModel.class);
+        GradeDetailViewModel vm = new ViewModelProvider(
+                this,
+                new GradeDetailViewModel.Factory(act.getApplication(), gradeId)
+        ).get(GradeDetailViewModel.class);
 
-        // Observe và bind dữ liệu
         vm.getGradeResult().observe(getViewLifecycleOwner(), gr -> {
             if (gr == null) return;
-            // set title: "Mã đề 189 – Điểm: 4/20 = 2.00"
-            toolbar.setTitle(
-                    String.format("Mã đề %s – Điểm: %d/%d = %.2f",
-                            gr.maDe, gr.correctCount, gr.totalQuestions, gr.score)
-            );
-            // load ảnh đã chấm
+
+            // Đẩy mã đề + số đúng/tổng = điểm lên title/subtitle
+            if (ab != null) {
+                ab.setTitle("Mã đề " + gr.maDe);
+                ab.setSubtitle(String.format(
+                        Locale.getDefault(),
+                        "Đúng %d/%d = %.2f",
+                        gr.correctCount,
+                        gr.totalQuestions,
+                        gr.score
+                ));
+            }
+
+            // Load ảnh chấm
             if (gr.imagePath != null) {
                 ivResult.setImageURI(Uri.parse(gr.imagePath));
             }

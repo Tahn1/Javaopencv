@@ -2,6 +2,7 @@ package com.example.javaopencv.ui;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ClipData;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -16,83 +17,128 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
+import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.fragment.NavHostFragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.javaopencv.R;
 import com.example.javaopencv.data.AppDatabase;
 import com.example.javaopencv.data.entity.GradeResult;
 import com.example.javaopencv.omr.OmrGrader;
 import com.example.javaopencv.omr.OmrGrader.Result;
-import com.google.android.material.appbar.MaterialToolbar;
 
 import org.opencv.android.OpenCVLoader;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ChamBaiFragment extends Fragment {
-    private static final int   REQ_READ_EXTERNAL   = 200;
-    private static final long  PREVIEW_DURATION_MS = 3000;
+    private static final int REQ_READ_EXTERNAL = 200;
 
-    private MaterialToolbar toolbar;
-    private Button          btnPickImage;
-    private ImageView       imageViewDebug;
-    private int             examId, questionCount;
-    private int             navigationIconRes;
+    private Button btnPick;
+    private ProgressBar progressBar;
+    private ImageView imageViewDebug;
+    private RecyclerView rvBatch;
+    private BatchResultAdapter batchAdapter;
 
-    private final ActivityResultLauncher<Intent> pickImageLauncher =
-            registerForActivityResult(
-                    new ActivityResultContracts.StartActivityForResult(),
-                    result -> {
-                        if (result.getResultCode() == Activity.RESULT_OK
-                                && result.getData() != null
-                                && result.getData().getData() != null) {
-                            handleImageUri(result.getData().getData());
-                        }
-                    }
-            );
+    private int examId;
+    private int questionCount;
+
+    private ActivityResultLauncher<Intent> multiImageLauncher;
+    private ActivityResultLauncher<Intent> folderLauncher;
 
     public ChamBaiFragment() {
         super(R.layout.fragment_cham_bai);
     }
 
-    @Override public View onCreateView(@NonNull LayoutInflater inflater,
-                                       @Nullable ViewGroup container,
-                                       @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_cham_bai, container, false);
-    }
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-    @Override public void onViewCreated(@NonNull View view,
-                                        @Nullable Bundle savedInstanceState) {
+        // Lấy examId & questionCount từ args nếu có
         Bundle args = getArguments();
         if (args != null) {
             examId        = args.getInt("examId", -1);
             questionCount = args.getInt("questionCount", 20);
         }
 
-        toolbar        = view.findViewById(R.id.toolbar);
-        btnPickImage   = view.findViewById(R.id.btnPickImage);
-        imageViewDebug = view.findViewById(R.id.imageViewDebug);
+        btnPick         = view.findViewById(R.id.btnPickImage);
+        progressBar     = view.findViewById(R.id.progressBar);
+        imageViewDebug  = view.findViewById(R.id.imageViewDebug);
+        rvBatch         = view.findViewById(R.id.rvBatchResults);
 
-        navigationIconRes = R.drawable.ic_arrow_back_white;
-        toolbar.setNavigationIcon(navigationIconRes);
-        toolbar.setNavigationOnClickListener(v ->
-                NavHostFragment.findNavController(this).popBackStack()
+        // Setup RecyclerView
+        batchAdapter = new BatchResultAdapter();
+        rvBatch.setLayoutManager(new LinearLayoutManager(requireContext()));
+        rvBatch.setAdapter(batchAdapter);
+
+        // Launcher chọn nhiều ảnh
+        multiImageLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                        Intent data = result.getData();
+                        List<Uri> uris = new ArrayList<>();
+                        ClipData clip = data.getClipData();
+                        if (clip != null) {
+                            for (int i = 0; i < clip.getItemCount(); i++) {
+                                uris.add(clip.getItemAt(i).getUri());
+                            }
+                        } else if (data.getData() != null) {
+                            uris.add(data.getData());
+                        }
+                        if (!uris.isEmpty()) startBatch(uris);
+                    }
+                }
         );
 
-        btnPickImage.setOnClickListener(v -> launchImagePicker());
+        // Launcher chọn folder
+        folderLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                        Uri treeUri = result.getData().getData();
+                        if (treeUri != null) {
+                            // Cấp quyền đọc lâu dài
+                            requireContext().getContentResolver()
+                                    .takePersistableUriPermission(
+                                            treeUri,
+                                            Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                    );
+                            scanFolderAndStart(treeUri);
+                        }
+                    }
+                }
+        );
+
+        // Hiển thị AlertDialog 2 lựa chọn
+        btnPick.setOnClickListener(v -> {
+            new AlertDialog.Builder(requireContext())
+                    .setTitle("Chọn nguồn ảnh")
+                    .setItems(new String[]{"Chọn nhiều ảnh", "Chọn thư mục"},
+                            (dialog, which) -> {
+                                if (which == 0) pickMultipleImages();
+                                else pickFolder();
+                            })
+                    .show();
+        });
     }
 
-    private void launchImagePicker() {
+    private void pickMultipleImages() {
         if (ContextCompat.checkSelfPermission(requireContext(),
                 Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -101,123 +147,181 @@ public class ChamBaiFragment extends Fragment {
                     REQ_READ_EXTERNAL
             );
         } else {
-            Intent pick = new Intent(
-                    Intent.ACTION_PICK,
-                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-            );
-            pick.setType("image/*");
-            pickImageLauncher.launch(pick);
+            Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            i.addCategory(Intent.CATEGORY_OPENABLE);
+            i.setType("image/*");
+            i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+            multiImageLauncher.launch(i);
         }
     }
 
-    @Override public void onRequestPermissionsResult(int requestCode,
-                                                     @NonNull String[] permissions,
-                                                     @NonNull int[] grantResults) {
+    private void pickFolder() {
+        if (ContextCompat.checkSelfPermission(requireContext(),
+                Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(
+                    new String[]{ Manifest.permission.READ_EXTERNAL_STORAGE },
+                    REQ_READ_EXTERNAL
+            );
+        } else {
+            Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+            i.addFlags(
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION |
+                            Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+            );
+            folderLauncher.launch(i);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQ_READ_EXTERNAL
                 && grantResults.length > 0
                 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            launchImagePicker();
+            btnPick.performClick();
         } else {
             Toast.makeText(requireContext(),
-                    "Cần cấp quyền truy cập thư viện",
-                    Toast.LENGTH_SHORT).show();
+                    "Cần quyền đọc bộ nhớ", Toast.LENGTH_SHORT).show();
         }
     }
 
-    private void handleImageUri(@NonNull Uri uri) {
-        try {
-            Bitmap bmp = MediaStore.Images.Media.getBitmap(
-                    requireContext().getContentResolver(), uri);
-            runOmrOnBitmap(bmp);
-        } catch (IOException e) {
+    private void scanFolderAndStart(Uri treeUri) {
+        DocumentFile folder = DocumentFile.fromTreeUri(requireContext(), treeUri);
+        if (folder == null || !folder.isDirectory()) {
             Toast.makeText(requireContext(),
-                    "Không đọc được ảnh",
-                    Toast.LENGTH_SHORT).show();
+                    "Thư mục không hợp lệ", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        List<Uri> uris = new ArrayList<>();
+        for (DocumentFile doc : folder.listFiles()) {
+            if (doc.isFile() && doc.getType() != null && doc.getType().startsWith("image/")) {
+                uris.add(doc.getUri());
+            }
+        }
+        if (uris.isEmpty()) {
+            Toast.makeText(requireContext(),
+                    "Không tìm thấy ảnh", Toast.LENGTH_SHORT).show();
+        } else {
+            startBatch(uris);
         }
     }
 
-    private void runOmrOnBitmap(@NonNull Bitmap bmp) {
+    /** Hiển thị loading, chạy batch, rồi ẩn loading */
+    private void startBatch(List<Uri> uris) {
+        // show loading
+        progressBar.setVisibility(View.VISIBLE);
+        btnPick.setEnabled(false);
+        imageViewDebug.setVisibility(View.GONE);
+
         new Thread(() -> {
-            OpenCVLoader.initDebug();
-            Result res = OmrGrader.grade(bmp, examId, requireContext());
-
-            requireActivity().runOnUiThread(() -> {
-                if (res == null) {
-                    Toast.makeText(requireContext(),
-                            "Xử lý OMR thất bại",
-                            Toast.LENGTH_LONG).show();
-                    return;
-                }
-
-                double computedScore = ((double) res.correctCount / questionCount) * 10.0;
-
-                toolbar.setTitle(String.format(
-                        "Mã đề %s – Đúng %d/%d = %.2f",
-                        res.maDe, res.correctCount, questionCount, computedScore
-                ));
-                // Hiển thị ảnh debug
-                imageViewDebug.setImageBitmap(res.annotatedBitmap);
-                imageViewDebug.setVisibility(View.VISIBLE);
-                btnPickImage.setVisibility(View.GONE);
-                toolbar.setNavigationIcon(null);
-
-                // 3) Lưu ảnh debug ra file
-                String debugUri = null;
+            List<OMRResult> results = new ArrayList<>();
+            for (Uri uri : uris) {
                 try {
-                    File dir = new File(requireContext()
-                            .getExternalFilesDir(null),
-                            "debug_results");
-                    if (!dir.exists()) dir.mkdirs();
-                    File out = new File(dir,
-                            System.currentTimeMillis() + "_graded.jpg");
-                    try (FileOutputStream fos = new FileOutputStream(out)) {
-                        res.annotatedBitmap.compress(
-                                Bitmap.CompressFormat.JPEG, 90, fos
-                        );
-                    }
-                    debugUri = Uri.fromFile(out).toString();
+                    Bitmap bmp = MediaStore.Images.Media.getBitmap(
+                            requireContext().getContentResolver(), uri);
+                    OpenCVLoader.initDebug();
+                    Result r = OmrGrader.grade(bmp, examId, requireContext());
+                    if (r == null) continue;
+
+                    double score = ((double) r.correctCount / questionCount) * 10.0;
+                    results.add(new OMRResult(r.annotatedBitmap, score, r.maDe, r.sbd));
+                    saveResultToDb(r, score);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
-                // 4) Tạo CSV từ res.answers nếu có
-                String answersCsv = "";
-                if (res.answers != null && res.answers.length > 0) {
-                    answersCsv = TextUtils.join(",", res.answers);
-                }
-
-                final String finalCsv        = answersCsv;
-                final String imagePathToSave = debugUri;
-                final float focusX = 0.5f, focusY = 0.5f;
-
-                // 5) Lưu vào DB, sử dụng điểm mới computedScore
-                new Thread(() -> {
-                    GradeResult gr = new GradeResult(
-                            examId,            // khóa ngoại exam
-                            res.maDe,          // mã đề
-                            res.sbd,           // số báo danh
-                            finalCsv,          // CSV đáp án
-                            res.correctCount,  // số câu đúng
-                            questionCount,     // tổng số câu
-                            computedScore,     // điểm tính mới
-                            imagePathToSave,   // đường dẫn ảnh debug
-                            focusX,
-                            focusY
-                    );
-                    AppDatabase.getInstance(requireContext())
-                            .gradeResultDao()
-                            .insert(gr);
-                }).start();
-
-                // 6) Reset UI sau PREVIEW_DURATION_MS
-                new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                    imageViewDebug.setVisibility(View.GONE);
-                    btnPickImage.setVisibility(View.VISIBLE);
-                    toolbar.setNavigationIcon(navigationIconRes);
-                    toolbar.setTitle(R.string.cham_bai_title);
-                }, PREVIEW_DURATION_MS);
+            }
+            // Quay về UI
+            new Handler(Looper.getMainLooper()).post(() -> {
+                progressBar.setVisibility(View.GONE);
+                btnPick.setEnabled(true);
+                batchAdapter.submitList(results);
             });
         }).start();
+    }
+
+    private void saveResultToDb(Result r, double score) {
+        String csv = r.answers != null ? TextUtils.join(",", r.answers) : "";
+        String path = saveAnnotatedBitmap(r.annotatedBitmap);
+        GradeResult gr = new GradeResult(
+                examId, r.maDe, r.sbd,
+                csv, r.correctCount, questionCount,
+                score, path, 0.5f, 0.5f
+        );
+        AppDatabase.getInstance(requireContext())
+                .gradeResultDao().insert(gr);
+    }
+
+    private String saveAnnotatedBitmap(Bitmap bmp) {
+        try {
+            File dir = new File(requireContext()
+                    .getExternalFilesDir(null), "debug_results");
+            if (!dir.exists()) dir.mkdirs();
+            File out = new File(dir, System.currentTimeMillis() + "_omr.jpg");
+            try (FileOutputStream fos = new FileOutputStream(out)) {
+                bmp.compress(Bitmap.CompressFormat.JPEG, 90, fos);
+            }
+            return out.getAbsolutePath();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    // ===== Inner Model & Adapter =====
+
+    private static class OMRResult {
+        final Bitmap annotated;
+        final double score;
+        final String maDe, sbd;
+        OMRResult(Bitmap annotated, double score, String maDe, String sbd) {
+            this.annotated = annotated;
+            this.score     = score;
+            this.maDe      = maDe;
+            this.sbd       = sbd;
+        }
+    }
+
+    private class BatchResultAdapter
+            extends RecyclerView.Adapter<BatchResultAdapter.VH> {
+
+        private final List<OMRResult> list = new ArrayList<>();
+
+        class VH extends RecyclerView.ViewHolder {
+            ImageView ivResult;
+            TextView  tvScore;
+            VH(View itemView) {
+                super(itemView);
+                ivResult = itemView.findViewById(R.id.ivResult);
+                tvScore  = itemView.findViewById(R.id.tvScore);
+            }
+        }
+
+        @NonNull @Override
+        public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View v = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.item_batch_result, parent, false);
+            return new VH(v);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull VH h, int pos) {
+            OMRResult r = list.get(pos);
+            h.ivResult.setImageBitmap(r.annotated);
+            h.tvScore.setText(String.format(
+                    "Mã đề %s – SBD %s – Điểm: %.2f",
+                    r.maDe, r.sbd, r.score
+            ));
+        }
+
+        @Override public int getItemCount() { return list.size(); }
+
+        void submitList(List<OMRResult> data) {
+            list.clear();
+            list.addAll(data);
+            notifyDataSetChanged();
+        }
     }
 }
