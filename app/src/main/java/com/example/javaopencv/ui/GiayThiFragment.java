@@ -13,7 +13,6 @@ import com.example.javaopencv.R;
 
 public class GiayThiFragment extends Fragment {
 
-    // TODO: Thay bằng link Google Drive thật của bạn
     private static final String DRIVE_URL_PHIEU_20     = "https://drive.google.com/file/d/14cYBbLpQmaxVuOjcGjKRAfxdKEw1jggx/view";
     private static final String DRIVE_URL_EXCEL_MAU    = "https://drive.google.com/drive/folders/1w7csyZA_tKK2yy9SLG-8u7KMdrLvGU6S?usp=sharing";
 
