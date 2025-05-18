@@ -1,5 +1,6 @@
 package com.example.javaopencv.data.dao;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.Query;
@@ -72,4 +73,18 @@ public interface AnswerDao {
     @Query("SELECT * FROM answers WHERE examId = :examId AND code = :code AND cauSo = :cauSo LIMIT 1")
     Answer findSingleAnswer(int examId, String code, int cauSo);
 
+    @Query("SELECT * FROM answers WHERE examId = :examId ORDER BY code, cauSo")
+    List<Answer> getAnswersByExamSync(int examId);
+
+    @Query("SELECT * FROM answers WHERE examId = :examId")
+    LiveData<List<Answer>> getAllAnswersForExamLive(int examId);
+    @Query("SELECT * FROM answers WHERE examId = :examId ORDER BY code, cauSo")
+    LiveData<List<Answer>> getAnswersForExamLive(int examId);
+    @Query("SELECT * FROM answers WHERE examId = :examId ORDER BY code, cauSo")
+    List<Answer> getAnswersForExamSync(int examId);
+
+    @Query("SELECT DISTINCT code FROM answers WHERE examId = :examId")
+    List<String> getAllMaDeByExamId(int examId);
 }
+
+

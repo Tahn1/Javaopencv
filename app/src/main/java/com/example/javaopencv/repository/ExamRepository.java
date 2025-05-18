@@ -1,31 +1,43 @@
 package com.example.javaopencv.repository;
 
 import android.app.Application;
+
 import androidx.lifecycle.LiveData;
+
 import com.example.javaopencv.data.AppDatabase;
 import com.example.javaopencv.data.dao.ExamDao;
 import com.example.javaopencv.data.entity.Exam;
+
 import java.util.List;
 
 public class ExamRepository {
     private final ExamDao examDao;
+    private final LiveData<List<Exam>> allExams;
 
-    public ExamRepository(Application app) {
-        examDao = AppDatabase.getInstance(app).examDao();
+    public ExamRepository(Application application) {
+        AppDatabase db = AppDatabase.getInstance(application);
+        examDao = db.examDao();
+        allExams = examDao.getAllExamsWithClass();
     }
 
-    /** Lấy tất cả exams kèm tên lớp */
-    public LiveData<List<Exam>> getAllExams() {
-        return examDao.getAllExamsWithClass();
-    }
-
-    /** Lấy exams cho 1 lớp cụ thể kèm tên lớp */
     public LiveData<List<Exam>> getExamsForClass(int classId) {
         return examDao.getExamsForClassWithClassName(classId);
     }
 
+    public LiveData<List<Exam>> getAllExams() {
+        return allExams;
+    }
+
+    public LiveData<Exam> getExamById(int id) {
+        return examDao.getExamById(id);
+    }
+
+    public Exam getExamSync(int examId) {
+        return examDao.getExamSync(examId);
+    }
+
     public void insertExam(Exam exam) {
-        new Thread(() -> examDao.insert(exam)).start();
+        new Thread(() -> examDao.insertExam(exam)).start();
     }
 
     public void updateExam(Exam exam) {
@@ -35,9 +47,4 @@ public class ExamRepository {
     public void deleteExam(Exam exam) {
         new Thread(() -> examDao.deleteExam(exam)).start();
     }
-
-    public LiveData<Exam> getExamById(int id) {
-        return examDao.getExamById(id);
-    }
-
 }

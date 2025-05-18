@@ -15,6 +15,9 @@ import java.util.List;
 @Dao
 public interface StudentDao {
 
+    @Query("DELETE FROM student WHERE class_id = :classId")
+    void deleteByClassId(int classId);
+
     /** Lấy danh sách học sinh của 1 lớp, sắp theo tên */
     @Query("SELECT * FROM student WHERE class_id = :classId ORDER BY name")
     LiveData<List<Student>> getStudentsForClass(int classId);

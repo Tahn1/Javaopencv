@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Header -->
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/cell_height"
+            android:background="#EEE">
+
+            <TextView
+                android:layout_width="@dimen/col_stt_width"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:padding="8dp"
+                android:text="STT"
+                android:textStyle="bold"
+                android:background="@drawable/cell_border"/>
+
+            <TextView
+                android:layout_width="@dimen/col_name_width"
+                android:layout_height="match_parent"
+                android:gravity="start|center_vertical"
+                android:padding="8dp"
+                android:text="Tên"
+                android:textStyle="bold"
+                android:background="@drawable/cell_border"/>
+
+            <TextView
+                android:layout_width="@dimen/col_code_width"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:padding="8dp"
+                android:text="Mã SV"
+                android:textStyle="bold"
+                android:background="@drawable/cell_border"/>
+
+            <TextView
+                android:layout_width="@dimen/col_score_width"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:padding="8dp"
+                android:text="Điểm"
+                android:textStyle="bold"
+                android:background="@drawable/cell_border"/>
+        </TableRow>
+    </TableLayout>
+
+    <!-- Dữ liệu -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvStudents"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="vertical"/>
+</LinearLayout>

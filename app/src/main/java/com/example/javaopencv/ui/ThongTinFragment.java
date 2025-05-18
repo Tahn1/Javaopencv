@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,7 +24,12 @@ import java.util.List;
 
 public class ThongTinFragment extends Fragment {
 
-    private TextView tvExamTitle,
+    private TextView
+            tvExamTitle,
+            tvExamClassLabel,
+            tvExamClass,
+            tvExamSubjectLabel,
+            tvExamSubject,
             tvExamPhieu,
             tvExamSoCau,
             tvExamSoBaiCham,
@@ -49,27 +55,31 @@ public class ThongTinFragment extends Fragment {
                                         @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Ánh xạ TextView
-        tvExamTitle     = view.findViewById(R.id.tv_exam_title);
-        tvExamPhieu     = view.findViewById(R.id.tv_exam_phieu);
-        tvExamSoCau     = view.findViewById(R.id.tv_exam_socau);
-        tvExamSoBaiCham = view.findViewById(R.id.tv_exam_sobaicham);
-        tvExamSoDapAn   = view.findViewById(R.id.tv_exam_sodapan);
-        tvExamDTB       = view.findViewById(R.id.tv_exam_dtb);
-        tvExamMin       = view.findViewById(R.id.tv_exam_min);
-        tvExamMax       = view.findViewById(R.id.tv_exam_max);
+        // 1) Ánh xạ tất cả TextView
+        tvExamTitle         = view.findViewById(R.id.tv_exam_title);
+        tvExamClassLabel    = view.findViewById(R.id.tv_exam_class_label);
+        tvExamClass         = view.findViewById(R.id.tv_exam_class);
+        tvExamSubjectLabel  = view.findViewById(R.id.tv_exam_subject_label);
+        tvExamSubject       = view.findViewById(R.id.tv_exam_subject);
+        tvExamPhieu         = view.findViewById(R.id.tv_exam_phieu);
+        tvExamSoCau         = view.findViewById(R.id.tv_exam_socau);
+        tvExamSoBaiCham     = view.findViewById(R.id.tv_exam_sobaicham);
+        tvExamSoDapAn       = view.findViewById(R.id.tv_exam_sodapan);
+        tvExamDTB           = view.findViewById(R.id.tv_exam_dtb);
+        tvExamMin           = view.findViewById(R.id.tv_exam_min);
+        tvExamMax           = view.findViewById(R.id.tv_exam_max);
 
-        // Lấy args từ Bundle
+        // 2) Lấy args
         Bundle args = getArguments();
         if (args != null) {
             examId = args.getInt("examId", -1);
             soCau  = args.getInt("questionCount", 20);
         }
 
-        // 1) Load thông tin cơ bản của Exam từ DB
+        // 3) Load thông tin cơ bản từ Exam
         loadExamInfo();
 
-        // 2) Quan sát số mã đề
+        // 4) Quan sát số mã đề
         dapAnViewModel = new ViewModelProvider(requireActivity())
                 .get(DapAnViewModel.class);
         dapAnViewModel.getMaDeList().observe(getViewLifecycleOwner(), maDeItems -> {
@@ -77,10 +87,13 @@ public class ThongTinFragment extends Fragment {
             tvExamSoDapAn.setText(String.valueOf(soDapAn));
         });
 
-        // 3) Quan sát kết quả đã chấm
-        xemLaiViewModel = new ViewModelProvider(requireActivity())
-                .get(XemLaiViewModel.class);
-        xemLaiViewModel.getResultsForExam(examId)
+        // 5) Khởi tạo và quan sát XemLaiViewModel với Factory truyền examId
+        xemLaiViewModel = new ViewModelProvider(
+                this,
+                new XemLaiViewModel.Factory(requireActivity().getApplication(), examId)
+        ).get(XemLaiViewModel.class);
+
+        xemLaiViewModel.getResultsForExam()
                 .observe(getViewLifecycleOwner(), results -> {
                     int soBaiCham = (results != null) ? results.size() : 0;
                     tvExamSoBaiCham.setText(String.valueOf(soBaiCham));
@@ -88,7 +101,7 @@ public class ThongTinFragment extends Fragment {
                     if (results != null && !results.isEmpty()) {
                         double sum = 0, min = Double.MAX_VALUE, max = Double.MIN_VALUE;
                         for (GradeResult gr : results) {
-                            double sc = gr.score; // sử dụng trường công khai
+                            double sc = gr.getScore();
                             sum += sc;
                             if (sc < min) min = sc;
                             if (sc > max) max = sc;
@@ -105,12 +118,10 @@ public class ThongTinFragment extends Fragment {
                 });
     }
 
-    /** Load tiêu đề, phiếu, số câu từ bảng Exam */
+    /** Load tiêu đề, phiếu, số câu, lớp và môn từ bảng Exam */
     private void loadExamInfo() {
         new Thread(() -> {
-            ExamDao examDao = AppDatabase
-                    .getInstance(requireContext())
-                    .examDao();
+            ExamDao examDao = AppDatabase.getInstance(requireContext()).examDao();
             final Exam exam = examDao.getExamSync(examId);
 
             if (getActivity() != null) {
@@ -119,10 +130,27 @@ public class ThongTinFragment extends Fragment {
                         tvExamTitle.setText(exam.getTitle());
                         tvExamPhieu.setText(exam.getPhieu());
                         tvExamSoCau.setText(String.valueOf(exam.getSoCau()));
+
+                        if (exam.getClassName() != null && !exam.getClassName().isEmpty()) {
+                            tvExamClassLabel.setVisibility(View.VISIBLE);
+                            tvExamClass.setVisibility(View.VISIBLE);
+                            tvExamClass.setText(exam.getClassName());
+                        } else {
+                            tvExamClassLabel.setVisibility(View.GONE);
+                            tvExamClass.setVisibility(View.GONE);
+                        }
+
+                        if (exam.getSubjectName() != null && !exam.getSubjectName().isEmpty()) {
+                            tvExamSubjectLabel.setVisibility(View.VISIBLE);
+                            tvExamSubject.setVisibility(View.VISIBLE);
+                            tvExamSubject.setText(exam.getSubjectName());
+                        } else {
+                            tvExamSubjectLabel.setVisibility(View.GONE);
+                            tvExamSubject.setVisibility(View.GONE);
+                        }
                     } else {
-                        tvExamTitle.setText("N/A");
-                        tvExamPhieu.setText("N/A");
-                        tvExamSoCau.setText("N/A");
+                        Toast.makeText(requireContext(),
+                                "Không tìm thấy bài thi!", Toast.LENGTH_SHORT).show();
                     }
                 });
             }

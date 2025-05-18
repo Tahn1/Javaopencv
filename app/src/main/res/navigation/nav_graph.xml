@@ -27,6 +27,22 @@
         <argument
             android:name="classId"
             app:argType="integer" />
+
+        <!-- Action to ExamDetailFragment with necessary args -->
+        <action
+            android:id="@+id/action_classDetailFragment_to_examDetailFragment"
+            app:destination="@id/examDetailFragment">
+            <argument
+                android:name="examId"
+                app:argType="integer" />
+            <argument
+                android:name="questionCount"
+                app:argType="integer"
+                android:defaultValue="20" />
+            <argument
+                android:name="classId"
+                app:argType="integer" />
+        </action>
     </fragment>
 
     <!-- KiemTraFragment: Kiểm Tra -->
@@ -34,7 +50,6 @@
         android:id="@+id/kiemTraFragment"
         android:name="com.example.javaopencv.ui.KiemTraFragment"
         android:label="Kiểm Tra" >
-        <!-- Đã xóa action tới subjectFragment -->
         <action
             android:id="@+id/action_kiemTraFragment_to_class"
             app:destination="@id/classFragment" />
@@ -51,7 +66,19 @@
         android:id="@+id/examDetailFragment"
         android:name="com.example.javaopencv.ui.ExamDetailFragment"
         android:label="Chi tiết bài thi" >
-        <argument android:name="examId" app:argType="integer" />
+        <argument
+            android:name="examId"
+            app:argType="integer" />
+        <argument
+            android:name="questionCount"
+            app:argType="integer"
+            android:defaultValue="20" />
+        <argument
+            android:name="classId"
+            app:argType="integer"
+            android:defaultValue="-1" />
+
+        <!-- Các action có sẵn -->
         <action
             android:id="@+id/action_examDetailFragment_to_dapAnFragment"
             app:destination="@id/dapAnFragment" />
@@ -67,9 +94,29 @@
         <action
             android:id="@+id/action_examDetailFragment_to_thongTinFragment"
             app:destination="@id/thongTinFragment" />
+        <action
+            android:id="@+id/action_examDetailFragment_to_studentListFragment"
+            app:destination="@id/studentListFragment" />
+        <action
+            android:id="@+id/action_examDetailFragment_to_danhSachToSaiMaDeFragment"
+            app:destination="@id/danhSachToSaiMaDeFragment" />
+        <action
+            android:id="@+id/action_examDetailFragment_to_danhSachToSaiMaSVFragment"
+            app:destination="@id/danhSachToSaiMaSVFragment" />
     </fragment>
 
-    <!-- DapAnFragment: Đáp án -->
+    <!-- Remaining fragments -->
+    <!-- StudentListFragment -->
+    <fragment
+        android:id="@+id/studentListFragment"
+        android:name="com.example.javaopencv.ui.StudentListFragment"
+        android:label="Danh sách điểm học sinh" >
+        <argument
+            android:name="examId"
+            app:argType="integer" />
+    </fragment>
+
+    <!-- DapAnFragment -->
     <fragment
         android:id="@+id/dapAnFragment"
         android:name="com.example.javaopencv.ui.DapAnFragment"
@@ -78,36 +125,72 @@
             android:id="@+id/action_dapAnFragment_to_addMaDeFragment"
             app:destination="@id/addMaDeFragment" />
     </fragment>
-
-    <!-- AddMaDeFragment: Tạo mã đề -->
     <fragment
         android:id="@+id/addMaDeFragment"
         android:name="com.example.javaopencv.ui.AddMaDeFragment"
         android:label="Tạo mã đề" />
 
-    <!-- ThongTinFragment: Thông tin bài thi -->
+    <!-- DanhSachToSaiMaDeFragment -->
+    <fragment
+        android:id="@+id/danhSachToSaiMaDeFragment"
+        android:name="com.example.javaopencv.ui.DanhSachToSaiMaDeFragment"
+        android:label="Danh sách tô sai mã đề">
+
+        <!-- Nhận examId từ bundle -->
+        <argument
+            android:name="examId"
+            app:argType="integer" />
+
+        <!-- Action khi click vào 1 item sẽ mở GradeDetailFragment -->
+        <action
+            android:id="@+id/action_danhSachToSaiMaDeFragment_to_gradeDetailFragment"
+            app:destination="@id/gradeDetailFragment">
+            <argument
+                android:name="gradeId"
+                app:argType="long" />
+        </action>
+    </fragment>
+
+    <fragment
+        android:id="@+id/danhSachToSaiMaSVFragment"
+        android:name="com.example.javaopencv.ui.DanhSachToSaiMaSVFragment"
+        android:label="Danh sách tô sai mã sinh viên">
+
+        <argument android:name="examId"  app:argType="integer" />
+        <argument android:name="classId" app:argType="integer" />
+        <action
+            android:id="@+id/action_danhSachToSaiMaSVFragment_to_gradeDetailFragment"
+            app:destination="@id/gradeDetailFragment">
+            <argument
+                android:name="gradeId"
+                app:argType="long" />
+        </action>
+    </fragment>
+
+
+    <!-- ThongTinFragment -->
     <fragment
         android:id="@+id/thongTinFragment"
         android:name="com.example.javaopencv.ui.ThongTinFragment"
-        android:label="Thông tin bài thi" />
+        android:label="Phân tích kết quả điểm thi" />
 
-    <!-- ChamBaiFragment: Chấm bài -->
+    <!-- ChamBaiFragment -->
     <fragment
         android:id="@+id/chamBaiFragment"
         android:name="com.example.javaopencv.ui.ChamBaiFragment"
         android:label="Chấm bài" />
 
-    <!-- XemLaiFragment: Xem lại danh sách kết quả -->
+    <!-- XemLaiFragment -->
     <fragment
         android:id="@+id/xemLaiFragment"
         android:name="com.example.javaopencv.ui.XemLaiFragment"
-        android:label="Xem lại" >
+        android:label="Kiểm dò bài thi" >
         <action
             android:id="@+id/action_xemLaiFragment_to_gradeDetailFragment"
-            app:destination="@id/gradeDetailFragment" />
+            app:destination="@+id/gradeDetailFragment" />
     </fragment>
 
-    <!-- GradeDetailFragment: Chi tiết bài đã chấm -->
+    <!-- GradeDetailFragment -->
     <fragment
         android:id="@+id/gradeDetailFragment"
         android:name="com.example.javaopencv.ui.GradeDetailFragment"
@@ -120,7 +203,7 @@
             app:destination="@id/editGradeFragment" />
     </fragment>
 
-    <!-- EditGradeFragment: Chỉnh sửa kết quả đã chấm -->
+    <!-- EditGradeFragment -->
     <fragment
         android:id="@+id/editGradeFragment"
         android:name="com.example.javaopencv.ui.EditGradeFragment"
@@ -130,16 +213,15 @@
             app:argType="long" />
     </fragment>
 
-    <!-- ThongKeFragment: Thống kê -->
+    <!-- ThongKeFragment -->
     <fragment
         android:id="@+id/thongKeFragment"
         android:name="com.example.javaopencv.ui.ThongKeFragment"
-        android:label="Thống kê" />
+        android:label="Thống kê điểm thi" />
 
-    <!-- GiayThiFragment: Giấy thi (drawer) -->
+    <!-- GiayThiFragment -->
     <fragment
         android:id="@+id/giayThiFragment"
         android:name="com.example.javaopencv.ui.GiayThiFragment"
         android:label="Giấy thi" />
-
 </navigation>

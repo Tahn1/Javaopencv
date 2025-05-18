@@ -25,13 +25,13 @@ public class ExamDetailFragment extends Fragment {
     private List<MenuItem> menuItems;
     private int examId = -1;
     private int questionCount = 20;
+    private int classId = -1;   // thêm biến lưu classId
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        // Chỉ inflate layout chứa RecyclerView (đã remove header)
         return inflater.inflate(R.layout.fragment_exam_detail, container, false);
     }
 
@@ -43,43 +43,66 @@ public class ExamDetailFragment extends Fragment {
         // Nhận args
         Bundle args = getArguments();
         if (args != null) {
-            examId = args.getInt("examId", -1);
-            questionCount = args.getInt("questionCount", 20);
+            examId         = args.getInt("examId", -1);
+            questionCount  = args.getInt("questionCount", 20);
+            classId        = args.getInt("classId", -1);   // lấy thêm classId
         }
 
         // 1) RecyclerView
         rvMenu = view.findViewById(R.id.rv_menu);
         rvMenu.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        // 2) Chuẩn bị dữ liệu menu
-        initializeMenuItems();
+        // 2) Chuẩn bị dữ liệu menu, truyền classId để quyết định có thêm 2 mục không
+        initializeMenuItems(classId);
 
         // 3) Adapter
         adapter = new MenuAdapter(menuItems, item -> {
             Bundle bundle = new Bundle();
             bundle.putInt("examId", examId);
             bundle.putInt("questionCount", questionCount);
+            bundle.putInt("classId", classId); // truyền luôn classId
+
             switch (item.label) {
                 case "Đáp án":
                     NavHostFragment.findNavController(this)
                             .navigate(R.id.action_examDetailFragment_to_dapAnFragment, bundle);
                     break;
+
                 case "Chấm bài":
                     NavHostFragment.findNavController(this)
                             .navigate(R.id.action_examDetailFragment_to_chamBaiFragment, bundle);
                     break;
-                case "Xem lại":
+
+                case "Danh sách tô sai mã đề":
+                    NavHostFragment.findNavController(this)
+                            .navigate(R.id.action_examDetailFragment_to_danhSachToSaiMaDeFragment, bundle);
+                    break;
+
+                case "Danh sách tô sai mã sinh viên":
+                    NavHostFragment.findNavController(this)
+                            .navigate(R.id.action_examDetailFragment_to_danhSachToSaiMaSVFragment, bundle);
+                    break;
+
+                case "Kiểm dò bài thi":
                     NavHostFragment.findNavController(this)
                             .navigate(R.id.action_examDetailFragment_to_xemLaiFragment, bundle);
                     break;
-                case "Thống kê":
+
+                case "Thống kê điểm thi":
                     NavHostFragment.findNavController(this)
                             .navigate(R.id.action_examDetailFragment_to_thongKeFragment, bundle);
                     break;
-                case "Thông tin":
+
+                case "Danh sách điểm học sinh":
+                    NavHostFragment.findNavController(this)
+                            .navigate(R.id.action_examDetailFragment_to_studentListFragment, bundle);
+                    break;
+
+                case "Phân tích kết quả điểm thi":
                     NavHostFragment.findNavController(this)
                             .navigate(R.id.action_examDetailFragment_to_thongTinFragment, bundle);
                     break;
+
                 default:
                     Toast.makeText(requireContext(),
                             "Chọn: " + item.label, Toast.LENGTH_SHORT).show();
@@ -88,13 +111,24 @@ public class ExamDetailFragment extends Fragment {
         rvMenu.setAdapter(adapter);
     }
 
-    private void initializeMenuItems() {
+    /**
+     * Khởi tạo menuItems, chỉ thêm 2 mục “Danh sách tô sai…” nếu classId hợp lệ.
+     */
+    private void initializeMenuItems(int classId) {
         menuItems = new ArrayList<>();
-        menuItems.add(new MenuItem("1", "Đáp án", "DapAn", "ic_key"));
-        menuItems.add(new MenuItem("2", "Chấm bài", "ChamBai", "ic_camera"));
-        menuItems.add(new MenuItem("3", "Xem lại", "XemLai", "ic_chatbox"));
-        menuItems.add(new MenuItem("4", "Thống kê", "ThongKe", "ic_bar_chart"));
-        menuItems.add(new MenuItem("5", "Thông tin", "ThongTin", "ic_information"));
+        menuItems.add(new MenuItem("1", "Đáp án",      "DapAn",                  "ic_key"));
+        menuItems.add(new MenuItem("2", "Chấm bài",    "ChamBai",                "ic_camera"));
+
+        // chỉ thêm 2 menu này khi classId != -1 (tức bài thi có lớp)
+        if (classId != -1) {
+            menuItems.add(new MenuItem("3", "Danh sách tô sai mã đề",       "DanhSachToSaiMaDe",     "ic_list_code"));
+            menuItems.add(new MenuItem("4", "Danh sách tô sai mã sinh viên","DanhSachToSaiMaSV",     "ic_list_made"));
+        }
+
+        menuItems.add(new MenuItem("5", "Kiểm dò bài thi",               "KiemDoBaiThi",          "ic_chatbox"));
+        menuItems.add(new MenuItem("6", "Thống kê điểm thi",            "ThongKeDiemThi",        "ic_bar_chart"));
+        menuItems.add(new MenuItem("7", "Danh sách điểm học sinh",       "DanhSachDiemHocSinh",   "ic_students"));
+        menuItems.add(new MenuItem("8", "Phân tích kết quả điểm thi",    "PhanTichKetQuaDiemThi", "ic_information"));
     }
 
     public static class MenuItem {
@@ -113,6 +147,7 @@ public class ExamDetailFragment extends Fragment {
     private class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.MenuViewHolder> {
         private final List<MenuItem> items;
         private final OnMenuItemClickListener listener;
+
         public MenuAdapter(List<MenuItem> items, OnMenuItemClickListener listener) {
             this.items = items;
             this.listener = listener;
@@ -145,12 +180,12 @@ public class ExamDetailFragment extends Fragment {
 
         class MenuViewHolder extends RecyclerView.ViewHolder {
             android.widget.ImageView ivIcon, ivChevron;
-            android.widget.TextView tvLabel;
+            android.widget.TextView  tvLabel;
             MenuViewHolder(@NonNull View itemView) {
                 super(itemView);
-                ivIcon   = itemView.findViewById(R.id.iv_menu_icon);
-                ivChevron= itemView.findViewById(R.id.iv_chevron);
-                tvLabel  = itemView.findViewById(R.id.tv_menu_label);
+                ivIcon    = itemView.findViewById(R.id.iv_menu_icon);
+                ivChevron = itemView.findViewById(R.id.iv_chevron);
+                tvLabel   = itemView.findViewById(R.id.tv_menu_label);
             }
         }
     }

@@ -5,13 +5,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.example.javaopencv.R;
 import com.example.javaopencv.data.entity.Exam;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -52,7 +49,8 @@ public class ExamAdapter extends RecyclerView.Adapter<ExamAdapter.ExamViewHolder
             String q = query.toLowerCase();
             List<Exam> filtered = new ArrayList<>();
             for (Exam e : examListFull) {
-                if (e.getTitle().toLowerCase().contains(q)) {
+                if (e.getTitle().toLowerCase().contains(q)
+                        || (e.getSubjectName() != null && e.getSubjectName().toLowerCase().contains(q))) {
                     filtered.add(e);
                 }
             }
@@ -97,11 +95,27 @@ public class ExamAdapter extends RecyclerView.Adapter<ExamAdapter.ExamViewHolder
         Exam exam = examList.get(position);
         Log.d("ExamAdapter", "Binding pos=" + position + " title=" + exam.getTitle());
 
-        holder.tvTitle.setText(exam.getTitle());
-        holder.tvClass.setText(exam.getClassName() != null ? exam.getClassName() : "");
-        holder.tvSocau.setText("Số câu");
+        // 1) Hiển thị Title – Subject
+        String title = exam.getTitle();
+        String subject = exam.getSubjectName();
+        if (subject != null && !subject.trim().isEmpty()) {
+            title += " _ " + subject;  // dấu “–”
+        }
+        holder.tvTitle.setText(title);
+
+        // 2) Hiển thị lớp nếu có, ngược lại ẩn
+        String className = exam.getClassName();
+        if (className != null && !className.trim().isEmpty()) {
+            holder.tvClass.setVisibility(View.VISIBLE);
+            holder.tvClass.setText(className);
+        } else {
+            holder.tvClass.setVisibility(View.GONE);
+        }
+
+        // 3) Các trường khác
         holder.tvPhieu.setText(exam.getPhieu());
         holder.tvDate.setText(exam.getDate());
+        holder.tvSocau.setText("Số câu");
         holder.tvCount.setText(String.valueOf(exam.getSoCau()));
     }
 
@@ -148,12 +162,5 @@ public class ExamAdapter extends RecyclerView.Adapter<ExamAdapter.ExamViewHolder
             }
             return false;
         }
-    }
-    // alias để tương thích với tên cũ
-    public void setListener(OnExamItemClickListener listener) {
-        setOnExamItemClickListener(listener);
-    }
-    public void setLongClickListener(OnExamItemLongClickListener listener) {
-        setOnExamItemLongClickListener(listener);
     }
 }

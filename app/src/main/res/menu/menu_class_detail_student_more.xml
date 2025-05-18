@@ -1,0 +1,8 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/subaction_import"
+        android:title="@string/action_import" />
+    <item
+        android:id="@+id/subaction_delete_all"
+        android:title="Xóa tất cả học sinh"/>
+</menu>

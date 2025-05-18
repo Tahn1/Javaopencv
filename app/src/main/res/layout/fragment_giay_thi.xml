@@ -43,6 +43,7 @@
                     android:adjustViewBounds="true"
                     android:scaleType="fitCenter"
                     android:src="@drawable/phieu_20"
+                    android:contentDescription="Mẫu phiếu 20 câu"
                     android:layout_marginBottom="8dp" />
 
                 <Button
@@ -50,44 +51,23 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Tải phiếu 20"
-                    android:layout_gravity="center" />
-            </LinearLayout>
+                    android:layout_gravity="center"
+                    android:onClick="onDownloadPhieu20"
+                    android:contentDescription="Tải file Excel mẫu phiếu 20 câu" />
 
-            <!-- Khoảng cách giữa các phần -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="16dp" />
-
-            <!-- Phần hiển thị Phiếu 60 câu -->
-            <LinearLayout
-                android:id="@+id/layout_phieu60"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/tv_phieu60_label"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Phiếu 60 câu"
-                    android:textAppearance="?attr/textAppearanceHeadline6"
-                    android:layout_marginBottom="8dp" />
-
-                <ImageView
-                    android:id="@+id/img_phieu_60"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:adjustViewBounds="true"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/phieu_60"
-                    android:layout_marginBottom="8dp" />
-
+                <!-- Nút mới: Tải Excel mẫu -->
                 <Button
-                    android:id="@+id/btn_tai_phieu_60"
+                    android:id="@+id/btn_tai_excel_mau"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Tải phiếu 60"
-                    android:layout_gravity="center" />
+                    android:layout_gravity="center"
+                    android:layout_marginTop="12dp"
+                    android:text="Tải Excel mẫu"
+                    android:backgroundTint="#4CAF50"
+                    android:textColor="@android:color/white"
+                    android:onClick="onDownloadExcelMau"
+                    android:contentDescription="Tải file Excel mẫu" />
+
             </LinearLayout>
 
         </LinearLayout>

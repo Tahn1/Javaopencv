@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.javaopencv.R;
+import com.example.javaopencv.data.entity.Exam;
 import com.example.javaopencv.ui.adapter.ExamAdapter;
 import com.example.javaopencv.viewmodel.ExamViewModel;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -70,10 +71,15 @@ public class ClassDetailExamFragment extends Fragment {
         // Click xem chi tiết
         adapter.setOnExamItemClickListener(exam -> {
             Bundle args = new Bundle();
-            args.putInt("examId", exam.getId());
+            args.putInt("examId",        exam.getId());
             args.putInt("questionCount", exam.getSoCau());
+            args.putInt("classId",       classId);
+            // Sử dụng action id để điều hướng và truyền luôn classId
             Navigation.findNavController(view)
-                    .navigate(R.id.examDetailFragment, args);
+                    .navigate(
+                            R.id.action_classDetailFragment_to_examDetailFragment,
+                            args
+                    );
         });
 
         // Long-press: Chỉnh sửa tiêu đề hoặc xóa bài thi
