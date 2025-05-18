@@ -30,7 +30,7 @@ public class MaDeViewPagerAdapter extends FragmentStateAdapter {
 
     @Override
     public int getItemCount() {
-        return 2; // 2 tab: "Mã đề" và "Đáp án"
+        return 2;
     }
 
     public MaDeTabFragment getMaDeTabFragment() {

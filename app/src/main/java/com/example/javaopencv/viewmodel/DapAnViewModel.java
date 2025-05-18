@@ -41,7 +41,6 @@ public class DapAnViewModel extends AndroidViewModel {
         return maDeList;
     }
 
-    //================== LOADDATA ==================//
     private void loadMaDeList() {
         if (examId < 0) return;
         new Thread(() -> {
@@ -60,7 +59,6 @@ public class DapAnViewModel extends AndroidViewModel {
         }).start();
     }
 
-    //================== ADD MA DE ==================//
     public void addMaDe(String code, List<String> answerList, int questionCount) {
         new Thread(() -> {
             if (examId < 0) {
@@ -76,12 +74,10 @@ public class DapAnViewModel extends AndroidViewModel {
         }).start();
     }
 
-    //================== UPDATE MA DE ==================//
     public void updateMaDe(int position,
                            String newCode,
                            List<String> newAnsList,
                            int questionCount) {
-        // đảm bảo kích thước
         List<String> finalNew = ensureSize(newAnsList, questionCount);
 
         new Thread(() -> {
@@ -98,14 +94,12 @@ public class DapAnViewModel extends AndroidViewModel {
             // 1) Tạo map đáp án cũ
             Map<Integer, String> oldMap = new HashMap<>();
             if (!newCode.equals(oldCode)) {
-                // đổi code: lấy từ DB
                 List<Answer> dbAns = answerRepository
                         .getAnswersByExamAndCodeSync(examId, oldCode);
                 for (Answer a : dbAns) {
                     oldMap.put(a.cauSo, a.dapAn);
                 }
             } else {
-                // giữ code: lấy từ cache
                 for (int i = 0; i < oldItem.answers.size(); i++) {
                     oldMap.put(i + 1, oldItem.answers.get(i));
                 }
@@ -135,10 +129,8 @@ public class DapAnViewModel extends AndroidViewModel {
                                 new Answer(examId, newCode, cauSo, ans));
                     }
                 } else {
-                    // đã có rồi
                     String oldAns = exist.dapAn;
                     if (ans == null) {
-                        // set null
                         answerRepository.updateSingleAnswerSync(
                                 examId, newCode, cauSo, null);
                     } else if (!ans.equals(oldAns)) {
@@ -154,7 +146,6 @@ public class DapAnViewModel extends AndroidViewModel {
         }).start();
     }
 
-    //================== REMOVE MA DE ==================//
     public void removeMaDe(int position) {
         new Thread(() -> {
             List<MaDeItem> current = maDeList.getValue();
@@ -168,7 +159,6 @@ public class DapAnViewModel extends AndroidViewModel {
         }).start();
     }
 
-    //================== GET ANSWERLIST BY POS ==================//
     public List<String> getAnswerListByPosition(int position) {
         List<MaDeItem> current = maDeList.getValue();
         if (current != null && position >= 0 && position < current.size()) {
@@ -177,7 +167,6 @@ public class DapAnViewModel extends AndroidViewModel {
         return null;
     }
 
-    //================== HELPER ==================//
     private List<String> ensureSize(List<String> base, int questionCount) {
         List<String> copy = new ArrayList<>(base);
         while (copy.size() > questionCount) copy.remove(copy.size() - 1);
@@ -185,7 +174,6 @@ public class DapAnViewModel extends AndroidViewModel {
         return copy;
     }
 
-    //================== CLASS MA DE ITEM ==================//
     public static class MaDeItem {
         public String code;
         public List<String> answers;

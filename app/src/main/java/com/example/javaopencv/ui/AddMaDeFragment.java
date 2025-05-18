@@ -106,8 +106,6 @@ public class AddMaDeFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu,
                                     @NonNull MenuInflater inflater) {
-        // menu_add_ma_de.xml chứa:
-        // <item android:id="@+id/action_save" … />
         inflater.inflate(R.menu.menu_add_ma_de, menu);
         super.onCreateOptionsMenu(menu, inflater);
     }
@@ -120,7 +118,6 @@ public class AddMaDeFragment extends Fragment {
             saveMaDe();
             return true;
         }
-        // đây là nút Up/Home do Activity’s Toolbar sinh ra
         if (id == android.R.id.home) {
             requireActivity().onBackPressed();
             return true;

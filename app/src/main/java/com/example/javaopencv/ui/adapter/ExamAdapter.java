@@ -95,7 +95,6 @@ public class ExamAdapter extends RecyclerView.Adapter<ExamAdapter.ExamViewHolder
         Exam exam = examList.get(position);
         Log.d("ExamAdapter", "Binding pos=" + position + " title=" + exam.getTitle());
 
-        // 1) Hiển thị Title – Subject
         String title = exam.getTitle();
         String subject = exam.getSubjectName();
         if (subject != null && !subject.trim().isEmpty()) {
@@ -103,7 +102,6 @@ public class ExamAdapter extends RecyclerView.Adapter<ExamAdapter.ExamViewHolder
         }
         holder.tvTitle.setText(title);
 
-        // 2) Hiển thị lớp nếu có, ngược lại ẩn
         String className = exam.getClassName();
         if (className != null && !className.trim().isEmpty()) {
             holder.tvClass.setVisibility(View.VISIBLE);
@@ -112,7 +110,6 @@ public class ExamAdapter extends RecyclerView.Adapter<ExamAdapter.ExamViewHolder
             holder.tvClass.setVisibility(View.GONE);
         }
 
-        // 3) Các trường khác
         holder.tvPhieu.setText(exam.getPhieu());
         holder.tvDate.setText(exam.getDate());
         holder.tvSocau.setText("Số câu");

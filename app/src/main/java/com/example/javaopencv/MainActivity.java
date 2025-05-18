@@ -76,13 +76,10 @@ public class MainActivity extends AppCompatActivity {
                 .setOpenableLayout(drawerLayout)
                 .build();
 
-        // 6) Kết nối Toolbar với NavController
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfig);
 
-        // 7) Kết nối NavigationView với NavController
         NavigationUI.setupWithNavController(navView, navController);
 
-        // 8) Đổi title/subtitle khi chuyển màn
         navController.addOnDestinationChangedListener((controller, destination, args) -> {
             ActionBar ab = getSupportActionBar();
             if (ab == null) return;
@@ -122,7 +119,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Xử lý kết quả user cho quyền Storage
     @Override
     public void onRequestPermissionsResult(
             int requestCode,
@@ -147,7 +143,6 @@ public class MainActivity extends AppCompatActivity {
                 ).show();
             } else if (ActivityCompat.shouldShowRequestPermissionRationale(
                     this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                // Nếu user từ chối nhưng chưa chọn "Không hỏi lại"
                 new AlertDialog.Builder(this)
                         .setTitle("Cần quyền Storage")
                         .setMessage("Ứng dụng cần quyền Storage để lưu và đọc ảnh chấm bài.")
@@ -164,7 +159,6 @@ public class MainActivity extends AppCompatActivity {
                         .setNegativeButton("Hủy", null)
                         .show();
             } else {
-                // User chọn "Không hỏi lại" hoặc từ chối
                 Toast.makeText(this,
                         "Không thể lưu ảnh nếu không có quyền Storage",
                         Toast.LENGTH_LONG

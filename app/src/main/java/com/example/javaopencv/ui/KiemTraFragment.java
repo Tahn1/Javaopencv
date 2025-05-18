@@ -25,9 +25,6 @@ import com.example.javaopencv.ui.adapter.ExamAdapter;
 import com.example.javaopencv.viewmodel.KiemTraViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-/**
- * Fragment hiển thị danh sách bài thi, gọi dialog riêng để thêm/sửa.
- */
 public class KiemTraFragment extends Fragment
         implements ExamAdapter.OnExamItemClickListener,
         ExamAdapter.OnExamItemLongClickListener {

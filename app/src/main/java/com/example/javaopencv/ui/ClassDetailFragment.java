@@ -14,15 +14,11 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.javaopencv.R;
-import com.example.javaopencv.data.entity.SchoolClass;
 import com.example.javaopencv.viewmodel.ClassViewModel;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
-/**
- * Fragment chi tiết lớp: hiển thị TabLayout với 2 tab (Exam, Student)
- * và đặt title toolbar thành tên lớp được chọn.
- */
+
 public class ClassDetailFragment extends Fragment {
     private static final String ARG_CLASS_ID = "classId";
     private int classId;

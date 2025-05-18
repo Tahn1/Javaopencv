@@ -37,7 +37,6 @@ public class DapAnFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Thông báo fragment có menu (chỉ Add)
         setHasOptionsMenu(true);
     }
 
@@ -76,7 +75,6 @@ public class DapAnFragment extends Fragment {
             }
         }
 
-        // Quan sát LiveData để cập nhật danh sách mã đề
         viewModel.getMaDeList().observe(getViewLifecycleOwner(), maDeItemList -> {
             List<String> codes = new ArrayList<>();
             for (DapAnViewModel.MaDeItem it : maDeItemList) {

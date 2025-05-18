@@ -25,7 +25,7 @@ public class ExamDetailFragment extends Fragment {
     private List<MenuItem> menuItems;
     private int examId = -1;
     private int questionCount = 20;
-    private int classId = -1;   // thêm biến lưu classId
+    private int classId = -1;
 
     @Nullable
     @Override
@@ -40,22 +40,18 @@ public class ExamDetailFragment extends Fragment {
                               @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Nhận args
         Bundle args = getArguments();
         if (args != null) {
             examId         = args.getInt("examId", -1);
             questionCount  = args.getInt("questionCount", 20);
-            classId        = args.getInt("classId", -1);   // lấy thêm classId
+            classId        = args.getInt("classId", -1);
         }
 
-        // 1) RecyclerView
         rvMenu = view.findViewById(R.id.rv_menu);
         rvMenu.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        // 2) Chuẩn bị dữ liệu menu, truyền classId để quyết định có thêm 2 mục không
         initializeMenuItems(classId);
 
-        // 3) Adapter
         adapter = new MenuAdapter(menuItems, item -> {
             Bundle bundle = new Bundle();
             bundle.putInt("examId", examId);
@@ -111,15 +107,12 @@ public class ExamDetailFragment extends Fragment {
         rvMenu.setAdapter(adapter);
     }
 
-    /**
-     * Khởi tạo menuItems, chỉ thêm 2 mục “Danh sách tô sai…” nếu classId hợp lệ.
-     */
+
     private void initializeMenuItems(int classId) {
         menuItems = new ArrayList<>();
         menuItems.add(new MenuItem("1", "Đáp án",      "DapAn",                  "ic_key"));
         menuItems.add(new MenuItem("2", "Chấm bài",    "ChamBai",                "ic_camera"));
 
-        // chỉ thêm 2 menu này khi classId != -1 (tức bài thi có lớp)
         if (classId != -1) {
             menuItems.add(new MenuItem("3", "Danh sách tô sai mã đề",       "DanhSachToSaiMaDe",     "ic_list_code"));
             menuItems.add(new MenuItem("4", "Danh sách tô sai mã sinh viên","DanhSachToSaiMaSV",     "ic_list_made"));
