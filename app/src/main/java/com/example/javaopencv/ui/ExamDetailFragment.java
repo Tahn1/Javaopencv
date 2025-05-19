@@ -25,7 +25,7 @@ public class ExamDetailFragment extends Fragment {
     private List<MenuItem> menuItems;
     private int examId = -1;
     private int questionCount = 20;
-    private int classId = -1;   // thêm biến lưu classId
+    private int classId = -1;
 
     @Nullable
     @Override

@@ -85,10 +85,7 @@ public class DapAnGridAdapter extends RecyclerView.Adapter<DapAnGridAdapter.View
         }
     }
 
-    /**
-     * Trả về danh sách độ dài questionCount,
-     * mỗi phần tử = "A"/"B"/"C"/"D" hoặc null
-     */
+
     public List<String> buildAnswersList() {
         String[] answers = new String[questionCount];
         for (int i = 0; i < questionCount; i++) {
@@ -104,10 +101,7 @@ public class DapAnGridAdapter extends RecyclerView.Adapter<DapAnGridAdapter.View
         return Arrays.asList(answers);
     }
 
-    /**
-     * Set lại các ô được chọn dựa trên danh sách cũ
-     * cỡ danh sách = questionCount.
-     */
+
     public void setSelectedAnswers(List<String> oldAnswers) {
         // fill -1
         Arrays.fill(selectedAnswer, -1);

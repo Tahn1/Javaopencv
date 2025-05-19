@@ -20,8 +20,6 @@ import com.example.javaopencv.data.entity.GradeResult;
 import com.example.javaopencv.viewmodel.DapAnViewModel;
 import com.example.javaopencv.viewmodel.XemLaiViewModel;
 
-import java.util.List;
-
 public class ThongTinFragment extends Fragment {
 
     private TextView
@@ -118,7 +116,7 @@ public class ThongTinFragment extends Fragment {
                 });
     }
 
-    /** Load tiêu đề, phiếu, số câu, lớp và môn từ bảng Exam */
+
     private void loadExamInfo() {
         new Thread(() -> {
             ExamDao examDao = AppDatabase.getInstance(requireContext()).examDao();

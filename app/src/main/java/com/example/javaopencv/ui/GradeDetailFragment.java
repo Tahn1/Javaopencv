@@ -33,7 +33,6 @@ public class GradeDetailFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // cho phép fragment inflate nút Edit lên toolbar chính
         setHasOptionsMenu(true);
     }
 
@@ -69,16 +68,13 @@ public class GradeDetailFragment extends Fragment {
 
         ivResult = view.findViewById(R.id.ivResult);
 
-        // Lấy ActionBar từ Activity
         AppCompatActivity act = (AppCompatActivity) requireActivity();
         ab = act.getSupportActionBar();
         if (ab != null) {
             ab.setDisplayHomeAsUpEnabled(true);
-            // nếu muốn custom icon back:
-            // ab.setHomeAsUpIndicator(R.drawable.ic_arrow_back_white);
+
         }
 
-        // Lấy ViewModel
         long gradeId = getArguments().getLong("gradeId", -1L);
         GradeDetailViewModel vm = new ViewModelProvider(
                 this,
@@ -88,7 +84,6 @@ public class GradeDetailFragment extends Fragment {
         vm.getGradeResult().observe(getViewLifecycleOwner(), gr -> {
             if (gr == null) return;
 
-            // Đẩy mã đề + số đúng/tổng = điểm lên title/subtitle
             if (ab != null) {
                 ab.setTitle("Mã đề " + gr.maDe);
                 ab.setSubtitle(String.format(
@@ -100,7 +95,6 @@ public class GradeDetailFragment extends Fragment {
                 ));
             }
 
-            // Load ảnh chấm
             if (gr.imagePath != null) {
                 ivResult.setImageURI(Uri.parse(gr.imagePath));
             }

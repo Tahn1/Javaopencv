@@ -99,7 +99,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    /** Cho phép Fragment gọi để mở Drawer */
     public void openDrawer() {
         if (drawerLayout != null) {
             drawerLayout.openDrawer(GravityCompat.START);
@@ -122,7 +121,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Xử lý kết quả user cho quyền Storage
     @Override
     public void onRequestPermissionsResult(
             int requestCode,
@@ -164,7 +162,6 @@ public class MainActivity extends AppCompatActivity {
                         .setNegativeButton("Hủy", null)
                         .show();
             } else {
-                // User chọn "Không hỏi lại" hoặc từ chối
                 Toast.makeText(this,
                         "Không thể lưu ảnh nếu không có quyền Storage",
                         Toast.LENGTH_LONG

@@ -15,7 +15,6 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.javaopencv.R;
-import com.example.javaopencv.data.entity.ClassWithCount;
 import com.example.javaopencv.data.entity.SchoolClass;
 import com.example.javaopencv.databinding.DialogAddClassBinding;
 import com.example.javaopencv.databinding.FragmentClassBinding;

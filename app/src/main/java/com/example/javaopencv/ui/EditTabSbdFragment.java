@@ -17,7 +17,7 @@ import com.example.javaopencv.R;
 public class EditTabSbdFragment extends Fragment {
 
     private GridLayout col1, col2, col3, col4, col5, col6, col7;
-    private final int[] selected = new int[8]; // chỉ dùng từ 2..7
+    private final int[] selected = new int[8];
 
     public static EditTabSbdFragment newInstance(String sbd) {
         Bundle b = new Bundle();
@@ -33,7 +33,6 @@ public class EditTabSbdFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View v = inf.inflate(R.layout.fragment_edit_tab_sbd, container, false);
 
-        // Lấy các GridLayout từ XML
         col1 = v.findViewById(R.id.grid_sbd_col1);
         col2 = v.findViewById(R.id.grid_sbd_col2);
         col3 = v.findViewById(R.id.grid_sbd_col3);
@@ -42,17 +41,14 @@ public class EditTabSbdFragment extends Fragment {
         col6 = v.findViewById(R.id.grid_sbd_col6);
         col7 = v.findViewById(R.id.grid_sbd_col7);
 
-        // Khởi tạo giá trị mặc định
         for (int i = 0; i < selected.length; i++) selected[i] = -1;
 
-        // Tạo cột 1 (static)
         for (int i = 0; i < 10; i++) {
             TextView tv = makeCell(String.valueOf(i));
             tv.setBackgroundResource(R.drawable.bg_digit_static);
             col1.addView(tv);
         }
 
-        // Tạo cột 2–7 (selectable)
         setupSelectable(col2, 2);
         setupSelectable(col3, 3);
         setupSelectable(col4, 4);
@@ -60,7 +56,6 @@ public class EditTabSbdFragment extends Fragment {
         setupSelectable(col6, 6);
         setupSelectable(col7, 7);
 
-        // Nếu có SBD truyền vào, khôi phục lựa chọn
         if (getArguments() != null) {
             String sbd = getArguments().getString("sbd");
             setSelectedSbd(sbd);
@@ -90,7 +85,6 @@ public class EditTabSbdFragment extends Fragment {
         }
     }
 
-    /** Tạo ô số (36dp x 36dp, margin 2dp) */
     private TextView makeCell(String text) {
         TextView tv = new TextView(requireContext());
         tv.setText(text);
@@ -108,7 +102,6 @@ public class EditTabSbdFragment extends Fragment {
         return tv;
     }
 
-    /** Trả về SBD (6 chữ số) */
     public String getSoBaoDanh() {
         StringBuilder sb = new StringBuilder();
         for (int c = 2; c <= 7; c++) {
@@ -117,13 +110,11 @@ public class EditTabSbdFragment extends Fragment {
         return sb.toString();
     }
 
-    /** Khôi phục lựa chọn khi có SBD cũ */
     public void setSelectedSbd(String sbd) {
         if (sbd == null || sbd.length() != 6) return;
         for (int i = 0; i < 6; i++) {
             selected[i + 2] = Character.getNumericValue(sbd.charAt(i));
         }
-        // Đánh dấu selection
         restore(col2, selected[2]);
         restore(col3, selected[3]);
         restore(col4, selected[4]);

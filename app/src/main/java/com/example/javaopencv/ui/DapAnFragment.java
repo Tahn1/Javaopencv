@@ -14,7 +14,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -37,7 +36,6 @@ public class DapAnFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Thông báo fragment có menu (chỉ Add)
         setHasOptionsMenu(true);
     }
 
@@ -46,7 +44,6 @@ public class DapAnFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        // Inflate chỉ phần nội dung, đã bỏ header khỏi XML
         return inflater.inflate(R.layout.fragment_dap_an, container, false);
     }
 
@@ -64,7 +61,6 @@ public class DapAnFragment extends Fragment {
         viewModel = new ViewModelProvider(requireActivity())
                 .get(DapAnViewModel.class);
 
-        // Lấy questionCount và examId từ args
         Bundle args = getArguments();
         if (args != null) {
             if (args.containsKey("questionCount")) {
@@ -76,7 +72,6 @@ public class DapAnFragment extends Fragment {
             }
         }
 
-        // Quan sát LiveData để cập nhật danh sách mã đề
         viewModel.getMaDeList().observe(getViewLifecycleOwner(), maDeItemList -> {
             List<String> codes = new ArrayList<>();
             for (DapAnViewModel.MaDeItem it : maDeItemList) {
@@ -86,11 +81,9 @@ public class DapAnFragment extends Fragment {
             updateUI(codes);
         });
 
-        // Đăng ký listener bằng anonymous class để override cả 2 phương thức
         adapter.setOnExamCodeClickListener(new ExamCodeAdapter.OnExamCodeClickListener() {
             @Override
             public void onExamCodeClick(int position, String maDe) {
-                // Chuyển sang AddMaDeFragment để sửa mã đề
                 Bundle bundle = new Bundle();
                 bundle.putString("maDeToEdit", maDe);
                 bundle.putInt   ("positionToEdit", position);
@@ -139,7 +132,6 @@ public class DapAnFragment extends Fragment {
         }
     }
 
-    // Inflate chỉ menu_add (không có camera)
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu,
                                     @NonNull MenuInflater inflater) {
@@ -147,7 +139,6 @@ public class DapAnFragment extends Fragment {
         super.onCreateOptionsMenu(menu, inflater);
     }
 
-    // Xử lý chỉ action_add
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.action_add) {
@@ -163,7 +154,6 @@ public class DapAnFragment extends Fragment {
                     .commit();
             return true;
         }
-        // Nút back/up do Toolbar của Activity xử lý
         return super.onOptionsItemSelected(item);
     }
 }

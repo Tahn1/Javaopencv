@@ -25,10 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Fragment hiển thị danh sách các bài thi có SBD thiếu
- * hoặc không tồn tại trong danh sách sinh viên của lớp.
- */
+
 public class DanhSachToSaiMaSVFragment extends Fragment {
     private GradeResultViewModel viewModel;
     private StudentViewModel studentVm;
@@ -95,7 +92,6 @@ public class DanhSachToSaiMaSVFragment extends Fragment {
                                 WrongSbdAdapter adapter = new WrongSbdAdapter(
                                         wrongList,
                                         gr -> {
-                                            // Khi click---đổi thành truyền Fragment 'this'
                                             Bundle args = new Bundle();
                                             args.putLong("gradeId", gr.getId());
                                             NavHostFragment.findNavController(

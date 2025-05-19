@@ -40,7 +40,7 @@ public class AddMaDeFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true); // fragment có menu (icon Save + Up)
+        setHasOptionsMenu(true);
     }
 
     @Nullable
@@ -102,17 +102,14 @@ public class AddMaDeFragment extends Fragment {
         });
     }
 
-    // Inflate menu: bao gồm Up/Home và Save
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu,
                                     @NonNull MenuInflater inflater) {
-        // menu_add_ma_de.xml chứa:
-        // <item android:id="@+id/action_save" … />
+
         inflater.inflate(R.menu.menu_add_ma_de, menu);
         super.onCreateOptionsMenu(menu, inflater);
     }
 
-    // Bắt sự kiện Up/Home và Save
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
@@ -120,7 +117,6 @@ public class AddMaDeFragment extends Fragment {
             saveMaDe();
             return true;
         }
-        // đây là nút Up/Home do Activity’s Toolbar sinh ra
         if (id == android.R.id.home) {
             requireActivity().onBackPressed();
             return true;
@@ -141,23 +137,18 @@ public class AddMaDeFragment extends Fragment {
             return;
         }
 
-        // Chuẩn bị list finalAnswers
         List<String> finalAnswers = new ArrayList<>();
         for (int i = 0; i < questionCount; i++) {
             finalAnswers.add(i < answers.size() ? answers.get(i) : null);
         }
 
-        // Lấy danh sách hiện tại
         List<DapAnViewModel.MaDeItem> currentList = viewModel.getMaDeList().getValue();
         boolean isEdit = maDeToEdit != null && positionToEdit != -1;
 
-        // 1) Kiểm tra trùng mã đề (bỏ qua chính vị trí đang sửa nếu đang edit)
         if (currentList != null) {
             for (int i = 0; i < currentList.size(); i++) {
                 String existing = currentList.get(i).code;
                 if (existing.equals(maDe) && (!isEdit || i != positionToEdit)) {
-                    // nếu thêm mới: bất cứ match nào đều trùng
-                    // nếu edit: match với index khác vị tríToEdit mới coi là trùng
                     Toast.makeText(requireContext(),
                             "Mã đề đã tồn tại. Vui lòng nhập mã đề khác.", Toast.LENGTH_SHORT).show();
                     return;
@@ -166,7 +157,7 @@ public class AddMaDeFragment extends Fragment {
         }
 
         if (isEdit) {
-            // 2) Sửa: hỏi xác nhận rồi update
+
             new AlertDialog.Builder(requireContext())
                     .setTitle("Xác nhận")
                     .setMessage("Bạn chắc chắn muốn cập nhật mã đề không?")
@@ -177,7 +168,6 @@ public class AddMaDeFragment extends Fragment {
                     .setNegativeButton("Không", null)
                     .show();
         } else {
-            // 3) Thêm mới
             viewModel.addMaDe(maDe, finalAnswers, questionCount);
             requireActivity().onBackPressed();
         }

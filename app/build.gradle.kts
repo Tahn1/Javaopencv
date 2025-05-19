@@ -39,17 +39,11 @@ android {
 }
 
 dependencies {
-    // --- Apache POI ---
     implementation("org.apache.poi:poi:5.2.3")
     implementation("org.apache.poi:poi-ooxml:5.2.3") {
-        // loại bỏ cái schemas cũ gây trùng class
         exclude(group = "org.apache.poi", module = "poi-ooxml-schemas")
     }
-
-    // desugaring cho MethodHandle, java.time, v.v.
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
-
-    // Các dependency còn lại giữ nguyên (đổi alias nếu cần)
     implementation(libs.androidx.swiperefreshlayout)
     implementation(libs.gridlayout)
     implementation(libs.material)
@@ -71,8 +65,6 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
-
-    // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

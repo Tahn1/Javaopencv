@@ -37,7 +37,6 @@ public class EditMaDeTabFragment extends Fragment {
         gridCol3 = v.findViewById(R.id.grid_col3);
         gridCol4 = v.findViewById(R.id.grid_col4);
 
-        // Grid layout 10 hàng, 1 cột
         gridCol1.setRowCount(10); gridCol1.setColumnCount(1);
         gridCol2.setRowCount(10); gridCol2.setColumnCount(1);
         gridCol3.setRowCount(10); gridCol3.setColumnCount(1);
@@ -48,7 +47,6 @@ public class EditMaDeTabFragment extends Fragment {
         setupSelectableGrid(gridCol3, 3);
         setupSelectableGrid(gridCol4, 4);
 
-        // Khôi phục chọn sẵn nếu có maDe truyền vào
         if (getArguments() != null) {
             String maDe = getArguments().getString("maDe");
             setSelectedMaDe(maDe);
@@ -74,9 +72,7 @@ public class EditMaDeTabFragment extends Fragment {
         }
     }
 
-    /**
-     * Tạo một TextView và gán LayoutParams với row=i, col=j
-     */
+
     private TextView createCell(String text, int row, int col) {
         TextView tv = new TextView(requireContext());
         tv.setText(text);
@@ -86,8 +82,8 @@ public class EditMaDeTabFragment extends Fragment {
         tv.setPadding(p, p, p, p);
 
         GridLayout.LayoutParams lp = new GridLayout.LayoutParams(
-                GridLayout.spec(row, GridLayout.FILL),    // đặt tại hàng `row`
-                GridLayout.spec(col, GridLayout.FILL)     // tại cột `col`
+                GridLayout.spec(row, GridLayout.FILL),
+                GridLayout.spec(col, GridLayout.FILL)
         );
         lp.width  = GridLayout.LayoutParams.WRAP_CONTENT;
         lp.height = GridLayout.LayoutParams.WRAP_CONTENT;

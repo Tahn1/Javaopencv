@@ -36,7 +36,6 @@ public class MaDeTabFragment extends Fragment {
         setupSelectableGrid(gridCol3, 3);
         setupSelectableGrid(gridCol4, 4);
 
-        // 🛠 Nhận dữ liệu từ Bundle sau khi setup xong Grid
         if (getArguments() != null && getArguments().containsKey("selectedMaDe")) {
             String selectedMaDe = getArguments().getString("selectedMaDe");
             if (selectedMaDe != null) {
@@ -114,7 +113,6 @@ public class MaDeTabFragment extends Fragment {
         return String.valueOf(selectedCol2) + selectedCol3 + selectedCol4;
     }
 
-    // ✅ NEW: Khôi phục Mã đề đã chọn (khi chỉnh sửa quay lại)
     public void setSelectedMaDe(String maDe) {
         if (maDe == null || maDe.length() != 3) return;
 

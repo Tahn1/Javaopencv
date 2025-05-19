@@ -14,11 +14,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.javaopencv.R;
-import com.example.javaopencv.data.entity.GradeResult;
 import com.example.javaopencv.ui.adapter.WrongMaDeAdapter;
 import com.example.javaopencv.viewmodel.GradeResultViewModel;
-
-import java.util.List;
 
 public class DanhSachToSaiMaDeFragment extends Fragment {
     private GradeResultViewModel viewModel;

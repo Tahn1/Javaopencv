@@ -30,9 +30,7 @@ import com.example.javaopencv.data.entity.GradeResult;
 import com.example.javaopencv.data.entity.Exam;
 import com.example.javaopencv.ui.adapter.StudentResultAdapter;
 import com.example.javaopencv.viewmodel.StudentViewModel;
-import com.example.javaopencv.viewmodel.GradeResultViewModel;
 import com.example.javaopencv.viewmodel.ExamViewModel;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -155,10 +153,7 @@ public class StudentListFragment extends Fragment {
         adapter.submitList(filtered);
     }
 
-    /**
-     * Xuất danh sách học sinh ra CSV (Excel) và chia sẻ,
-     * thêm dòng metadata StudentList_<Test>_<Subject>_<dd-MM-yyyy> đầu file
-     */
+
     private void exportStudentListCsv() {
         new Thread(() -> {
             // 1) Lấy metadata

@@ -81,12 +81,10 @@ public class EditDapAnTabFragment extends Fragment {
         gridCol5.setRowCount(totalQuestions);
 
         for (int row = 0; row < totalQuestions; row++) {
-            // Cột 1: số thứ tự
             TextView tvHeader = createCell(String.valueOf(row + 1));
             tvHeader.setBackgroundResource(R.drawable.bg_digit_static);
             gridCol1.addView(tvHeader);
 
-            // Xác định giá trị ban đầu
             int init = 0;
             if (row < initialAnswers.length) {
                 String ans = initialAnswers[row].trim().toUpperCase();
@@ -100,7 +98,7 @@ public class EditDapAnTabFragment extends Fragment {
             // Cột A–D
             for (int col = 2; col <= 5; col++) {
                 final int r = row;
-                final int val = col - 1; // 1=A,2=B,3=C,4=D
+                final int val = col - 1; //
                 String label;
                 if (val == 1)      label = "A";
                 else if (val == 2) label = "B";
@@ -144,10 +142,7 @@ public class EditDapAnTabFragment extends Fragment {
         else             return gridCol5;
     }
 
-    /**
-     * Tạo ô vuông cố định 28dp×28dp với margin 4dp, text size 16sp, gravity CENTER.
-     * Khi kết hợp với drawable bg_digit_*, sẽ ra hình tròn.
-     */
+
     private TextView createCell(String text) {
         TextView tv = new TextView(requireContext());
         tv.setText(text);
@@ -170,7 +165,6 @@ public class EditDapAnTabFragment extends Fragment {
         return Math.round(d * density);
     }
 
-    /** Trả về mảng đáp án đã chọn (1..4), 0 nếu bỏ trống */
     public int[] getSelectedAnswers() {
         return selectedAnswers;
     }

@@ -27,7 +27,6 @@ import com.example.javaopencv.viewmodel.ExamViewModel;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -183,7 +182,6 @@ public class NewExamDialogFragment extends DialogFragment {
             }
 
             if (isEdit) {
-                // Chỉ update Title và Subject
                 Exam exam = new Exam(
                         editExamId,
                         classIdArg == 0 ? null : classIdArg,
@@ -196,7 +194,6 @@ public class NewExamDialogFragment extends DialogFragment {
                 examVm.updateExam(exam);
 
             } else {
-                // Tạo mới full dữ liệu
                 String soStr = etSoCau.getText().toString().trim();
                 if (TextUtils.isEmpty(soStr)) {
                     Toast.makeText(requireContext(),
@@ -235,7 +232,6 @@ public class NewExamDialogFragment extends DialogFragment {
         return dlg;
     }
 
-    /** InputFilter để bắt buộc số trong khoảng [min,max] */
     public static class InputFilterMinMax implements InputFilter {
         private final int min, max;
         public InputFilterMinMax(int min, int max) {

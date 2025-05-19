@@ -37,14 +37,6 @@ public class ThongKeFragment extends Fragment {
     private BarChart barChart;
     private PieChart pieChart;
 
-    public static ThongKeFragment newInstance(int examId) {
-        Bundle args = new Bundle();
-        args.putInt(ARG_EXAM_ID, examId);
-        ThongKeFragment f = new ThongKeFragment();
-        f.setArguments(args);
-        return f;
-    }
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,

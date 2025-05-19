@@ -25,9 +25,7 @@ import com.example.javaopencv.ui.adapter.ExamAdapter;
 import com.example.javaopencv.viewmodel.KiemTraViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-/**
- * Fragment hiển thị danh sách bài thi, gọi dialog riêng để thêm/sửa.
- */
+
 public class KiemTraFragment extends Fragment
         implements ExamAdapter.OnExamItemClickListener,
         ExamAdapter.OnExamItemLongClickListener {
@@ -54,13 +52,11 @@ public class KiemTraFragment extends Fragment
                               @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Toolbar title
         AppCompatActivity act = (AppCompatActivity) requireActivity();
         if (act.getSupportActionBar() != null) {
             act.getSupportActionBar().setTitle("Kiểm Tra");
         }
 
-        // RecyclerView & Adapter
         RecyclerView rv = view.findViewById(R.id.rv_exams);
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         examAdapter = new ExamAdapter();
@@ -68,7 +64,6 @@ public class KiemTraFragment extends Fragment
         examAdapter.setOnExamItemLongClickListener(this);
         rv.setAdapter(examAdapter);
 
-        // ViewModel
         viewModel = new ViewModelProvider(
                 requireActivity(),
                 ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().getApplication())
@@ -77,10 +72,8 @@ public class KiemTraFragment extends Fragment
             examAdapter.setExamList(exams);
         });
 
-        // FAB: tạo mới exam
         FloatingActionButton fab = view.findViewById(R.id.fab_add);
         fab.setOnClickListener(v -> {
-            // Nếu cần classId mặc định, truyền -1
             NewExamDialogFragment.newInstanceForCreate(-1)
                     .show(getParentFragmentManager(), "NewExam");
         });

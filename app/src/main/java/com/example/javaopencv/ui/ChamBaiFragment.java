@@ -125,7 +125,6 @@ public class ChamBaiFragment extends Fragment {
                 }
         );
 
-        // Hiển thị AlertDialog 2 lựa chọn
         btnPick.setOnClickListener(v -> {
             new AlertDialog.Builder(requireContext())
                     .setTitle("Chọn nguồn ảnh")
@@ -209,7 +208,6 @@ public class ChamBaiFragment extends Fragment {
         }
     }
 
-    /** Hiển thị loading, chạy batch, rồi ẩn loading */
     private void startBatch(List<Uri> uris) {
         // show loading
         progressBar.setVisibility(View.VISIBLE);
@@ -269,8 +267,6 @@ public class ChamBaiFragment extends Fragment {
             return null;
         }
     }
-
-    // ===== Inner Model & Adapter =====
 
     private static class OMRResult {
         final Bitmap annotated;

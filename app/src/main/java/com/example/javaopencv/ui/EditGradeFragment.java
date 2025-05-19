@@ -125,7 +125,6 @@ public class EditGradeFragment extends Fragment implements OnAnswerChangeListene
 
     @Override
     public void onAnswersChanged(int[] selected) {
-        // no-op
     }
 
     private void confirmAndSave() {

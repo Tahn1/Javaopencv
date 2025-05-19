@@ -22,7 +22,7 @@ public class DapAnTabFragment extends Fragment {
     private RecyclerView rvDapAnGrid;
     private DapAnGridAdapter adapter;
     private List<String> answerListToEdit;
-    private int questionCount = 0;  // số câu sẽ được set từ ngoài
+    private int questionCount = 0;
 
     @Nullable
     @Override
@@ -32,7 +32,6 @@ public class DapAnTabFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_dap_an_tab, container, false);
         rvDapAnGrid = view.findViewById(R.id.rv_dap_an_grid);
 
-        // Nếu đã set questionCount trước khi view created
         if (questionCount > 0) {
             setupGrid(questionCount);
             // highlight old answers nếu có
@@ -43,9 +42,7 @@ public class DapAnTabFragment extends Fragment {
         return view;
     }
 
-    /**
-     * Thiết lập số câu hỏi mới, có thể gọi trước hoặc sau khi view được tạo
-     */
+
     public void setQuestionCount(int count) {
         this.questionCount = count;
         // nếu view đã tạo, vẽ luôn
@@ -57,9 +54,7 @@ public class DapAnTabFragment extends Fragment {
         }
     }
 
-    /**
-     * Thiết lập danh sách đáp án cũ để highlight khi edit
-     */
+
     public void setAnswerListToEdit(List<String> answers) {
         this.answerListToEdit = answers;
         if (adapter != null && answers != null && !answers.isEmpty()) {
@@ -67,9 +62,7 @@ public class DapAnTabFragment extends Fragment {
         }
     }
 
-    /**
-     * Khởi tạo lưới đáp án dựa trên số câu hỏi
-     */
+
     private void setupGrid(int count) {
         GridLayoutManager layoutManager = new GridLayoutManager(requireContext(), 5);
         rvDapAnGrid.setLayoutManager(layoutManager);
@@ -83,9 +76,7 @@ public class DapAnTabFragment extends Fragment {
         rvDapAnGrid.setAdapter(adapter);
     }
 
-    /**
-     * Lấy list đáp án hiện tại
-     */
+
     public List<String> getAnswerList() {
         return (adapter != null) ? adapter.buildAnswersList() : new ArrayList<>();
     }

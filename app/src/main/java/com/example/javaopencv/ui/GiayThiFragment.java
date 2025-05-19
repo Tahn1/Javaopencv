@@ -22,13 +22,11 @@ public class GiayThiFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_giay_thi, container, false);
 
-        // Tải phiếu 20
         view.findViewById(R.id.btn_tai_phieu_20)
                 .setOnClickListener(v ->
                         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(DRIVE_URL_PHIEU_20)))
                 );
 
-        // Tải file Excel mẫu
         view.findViewById(R.id.btn_tai_excel_mau)
                 .setOnClickListener(v ->
                         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(DRIVE_URL_EXCEL_MAU)))

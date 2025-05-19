@@ -69,12 +69,10 @@ public class XemLaiFragment extends Fragment {
     private final Map<String, Student> studentMap = new HashMap<>();
     private final List<GradeResult>    fullResults = new ArrayList<>();
 
-    private int sortMode = 0; // 0=default,1=SBD,2=MaDe
+    private int sortMode = 0;
 
-    // Dùng để filter mã đề; load 1 lần khi viewCreated
     private final Set<String> validCodes = new HashSet<>();
 
-    // Executor + Handler để gọi Room off main thread
     private final Executor executor = Executors.newSingleThreadExecutor();
     private final Handler  mainHandler = new Handler(Looper.getMainLooper());
 
@@ -208,7 +206,6 @@ public class XemLaiFragment extends Fragment {
         refreshData();
     }
 
-    /** Reload dữ liệu sync và cập nhật fullResults */
     private void refreshData() {
         new Thread(() -> {
             List<GradeResult> list = vm.getResultsListSync();
@@ -221,7 +218,6 @@ public class XemLaiFragment extends Fragment {
         }).start();
     }
 
-    /** Lọc theo validCodes + studentMap, rồi sắp xếp và submitList */
     private void applySort() {
         List<GradeResult> filtered = new ArrayList<>();
         boolean hasClass = (classId != null && classId >= 0);
@@ -291,7 +287,6 @@ public class XemLaiFragment extends Fragment {
             File dir = requireContext().getExternalFilesDir("exports");
             if (dir!=null && !dir.exists()) dir.mkdirs();
             File csv = new File(dir, meta + ".csv");
-
             try (FileOutputStream fos = new FileOutputStream(csv);
                  OutputStreamWriter osw = new OutputStreamWriter(fos, StandardCharsets.UTF_8);
                  BufferedWriter bw = new BufferedWriter(osw)) {
@@ -330,9 +325,7 @@ public class XemLaiFragment extends Fragment {
         }).start();
     }
 
-    /**
-     * Xuất PDF chi tiết bài chấm với metadata header trên tiêu đề trang đầu
-     */
+
     private void exportSinglePdfAndShare(){
         Toast.makeText(requireContext(),"Đang tạo PDF…",Toast.LENGTH_SHORT).show();
         new Thread(()->{
@@ -383,9 +376,7 @@ public class XemLaiFragment extends Fragment {
         }).start();
     }
 
-    /**
-     * Xuất đáp án (answer key) CSV với tên file DapAn_<Test>_<Subject>_<dd-MM-yyyy>
-     */
+
     private void exportAnswerKeyCsvAndShare() {
         new Thread(() -> {
             AnswerDao dao = AppDatabase.getInstance(requireContext()).answerDao();

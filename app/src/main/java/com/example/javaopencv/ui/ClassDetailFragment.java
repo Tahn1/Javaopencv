@@ -19,10 +19,7 @@ import com.example.javaopencv.viewmodel.ClassViewModel;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
-/**
- * Fragment chi tiết lớp: hiển thị TabLayout với 2 tab (Exam, Student)
- * và đặt title toolbar thành tên lớp được chọn.
- */
+
 public class ClassDetailFragment extends Fragment {
     private static final String ARG_CLASS_ID = "classId";
     private int classId;
@@ -44,13 +41,11 @@ public class ClassDetailFragment extends Fragment {
             classId = getArguments().getInt(ARG_CLASS_ID, -1);
         }
 
-        // Khởi tạo ViewModel với Factory (subjectId không dùng ở đây)
         viewModel = new ViewModelProvider(
                 this,
                 new ClassViewModel.Factory(requireActivity().getApplication())
         ).get(ClassViewModel.class);
 
-        // Quan sát tên lớp và đặt làm title
         viewModel.getClassById(classId)
                 .observe(getViewLifecycleOwner(), klass -> {
                     if (klass != null) {
